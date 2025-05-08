@@ -1,0 +1,167 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Plus, X, Minus } from 'lucide-react';
+import Select from 'react-select';
+import { useAuth } from '../../utils/idb';
+
+const AddGroup = ({ onClose }) => {
+    const {user} = useAuth();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [memberLimit, setMemberLimit] = useState(10);
+  const [users, setUsers] = useState([]);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+
+  useEffect(() => {
+    // Fetch users from the API
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/users/fetchallusers');
+        const data = await res.json();
+        setUsers(data.data || []);
+      } catch (err) {
+        console.error('Error fetching users:', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+
+    const response = await fetch('http://localhost:5000/api/groups/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name,
+        description,
+        member_limit: memberLimit,
+        created_by: user.id,
+        selectedMembers  : selectedMembers
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status) {
+      alert('Group created successfully!');
+      onClose(); // Close the modal after creation
+    } else {
+      alert('Error creating group');
+    }
+  };
+
+  const handleMemberLimitChange = (operation) => {
+    setMemberLimit((prev) => {
+      if (operation === 'increase') return prev + 1;
+      if (operation === 'decrease' && prev > 1) return prev - 1;
+      return prev;
+    });
+  };
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="bg-white w-full max-w-4xl h-full p-8 overflow-y-auto rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Add Group</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-red-500">
+            <X size={24} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Group Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              rows="4"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700">
+              Member Limit
+            </label>
+            <div className="flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={() => handleMemberLimitChange('decrease')}
+                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+              >
+                <Minus size={18} />
+              </button>
+              <span className="text-lg font-medium">{memberLimit}</span>
+              <button
+                type="button"
+                onClick={() => handleMemberLimitChange('increase')}
+                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Select Members</label>
+            <Select
+              isMulti
+              options={users.map((user) => ({
+                value: user.id,
+                label: user.name,
+              }))}
+              onChange={(selected) => {
+                setSelectedMembers(selected.map((item) => item.value));
+              }}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+            >
+              Create Group
+            </button>
+          </div>
+        </form>
+      </div>
+    </motion.div>
+  );
+};
+
+export default AddGroup;

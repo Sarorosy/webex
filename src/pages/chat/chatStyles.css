@@ -1,0 +1,26 @@
+
+/* Send button styling */
+.send-button {
+  margin-top: 10px;
+  display: inline-block;
+  cursor: pointer;
+  width: 50px;
+}
+.chat-send-container{
+    width: 100%;
+}
+
+.p-mention-input{
+    height: 50px;
+    width: 100%;
+    resize: none;
+}
+.p-inputtext:enabled:focus{
+    box-shadow: none;
+}
+.p-inputwrapper-focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: #ccc !important; /* Optional: keep a neutral border */
+  }
+  
