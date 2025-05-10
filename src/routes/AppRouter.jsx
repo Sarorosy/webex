@@ -21,6 +21,7 @@ export default function AppRouter() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/manage-users" element={<Users />} />
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:view_user_id/:view_user_name" element={<ChatPage />} />
             <Route path="/manage-groups" element={<ManageGroups />} />
           </Route>
         </Route>

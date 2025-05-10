@@ -1,13 +1,54 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import ChatSend from "./ChatSend";
 import ChatMessages from "./ChatMessages";
+import { getSocket, connectSocket } from "../../utils/Socket";
+import { useAuth } from "../../utils/idb";
+import TypingIndicator from "./TypingIndicator";
+import ChatHeader from "./ChatHeader";
 
-const ChatArea = ({ selectedUser }) => {
+const ChatArea = ({view_user_id, selectedUser }) => {
   const [messages, setMessages] = useState([
     { id: 1, sender: "You", text: "Hello!" },
     { id: 2, sender: selectedUser?.name || "User", text: "Hi there!" },
   ]);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+  const { user } = useAuth();
+  const socket = getSocket();
+
+
+  const [isReply, setIsReply] = useState(false);
+  const [replyMsgId, setReplyMsgId] = useState(null);
+  const [replyMessage, setReplyMessage] = useState(null);
+  
+
+  useEffect(() => {
+    if (user?.id && selectedUser.id) {
+      connectSocket(user.id);
+
+      const handleTyping = ({ from, to }) => {
+        if (to == user.id && from == parseInt(selectedUser.id)) {
+          setIsTyping(true);
+
+          // Clear previous timer and reset it
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+          }
+
+          typingTimeoutRef.current = setTimeout(() => {
+            setIsTyping(false);
+          }, 2000);
+        }
+      };
+
+      socket.on("typing", handleTyping);
+
+      return () => {
+        socket.off("typing", handleTyping);
+      };
+    }
+  }, [user?.id, selectedUser.id]);
 
   const sendMessage = () => {
     if (!input.trim()) return;
@@ -15,24 +56,43 @@ const ChatArea = ({ selectedUser }) => {
     setInput("");
   };
 
+  useEffect(() => {
+    socket.on("typing", ({ from, to }) => {
+      if (to === currentUser.id && from === selectedUser.id) {
+        setIsTyping(true);
+
+        // Hide typing after 2 seconds of inactivity
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 2000);
+      }
+    });
+
+    return () => {
+      socket.off("typing");
+    };
+  }, [selectedUser?.id]);
+
   return (
     <div className="flex flex-col flex-1 p-4 bg-white rounded shadow">
-      <div className="flex items-center gap-3 border-b pb-3 mb-4 px-4 py-3 bg-orange-100 rounded-t-lg shadow-inner">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-400 text-white text-xl font-bold shadow">
-          {selectedUser?.name?.charAt(0).toUpperCase() || "U"}
-        </div>
-        <h2 className="text-xl font-bold text-gray-800 tracking-wide">
-          {selectedUser?.name || "Unknown User"}
-        </h2>
-      </div>
+      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} />
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-       <ChatMessages userId={selectedUser?.id} />
+      <div className="flex-1 overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
+        <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} />
       </div>
 
       {/* Message Input */}
-      <ChatSend userId={selectedUser?.id} type={selectedUser?.type} onSend={(message)=>console.log(message)} />
+      <ChatSend
+        userId={selectedUser?.id}
+        type={selectedUser?.type}
+        isReply={isReply}
+        setIsReply={setIsReply}
+        replyMsgId={replyMsgId}
+        setReplyMsgId={setReplyMsgId}
+        replyMessage={replyMessage}
+        setReplyMessage={setReplyMessage}
+        
+      />
     </div>
   );
 };

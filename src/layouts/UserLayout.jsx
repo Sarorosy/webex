@@ -12,7 +12,7 @@ export default function UserLayout() {
         className="flex-grow w-full overflow-y-auto "
         id="scroll-container"
       >
-        <div className="bg-white rounded shadow-md p-2 min-h-full">
+        <div className="bg-white rounded shadow-md p-2 min-h-full" id="sample">
           <Outlet />
         </div>
       </main>

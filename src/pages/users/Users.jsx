@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Pencil, Trash, Plus, Search, CirclePlus, Frown, Trash2 } from "lucide-react";
+import { Pencil, Trash, Plus, Search, CirclePlus, Frown, Trash2, MessagesSquare } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
 import AddUser from "./AddUser";
 import EditUser from "./EditUser";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { useNavigate } from "react-router-dom";
 
 const getRandomColor = (id) => {
     const colors = [
@@ -22,6 +23,7 @@ const Users = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [editOpen, setEditOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     const fetchUsers = async () => {
         try {
@@ -147,6 +149,9 @@ const Users = () => {
                                             <div className="text-red flex items-center justify-center" style={{ textDecoration: "none !important" }}> <Frown size={20} /><span>Deleted User</span></div>
                                         ) : (
                                             <div className="flex justify-center gap-2">
+                                                 <button onClick={() => navigate("/chat/" + user.id + "/" + user.name)} className="text-orange-500 hover:text-orange-700 flex items-center mr-2 border p-1 rounded">
+                                                    <MessagesSquare size={16} /> View Chats
+                                                </button>
                                                 <button onClick={() => handleEditClick(user.id)} className="text-blue-500 hover:text-blue-700">
                                                     <Pencil size={16} />
                                                 </button>
