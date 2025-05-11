@@ -36,9 +36,8 @@ const ChatMessages = ({
       setIsLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messages?sender_id=${
-          view_user_id ?? user.id
-        }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}`
+        `http://localhost:5000/api/chats/messages?sender_id=${view_user_id ?? user.id
+        }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
 
       if (!res.ok) {
@@ -319,6 +318,27 @@ const ChatMessages = ({
               </div>
 
               {messages.map((msg) => {
+
+                if (msg.is_history == 1) {
+                  return (
+                    <div
+                      key={msg.id}
+                      className="w-full flex justify-center my-2"
+                    >
+                      <div className="bg-gray-100 text-[10px] text-gray-500 px-2 py-1 rounded text-center flex items-center space-x-2">
+                        <div>
+                          {msg.sender_name ?? ""} {msg.message}
+                        </div>
+                        <div className=" text-[9px] opacity-70">
+                          {formatTime(msg.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+
+
                 const isSent = isValidViewUserId
                   ? msg.sender_id == view_user_id
                   : msg.sender_id == user.id;
@@ -330,7 +350,7 @@ const ChatMessages = ({
                     onMouseEnter={() => setHoveredMessageId(msg.id)}
                     onMouseLeave={() => setHoveredMessageId(null)}
                     style={{
-                      
+
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
                         isReply && replyMsgId !== msg.id ? "blur(3px)" : "none",
@@ -343,25 +363,22 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper rounded py-2 w-full flex ${
-                      isSent ? "justify-end" : "justify-start"
-                    } mb-2 relative hover:bg-gray-100 border border-transparent hover:border-gray-300 msg-number-${msg.id}`}
+                    className={`message-wrapper rounded py-2 w-full flex ${isSent ? "justify-end" : "justify-start"
+                      } mb-2 relative hover:bg-gray-100 border border-transparent hover:border-gray-300 msg-number-${msg.id}`}
                   >
                     <div
-                      className={`text-xs mb-1 px-1 ${
-                        isSent
-                          ? "text-right text-blue-600"
-                          : "text-left text-gray-600"
-                      }`}
+                      className={`text-xs mb-1 px-1 ${isSent
+                        ? "text-right text-blue-600"
+                        : "text-left text-gray-600"
+                        }`}
                     >
-                      {isSent ? "You" : msg.sender_name ?? "Unknown User"}
+                      {isSent && !view_user_id ? "You" : msg.sender_name ?? "Unknown User"}
                     </div>
                     <div
-                      className={`message relative max-w-[70%] ${
-                        isSent
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-black"
-                      } rounded-2xl px-3 py-2`}
+                      className={`message relative max-w-[70%] ${isSent
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-black"
+                        } rounded-2xl px-3 py-2`}
                     >
                       <div className="message-content"
                       >
@@ -415,11 +432,11 @@ const ChatMessages = ({
                                   className="reply-box bg-white border-l-4 border-blue-500 p-2 rounded text-sm text-gray-800 shadow-sm"
                                 >
                                   <div className="font-semibold text-blue-600">
-                                    {reply.sender_id == user?.id
+                                    {reply.sender_id == user?.id && !view_user_id
                                       ? "You"
                                       : reply.reply_user_name || "User"}
                                   </div>
-                                  <div>{reply.reply_message}</div>
+                                  <div dangerouslySetInnerHTML={{ __html: reply.reply_message }}></div>
                                   <div className="text-xs text-gray-500 mt-1">
                                     {formatTime(reply.reply_at)}
                                   </div>
@@ -430,9 +447,8 @@ const ChatMessages = ({
                         })()}
                       </div>
                       <div
-                        className={`message-time text-xs opacity-70 ${
-                          isSent ? "text-right" : "text-left"
-                        } mt-1`}
+                        className={`message-time text-xs opacity-70 ${isSent ? "text-right" : "text-left"
+                          } mt-1`}
                       >
                         {formatTime(msg.created_at)}
                       </div>

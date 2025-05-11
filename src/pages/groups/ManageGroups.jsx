@@ -14,6 +14,7 @@ const ManageGroups = () => {
   const [groups, setGroups] = useState([]);
   const [addGroup, setAddGroup] = useState(false);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
+  const [loading, setLoading]= useState(false);
 
   useEffect(() => {
     fetchGroups();
@@ -21,17 +22,27 @@ const ManageGroups = () => {
 
   const fetchGroups = async () => {
     try {
+      setLoading(true);
       const res = await fetch("http://localhost:5000/api/groups/all");
       const data = await res.json();
       setGroups(data.groups || []);
     } catch (err) {
       console.error("Error fetching groups:", err);
+    }finally{
+      setLoading(false)
     }
   };
 
   const toggleGroup = (id) => {
     setExpandedGroupId((prev) => (prev === id ? null : id));
   };
+  if(loading){
+    return (
+      <div className="text-center">
+        Loading..
+      </div>
+    )
+  }
 
   return (
     <div className="p-6 space-y-6">

@@ -13,8 +13,14 @@ const EditUser = ({ userId, onClose, after }) => {
         password: "",
         pronouns: "",
         bio: "",
-        profilePic: null
+        office_name: "",
+        city_name: "",
+        profilePic: null,
+        user_panel: "AP",
+        max_group_count: 5
     });
+
+
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -22,14 +28,14 @@ const EditUser = ({ userId, onClose, after }) => {
             try {
                 setFetching(true);
                 const response = await fetch(`http://localhost:5000/api/users/user/${userId}`);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
-        
-                if(data.status){
+
+                if (data.status) {
                     console.log(data.user)
                     setUserData({
                         name: data.user.name,
@@ -37,9 +43,13 @@ const EditUser = ({ userId, onClose, after }) => {
                         password: data.user.password, // Fixed access issue
                         pronouns: data.user.pronouns,
                         bio: data.user.bio,
+                        user_panel: data.user.user_panel || "AP",
+                        max_group_count: data.user.max_group_count || 5,
+                        office_name: data.user.office_name || "",
+                        city_name: data.user.city_name || "",
                         profilePic: data.user.profile_pic ? `http://localhost:5000${data.user.profile_pic}` : null
                     });
-        
+
                 }
             } catch (error) {
                 console.error("Error fetching user details:", error);
@@ -47,7 +57,7 @@ const EditUser = ({ userId, onClose, after }) => {
                 setFetching(false);
             }
         };
-        
+
         fetchUserDetails();
     }, [userId]);
 
@@ -78,6 +88,12 @@ const EditUser = ({ userId, onClose, after }) => {
             formData.append("password", userData.password);
             formData.append("pronouns", userData.pronouns);
             formData.append("bio", userData.bio);
+            formData.append("user_panel", userData.user_panel);
+            formData.append("max_group_count", userData.max_group_count);
+            formData.append("office_name", userData.office_name);
+            formData.append("city_name", userData.city_name);
+
+
             if (userData.profilePic) {
                 formData.append("profile_pic", userData.profilePic);
             }
@@ -104,35 +120,83 @@ const EditUser = ({ userId, onClose, after }) => {
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit User</h2>
                 {fetching ? (
                     <div className="animate-spin border-4 border-gray-300 border-t-blue-500 rounded-full w-8 h-8"></div>
-                        ) : (
-                        <form onSubmit={handleSubmit} className="h-96 overflow-y-scroll scrollbar-none">
-                            <div className="flex flex-col items-center mb-4">
-                                {userData.profilePic ? (
-                                    <img src={userData.profilePic instanceof File ? URL.createObjectURL(userData.profilePic) : userData.profilePic} alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
-                                ) : (
-                                    <div className="w-24 h-24 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-2">
-                                        {userData.name.charAt(0).toUpperCase()}
-                                    </div>
-                                )}
-                                <label className="cursor-pointer text-blue-600 hover:underline">
-                                    Upload new photo
-                                    <input type="file" className="hidden" onChange={handleProfileChange} />
-                                </label>
-                            </div>
-                            <div className="space-y-3">
-                                <input type="text" name="name" value={userData.name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your name" />
-                                <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your email" />
-                                <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter password" />
-                                <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Pronouns" />
-                                <textarea name="bio" value={userData.bio} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Bio"></textarea>
-                            </div>
-                            <button type="submit" className="mt-5 w-full bg-black text-white py-2 rounded-md text-lg">
-                                {loading ? "Saving..." : "Save Changes"}
+                ) : (
+                    <form onSubmit={handleSubmit} className="h-96 overflow-y-scroll scrollbar-none">
+                        <div className="flex flex-col items-center mb-4">
+                            {userData.profilePic ? (
+                                <img src={userData.profilePic instanceof File ? URL.createObjectURL(userData.profilePic) : userData.profilePic} alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
+                            ) : (
+                                <div className="w-24 h-24 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-2">
+                                    {userData.name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <label className="cursor-pointer text-blue-600 hover:underline">
+                                Upload new photo
+                                <input type="file" className="hidden" onChange={handleProfileChange} />
+                            </label>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <input type="text" name="name" value={userData.name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your name" />
+    <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your email" />
+    
+    <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter password" />
+    <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Pronouns" />
+
+    <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Office Name" />
+    <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="City Name" />
+
+    <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 rounded-md" placeholder="Bio"></textarea>
+</div>
+
+                        <div className="flex gap-2 mt-3 items-center">
+                            <label className="font-medium">Panel:</label>
+                            <select
+                                name="user_panel"
+                                value={userData.user_panel}
+                                onChange={handleChange}
+                                className="border p-2 rounded-md flex-1"
+                            >
+                                <option value="AP">Attendance Panel</option>
+                                <option value="SP">Service Panel</option>
+                            </select>
+                        </div>
+
+                        <div className="flex gap-2 mt-3 items-center">
+                            <label className="font-medium">Max Group Count:</label>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setUserData((prev) => ({
+                                        ...prev,
+                                        max_group_count: Math.max(1, prev.max_group_count - 1)
+                                    }))
+                                }
+                                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                            >
+                                -
                             </button>
-                        </form>
+                            <span className="w-8 text-center">{userData.max_group_count}</span>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setUserData((prev) => ({
+                                        ...prev,
+                                        max_group_count: prev.max_group_count + 1
+                                    }))
+                                }
+                                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                            >
+                                +
+                            </button>
+                        </div>
+
+                        <button type="submit" className="mt-5 w-full bg-black text-white py-2 rounded-md text-lg">
+                            {loading ? "Saving..." : "Save Changes"}
+                        </button>
+                    </form>
                 )}
 
-                    </div>
+            </div>
         </motion.div>
     );
 };

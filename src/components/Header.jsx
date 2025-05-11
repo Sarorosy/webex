@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { LogOut, CircleUserRound, Bell, Users, LayoutDashboard, MessagesSquare, Group } from "lucide-react";
 import logo from "../assets/rc.png";
 import { AnimatePresence } from "framer-motion";
+import AddGroup from '../pages/groups/AddGroup.jsx';
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [createNewSpace, setCreateNewSpace]  =useState(false);
 
   return (
     <header className="bg-white text-[#092e46] shadow-md">
@@ -48,7 +50,7 @@ export default function Header() {
                 Dashbaord
               </button>
             )}
-            {user.user_type == "admin" && (
+            {user.user_type == "admin" ? (
               <button
                 onClick={() => navigate("/manage-groups")}
                 data-tooltip-id="my-tooltip"
@@ -57,6 +59,16 @@ export default function Header() {
               >
                 <Group className="w-4 h-4 mr-2" />
                 Groups
+              </button>
+            ) : (
+              <button
+                onClick={() => setCreateNewSpace(true)}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Create New Space"
+                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+              >
+                <Group className="w-4 h-4 mr-2" />
+                New Space
               </button>
             )}
             {user.user_type == "admin" && (
@@ -95,7 +107,11 @@ export default function Header() {
         )}
       </div>
 
-      <AnimatePresence></AnimatePresence>
+      <AnimatePresence>
+        {createNewSpace && (
+          <AddGroup onClose={()=>{setCreateNewSpace(false)}} />
+        )}
+      </AnimatePresence>
     </header>
   );
 }

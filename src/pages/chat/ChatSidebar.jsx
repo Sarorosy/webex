@@ -12,6 +12,7 @@ import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import {ScaleLoader} from 'react-spinners';
 
 const ChatSidebar = ({
   view_user_id,
@@ -63,9 +64,11 @@ const ChatSidebar = ({
     }
   }, [view_user_id, user]);
 
+  const [sideBarLoading, setSideBarLoading] = useState(false)
   useEffect(() => {
     const fetchChats = async () => {
       try {
+        setSideBarLoading(true);
         const res = await fetch(
           "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
           {
@@ -86,6 +89,8 @@ const ChatSidebar = ({
         }
       } catch (err) {
         console.error("Error fetching chats:", err);
+      }finally{
+        setSideBarLoading(false)
       }
     };
 
@@ -153,7 +158,7 @@ const ChatSidebar = ({
       socket.off("favouriteUpdated");
     };
   }, []);
-
+ 
   return (
     <div className="w-1/4 bg-gray-100 p-4 overflow-y-auto border-r sticky top-0">
       <div>
@@ -212,8 +217,19 @@ const ChatSidebar = ({
         </div>
       </div>
 
-      {/* Render filtered data */}
-      {activeTab === "all" ? (
+      
+      {sideBarLoading ? (
+      <div className="mx-auto flex justicy-center w-full">
+      <ScaleLoader
+      className="mx-auto"
+        color="#ea580c"
+        height={14}
+        width={3}
+        radius={2}
+        margin={2}
+      />
+    </div>
+    ) : activeTab === "all" ? (
         <>
           {filteredData.some((chat) =>
             JSON.parse(chat.favourites || "[]").includes(user.id)
@@ -283,7 +299,7 @@ const ChatSidebar = ({
                 selectedUser?.id === chat.id && "bg-gray-300"
               }`}
             >
-              <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                 {chat.profile_pic ? (
                   <img
                     src={"http://localhost:5000" + chat.profile_pic}

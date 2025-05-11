@@ -1,22 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, X, Minus } from 'lucide-react';
-import Select from 'react-select';
+import Select, { components } from "react-select";
 import { useAuth } from '../../utils/idb';
+import toast from 'react-hot-toast';
 
 const AddGroup = ({ onClose }) => {
-    const {user} = useAuth();
+  const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [memberLimit, setMemberLimit] = useState(10);
   const [users, setUsers] = useState([]);
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/users/fetchallusers');
+        const res = await fetch('http://localhost:5000/api/users/getusersforgroup', {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json"
+          },
+          body: JSON.stringify({ user_id: user?.id })
+        });
         const data = await res.json();
         setUsers(data.data || []);
       } catch (err) {
@@ -28,31 +36,39 @@ const AddGroup = ({ onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-
-    const response = await fetch('http://localhost:5000/api/groups/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name,
-        description,
-        member_limit: memberLimit,
-        created_by: user.id,
-        selectedMembers  : selectedMembers
-      }),
-    });
-
-    const data = await response.json();
-
-    if (data.status) {
-      alert('Group created successfully!');
-      onClose(); // Close the modal after creation
-    } else {
-      alert('Error creating group');
+  
+    try {
+      setCreating(true)
+      const response = await fetch('http://localhost:5000/api/groups/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          member_limit: memberLimit,
+          created_by: user.id,
+          selectedMembers: selectedMembers,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.status) {
+        toast.success('Group created successfully!');
+        onClose(); // Close the modal after creation
+      } else {
+        toast.error(data.message || 'Error creating group');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Something went wrong while creating the group.');
+    }finally{
+      setCreating(false)
     }
   };
+  
 
   const handleMemberLimitChange = (operation) => {
     setMemberLimit((prev) => {
@@ -60,6 +76,51 @@ const AddGroup = ({ onClose }) => {
       if (operation === 'decrease' && prev > 1) return prev - 1;
       return prev;
     });
+  };
+
+  const baseURL = "http://localhost:5000";
+
+  // Custom Option with avatar
+  const CustomOption = (props) => {
+    const { data, innerRef, innerProps } = props;
+    const avatar = data.profile_pic
+      ? `${baseURL}${data.profile_pic}`
+      : null;
+
+    return (
+      <div ref={innerRef} {...innerProps} className="flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100">
+        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden mr-2 text-sm">
+          {avatar ? (
+            <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+          ) : (
+            <span>{data.name.charAt(0).toUpperCase()}</span>
+          )}
+        </div>
+        <span className={data.isDisabled ? "text-gray-400" : ""}>{data.label}</span>
+      </div>
+    );
+  };
+
+  const CustomMultiValue = (props) => {
+    const { data } = props;
+    const avatar = data.profile_pic
+      ? `${baseURL}${data.profile_pic}`
+      : null;
+
+    return (
+      <components.MultiValue {...props}>
+        <div className="flex items-center">
+          <div className="w-5 h-5 rounded-full bg-gray-300 overflow-hidden mr-1 text-xs flex items-center justify-center">
+            {avatar ? (
+              <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <span>{data.name.charAt(0).toUpperCase()}</span>
+            )}
+          </div>
+          <span>{data.label}</span>
+        </div>
+      </components.MultiValue>
+    );
   };
 
   return (
@@ -87,6 +148,7 @@ const AddGroup = ({ onClose }) => {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder='Group name'
               className="w-full p-2 border rounded-md"
               required
             />
@@ -100,33 +162,36 @@ const AddGroup = ({ onClose }) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder='Group for'
               className="w-full p-2 border rounded-md"
-              rows="4"
+              rows="1"
             />
           </div>
 
-          <div>
-            <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700">
-              Member Limit
-            </label>
-            <div className="flex items-center space-x-4">
-              <button
-                type="button"
-                onClick={() => handleMemberLimitChange('decrease')}
-                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
-              >
-                <Minus size={18} />
-              </button>
-              <span className="text-lg font-medium">{memberLimit}</span>
-              <button
-                type="button"
-                onClick={() => handleMemberLimitChange('increase')}
-                className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
-              >
-                <Plus size={18} />
-              </button>
+          {user?.user_type != "user" && (
+            <div>
+              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700">
+                Member Limit
+              </label>
+              <div className="flex items-center space-x-4">
+                <button
+                  type="button"
+                  onClick={() => handleMemberLimitChange('decrease')}
+                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                >
+                  <Minus size={18} />
+                </button>
+                <span className="text-lg font-medium">{memberLimit}</span>
+                <button
+                  type="button"
+                  onClick={() => handleMemberLimitChange('increase')}
+                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700">Select Members</label>
@@ -134,12 +199,19 @@ const AddGroup = ({ onClose }) => {
               isMulti
               options={users.map((user) => ({
                 value: user.id,
-                label: user.name,
+                name: user.name,
+                profile_pic: user.profile_pic,
+                label:
+                  user.user_type === "user"
+                    ? `${user.name} - present in ${user.group_present_count} group(s)`
+                    : user.name,
+                isDisabled: user.is_available === 0,
               }))}
               onChange={(selected) => {
                 setSelectedMembers(selected.map((item) => item.value));
               }}
               className="w-full"
+              components={{ Option: CustomOption, MultiValue: CustomMultiValue }}
             />
           </div>
 
@@ -153,9 +225,10 @@ const AddGroup = ({ onClose }) => {
             </button>
             <button
               type="submit"
+              disabled={creating}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
             >
-              Create Group
+              {creating ? "Creating..." : "Create"}
             </button>
           </div>
         </form>

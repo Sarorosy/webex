@@ -18,43 +18,44 @@ const ChatSend = ({
   setReplyMessage,
 }) => {
   const [value, setValue] = useState("");
-  // Dummy user data with an id
-  const dummyUsers = [
-  {
-    id: 1,
-    userName: "Sarah Johnson",
-    userColor: "#FF6B6B",
-    profilePic: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: 2,
-    userName: "Michael Chen",
-    userColor: "#4ECDC4",
-    profilePic: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: 3,
-    userName: "Aisha Patel",
-    userColor: "#FFD166",
-    profilePic: "https://i.pravatar.cc/150?img=3",
-  },
-  {
-    id: 4,
-    userName: "David Kim",
-    userColor: "#6A0572",
-    profilePic: "https://i.pravatar.cc/150?img=4",
-  },
-  {
-    id: 5,
-    userName: "Elena Rodriguez",
-    userColor: "#1A936F",
-    profilePic: "https://i.pravatar.cc/150?img=5",
-  },
-];
+  
+  const [groupUsers, setGroupUsers] = useState([]);
 
-  const [mentionData, setMentionData] = useState(
-    dummyUsers.map((u) => u.userName)
-  );
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+      const data = await res.json();
+
+      if (data.status) {
+        const transformedUsers = data.members.map((member, index) => ({
+          id: member.id,
+          userName: member.name,
+          userColor: '#6A0572',
+          profilePic: member.profile_pic
+            ? `http://localhost:5000${member.profile_pic}`
+            : null,
+        }));
+
+        setGroupUsers(transformedUsers);
+      } else {
+        console.error(data.message || "Failed to fetch group members");
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (type === "group") {
+      fetchUsers();
+    }
+  }, [type, userId]); // also re-fetch if userId changes
+
+  useEffect(() => {
+    console.log("Fetched Group Users:", groupUsers);
+  }, [groupUsers]);
+
+
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -67,17 +68,29 @@ const ChatSend = ({
     );
     setSuggestions(filteredUsers);
   };
-
   const itemTemplate = (data) => (
-  <div className="flex items-center gap-2 p-2">
-    <img
-      src={data.profilePic}
-      alt={data.userName}
-      className="w-8 h-8 rounded-full object-cover"
-    />
-    <span>{data.userName}</span>
-  </div>
-);
+    <div className="flex items-center gap-2 p-2">
+      {data.profilePic ? (
+        <img
+          src={data.profilePic}
+          alt={data.userName}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm leading-none"
+          style={{
+            backgroundColor: data.userColor,
+            lineHeight: "2rem", // ensures vertical centering
+          }}
+        >
+          {data.userName?.charAt(0).toUpperCase()}
+        </div>
+
+      )}
+      <span>{data.userName}</span>
+    </div>
+  );
 
 
   const handleInput = (e) => {
@@ -93,6 +106,17 @@ const ChatSend = ({
   const handleSend = async () => {
     if (!value.trim()) return;
 
+      const urlRegex = /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
+
+  const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
+    let href = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      href = 'https://' + url;
+    }
+    return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
+  });
+
+
     try {
       setSubmitBtnDisabled(true);
       const res = await fetch("http://localhost:5000/api/chats/send", {
@@ -101,9 +125,10 @@ const ChatSend = ({
         body: JSON.stringify({
           isReply,
           replyMsgId,
+          user_type : type,
           sender_id: user.id,
           receiver_id: userId,
-          message: value.trim(),
+          message: linkifiedMessage,
           sender_name: user.name,
         }),
       });
@@ -165,7 +190,7 @@ const ChatSend = ({
     <>
       {isReply && (
         <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center">
-          <div>Replying to : {replyMessage}</div>
+          <div>Replying to : <div dangerouslySetInnerHTML={{ __html: replyMessage }}></div></div>
           <button
             onClick={() => {
               setIsReply(false);
@@ -179,7 +204,7 @@ const ChatSend = ({
         </div>
       )}
       <div className="chat-send-container space-x-2 flex items-end justify-between mx-auto">
-        
+
         {type === "group" ? (
           <div className="relative w-full">
             {value.trim() === "" && (
@@ -196,14 +221,14 @@ const ChatSend = ({
             ></div>
 
             <MentionComponent
-              dataSource={dummyUsers}
+              dataSource={groupUsers}
               fields={{ text: "userName" }}
               target="#chatInput"
               mentionChar="@"
               allowSpaces={true}
               popupHeight="200px"
               popupWidth="250px"
-              itemTemplate={itemTemplate} 
+              itemTemplate={itemTemplate}
               select={handleSelect} // Attach the select event handler
             />
           </div>

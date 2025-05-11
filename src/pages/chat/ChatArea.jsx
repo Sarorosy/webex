@@ -5,6 +5,8 @@ import { getSocket, connectSocket } from "../../utils/Socket";
 import { useAuth } from "../../utils/idb";
 import TypingIndicator from "./TypingIndicator";
 import ChatHeader from "./ChatHeader";
+import { AnimatePresence } from "framer-motion";
+import GroupInfo from "../groups/GroupInfo";
 
 const ChatArea = ({view_user_id, selectedUser }) => {
   const [messages, setMessages] = useState([
@@ -22,6 +24,13 @@ const ChatArea = ({view_user_id, selectedUser }) => {
   const [replyMsgId, setReplyMsgId] = useState(null);
   const [replyMessage, setReplyMessage] = useState(null);
   
+  const [groupInfoOpen, setGroupInfoOpen] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+
+  const handleGroupInfoClick = (groupId) => {
+    setSelectedGroup(groupId);
+    setGroupInfoOpen(true);
+  }
 
   useEffect(() => {
     if (user?.id && selectedUser.id) {
@@ -74,7 +83,7 @@ const ChatArea = ({view_user_id, selectedUser }) => {
 
   return (
     <div className="flex flex-col flex-1 p-4 bg-white rounded shadow">
-      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} />
+      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} />
 
       {/* Messages */}
       <div className="flex-1 overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
@@ -93,6 +102,11 @@ const ChatArea = ({view_user_id, selectedUser }) => {
         setReplyMessage={setReplyMessage}
         
       />
+      <AnimatePresence>
+        {groupInfoOpen && (
+          <GroupInfo selectedGroup={selectedGroup} onClose={()=>{setGroupInfoOpen(false)}} />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

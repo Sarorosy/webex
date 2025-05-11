@@ -50,6 +50,10 @@ div#commentsMention[placeholder]:empty:before {
   }
 }
 
+.messages-a-link{
+  text-decoration: underline;
+  font-weight: 500;
+}
 .chat-messages-container-div{
-  background-image: url('./assets/chat-bg.jpg');
+  /* background-image: url('./assets/chat-bg.jpg'); */
 }

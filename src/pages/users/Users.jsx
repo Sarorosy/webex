@@ -6,6 +6,7 @@ import AddUser from "./AddUser";
 import EditUser from "./EditUser";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
+import { encode } from "../../utils/encoder";
 
 const getRandomColor = (id) => {
     const colors = [
@@ -24,6 +25,12 @@ const Users = () => {
     const [editOpen, setEditOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
+
+    const goToChat = (user) => {
+        const encodedId = encode(user.id.toString());
+        const encodedName = encode(user.name);
+        navigate(`/chat/${encodedId}/${encodedName}`);
+      };
 
     const fetchUsers = async () => {
         try {
@@ -113,7 +120,7 @@ const Users = () => {
                             <th className="border p-2">Profile</th>
                             <th className="border p-2">Name</th>
                             <th className="border p-2">Email</th>
-                            <th className="border p-2">Password</th>
+                            <th className="border p-2">Panel</th>
                             <th className="border p-2">Actions</th>
                         </tr>
                     </thead>
@@ -143,13 +150,13 @@ const Users = () => {
 
                                     <td className="border p-2  font-medium" style={{ color: user.trashed == 1 ? "red" : "#4b5563", textDecoration: user.trashed == 1 ? "line-through" : "" }}>{user.name}</td>
                                     <td className="border p-2 " style={{ color: user.trashed == 1 ? "red" : "#4b5563", textDecoration: user.trashed == 1 ? "line-through" : "" }}>{user.email}</td>
-                                    <td className="border p-2 " style={{ color: user.trashed == 1 ? "red" : "#4b5563", textDecoration: user.trashed == 1 ? "line-through" : "" }}>{user.password}</td>
+                                    <td className="border p-2 " style={{ color: user.trashed == 1 ? "red" : "#4b5563", textDecoration: user.trashed == 1 ? "line-through" : "" }}>{user.user_panel}</td>
                                     <td className="border p-2 ">
                                         {user.trashed == 1 ? (
                                             <div className="text-red flex items-center justify-center" style={{ textDecoration: "none !important" }}> <Frown size={20} /><span>Deleted User</span></div>
                                         ) : (
                                             <div className="flex justify-center gap-2">
-                                                 <button onClick={() => navigate("/chat/" + user.id + "/" + user.name)} className="text-orange-500 hover:text-orange-700 flex items-center mr-2 border p-1 rounded">
+                                                 <button onClick={() => goToChat(user)} className="text-orange-500 hover:text-orange-700 flex items-center mr-2 border p-1 rounded">
                                                     <MessagesSquare size={16} /> View Chats
                                                 </button>
                                                 <button onClick={() => handleEditClick(user.id)} className="text-blue-500 hover:text-blue-700">
@@ -183,13 +190,15 @@ const Users = () => {
                 )}
             </AnimatePresence>
 
-            {/* <ConfirmationModal
-                isOpen={isModalOpen}
-                message="Are you sure you want to delete this user?"
-                smallMessage="This action cannot be undone."
-                onConfirm={confirmDelete} 
-                onCancel={() => setIsModalOpen(false)}
-            /> */}
+                {isModalOpen && (
+
+            <ConfirmationModal
+                title="Are you sure you want to delete this user?"
+                message="This action cannot be undone."
+                onYes={confirmDelete} 
+                onClose={() => setIsModalOpen(false)}
+            />
+                )}
         </div>
     );
 };
