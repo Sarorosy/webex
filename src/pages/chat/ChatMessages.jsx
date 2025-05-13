@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import toast from "react-hot-toast";
-import { Forward, MapPin, Pen, Pin, Reply } from "lucide-react";
+import { BellDot, Forward, MapPin, Pen, Pin, Reply } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import EditModal from "./EditModal";
+import ReadPersons from "./ReadPersons";
 
 const ChatMessages = ({
   view_user_id,
@@ -15,18 +16,26 @@ const ChatMessages = ({
   setIsReply,
   setReplyMsgId,
   setReplyMessage,
+  selectedMessage,
 }) => {
   const [messages, setMessages] = useState([]);
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [latestMessageId, setLatestMessageId] = useState(null);
   const containerRef = useRef(null);
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
   const { user } = useAuth();
+  const topSentinelRef = useRef(null);
+  const hasMoreRef = useRef(true);
 
-  const limit = 10;
+  const limit = 20;
+
+  useEffect(() => {
+    setLatestMessageId(null);
+  }, [view_user_id, userId]);
 
   const fetchMessages = async (skipCount = 0) => {
     if (isFetchingRef.current) return [];
@@ -36,7 +45,8 @@ const ChatMessages = ({
       setIsLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messages?sender_id=${view_user_id ?? user.id
+        `https://webexback.onrender.com/api/chats/messages?sender_id=${
+          view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
 
@@ -45,7 +55,13 @@ const ChatMessages = ({
       }
 
       const data = await res.json();
-      return data.reverse();
+      const reversedData = data.reverse();
+
+      if (reversedData.length > 0) {
+        setLatestMessageId(reversedData[reversedData.length - 1].id);
+      }
+
+      return reversedData;
     } catch (error) {
       console.error("Error fetching messages:", error);
       return [];
@@ -54,13 +70,19 @@ const ChatMessages = ({
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    console.log("latest msg id", latestMessageId);
+  }, [latestMessageId]);
 
   useEffect(() => {
     const loadInitialMessages = async () => {
       const initialMessages = await fetchMessages(0);
       setMessages(initialMessages);
       setSkip(initialMessages.length);
-      setHasMore(initialMessages.length >= limit);
+
+      // Check if there are more messages to load based on skip or total message count
+      const totalMessages = 0; // Fetch total message count from the API
+      setHasMore(initialMessages.length < totalMessages); // Check if more messages exist
     };
 
     if (userId && user?.id) {
@@ -75,6 +97,99 @@ const ChatMessages = ({
   }, [userId, user?.id]);
 
   useEffect(() => {
+    if (containerRef.current && messages.length > 0) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages.length === 0 ? messages : null]);
+
+  const handleScroll = async () => {
+    const container = containerRef.current;
+
+    if (!container || isLoading || isFetchingRef.current) return;
+
+    if (container.scrollTop < 100) {
+      const prevScrollHeight = container.scrollHeight;
+
+      const olderMessages = await fetchMessages(skip);
+
+      if (olderMessages.length > 0) {
+        setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
+        setSkip(skip + olderMessages.length);
+
+        // Only set hasMore to false if less than limit was returned
+        setHasMore(olderMessages.length === limit);
+        hasMoreRef.current = olderMessages.length === limit;
+
+        setTimeout(() => {
+          const newScrollHeight = container.scrollHeight;
+          container.scrollTop = newScrollHeight - prevScrollHeight;
+        }, 10);
+      } else {
+        setHasMore(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log("Setting up IntersectionObserver");
+
+    const observer = new IntersectionObserver(
+      async ([entry]) => {
+        console.log("IntersectionObserver triggered", {
+          isIntersecting: entry.isIntersecting,
+          hasMore,
+          isLoading,
+        });
+
+        if (
+          entry.isIntersecting &&
+          !isLoading &&
+          !isFetchingRef.current &&
+          hasMoreRef.current &&
+          hasMore
+        ) {
+          const prevScrollHeight = containerRef.current.scrollHeight;
+
+          const olderMessages = await fetchMessages(skip);
+
+          if (olderMessages.length > 0) {
+            setMessages((prev) => [...olderMessages, ...prev]);
+            setSkip((prev) => prev + olderMessages.length);
+
+            setHasMore(olderMessages.length === limit); // 👈 this line
+
+            setTimeout(() => {
+              const newScrollHeight = containerRef.current.scrollHeight;
+              containerRef.current.scrollTop =
+                newScrollHeight - prevScrollHeight;
+            }, 10);
+          } else {
+            setHasMore(false);
+          }
+        }
+      },
+      {
+        root: containerRef.current,
+        threshold: 0.1,
+      }
+    );
+
+    if (topSentinelRef.current) {
+      observer.observe(topSentinelRef.current);
+      console.log("Observer attached to topSentinelRef");
+    } else {
+      console.warn("topSentinelRef is not available");
+    }
+
+    return () => {
+      if (topSentinelRef.current) {
+        observer.unobserve(topSentinelRef.current);
+        console.log("Observer detached from topSentinelRef");
+      }
+    };
+  }, [skip, hasMore, isLoading]);
+
+  useEffect(() => {
     let mounted = true;
 
     if (user?.id && userId) {
@@ -86,16 +201,31 @@ const ChatMessages = ({
       const handleNewMessage = (msg) => {
         if (!mounted) return;
 
-        const isRelevantMessage =
-          (msg.sender_id == user.id && msg.receiver_id == parsedUserId) ||
-          (msg.sender_id == parsedUserId && msg.receiver_id == user.id);
+        console.log(msg, "msg from socket");
+        console.log("cuurent userId", userId);
 
-        if (isRelevantMessage) {
+        const isGroupMessage =
+          msg.user_type == "group" && msg.receiver_id == userId;
+
+        const isPrivateMessage =
+          msg.user_type == "user" &&
+          ((msg.sender_id == user.id && msg.receiver_id == parsedUserId) ||
+            (msg.sender_id == parsedUserId && msg.receiver_id == user.id));
+
+        if (isGroupMessage || isPrivateMessage) {
           setMessages((prevMessages) => {
             if (prevMessages.some((m) => m.id === msg.id)) {
               return prevMessages;
             }
             return [...prevMessages, msg];
+          });
+          setLatestMessageId(msg.id);
+          console.log("read_message-emit");
+          socket.emit("read_message_socket", {
+            user_id: user.id,
+            message_ids: [msg.id],
+            receiver_id: msg.receiver_id,
+            user_type: msg.user_type,
           });
 
           setTimeout(() => {
@@ -133,10 +263,10 @@ const ChatMessages = ({
         );
       };
 
-      socket.off("new_message");
+      socket.off("new_message", handleNewMessage);
       socket.on("new_message", handleNewMessage);
 
-      socket.off("new_reply");
+      socket.off("new_reply", handleNewReply);
       socket.on("new_reply", handleNewReply);
 
       return () => {
@@ -150,37 +280,6 @@ const ChatMessages = ({
       mounted = false;
     };
   }, [user?.id, userId]);
-
-  useEffect(() => {
-    if (containerRef.current && messages.length > 0) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, [messages.length === 0 ? messages : null]);
-
-  const handleScroll = async () => {
-    const container = containerRef.current;
-
-    if (!container || !hasMore || isLoading || isFetchingRef.current) return;
-
-    if (container.scrollTop < 100) {
-      const prevScrollHeight = container.scrollHeight;
-
-      const olderMessages = await fetchMessages(skip);
-
-      if (olderMessages.length > 0) {
-        setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
-        setSkip(skip + olderMessages.length);
-        setHasMore(olderMessages.length >= limit);
-
-        setTimeout(() => {
-          const newScrollHeight = container.scrollHeight;
-          container.scrollTop = newScrollHeight - prevScrollHeight;
-        }, 10);
-      } else {
-        setHasMore(false);
-      }
-    }
-  };
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -233,14 +332,14 @@ const ChatMessages = ({
     setReplyMessage(messageText);
   };
 
-  const handleForward = (msgId) => {
+  const handleReminder = (msgId) => {
     console.log("Forward message:", msgId);
-    toast.success("Forward clicked for message " + msgId);
+    toast.success("Reminder clicked for message " + msgId);
   };
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("http://localhost:5000/api/messages/pin", {
+      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -268,35 +367,108 @@ const ChatMessages = ({
       toast.error("Failed to pin/unpin message");
     }
   };
-  const scrollToMessage = async (targetId) => {
-    let found = messages.some((msg) => msg.id === targetId);
 
-    while (!found && hasMore) {
-      const olderMessages = await fetchMessages(skip);
-      if (olderMessages.length === 0) break;
+  const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
-      setMessages((prev) => [...olderMessages, ...prev]);
-      setSkip((prev) => prev + olderMessages.length);
-      found = olderMessages.some((msg) => msg.id === targetId);
+  const scrollToMessage = async (selectedMessage) => {
+    // Check if the message is already in the current messages array
+    let existingMessage = messages.find((msg) => msg.id === selectedMessage.id);
+
+    // If message is not found, we'll implement a multi-step fetch strategy
+    if (!existingMessage) {
+      try {
+        // First, try to fetch messages around the selected message's timestamp
+        const fetchAroundMessageUrl = new URL(
+          "https://webexback.onrender.com/api/chats/messages"
+        );
+        fetchAroundMessageUrl.searchParams.append(
+          "sender_id",
+          selectedMessage.sender_id
+        );
+        fetchAroundMessageUrl.searchParams.append(
+          "receiver_id",
+          selectedMessage.receiver_id
+        );
+        fetchAroundMessageUrl.searchParams.append(
+          "created_at",
+          selectedMessage.created_at
+        );
+        fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
+
+        const response = await fetch(fetchAroundMessageUrl.toString());
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to fetch messages around the selected message"
+          );
+        }
+
+        const fetchedMessages = await response.json();
+
+        // Merge and deduplicate messages
+        const mergedMessages = [...messages, ...fetchedMessages]
+          .filter(
+            (msg, index, self) =>
+              index ===
+              self.findIndex(
+                (t) => t.id === msg.id && t.created_at === msg.created_at
+              )
+          )
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        // Update messages state
+        setMessages(mergedMessages);
+
+        // Find the specific message
+        existingMessage = mergedMessages.find(
+          (msg) => msg.id === selectedMessage.id
+        );
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
     }
 
-    // Give React time to render
+    // If message is still not found after fetching
+    if (!existingMessage) {
+      toast.error("Message not found");
+      return;
+    }
+
+    // Scroll to the message and highlight
     setTimeout(() => {
-      const el = messageRefs.current[targetId];
+      const el = messageRefs.current[selectedMessage.id];
       if (el && containerRef.current) {
+        // Scroll to message
         el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Set highlighted message
+        setHighlightedMessageId(selectedMessage.id);
+
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+         // setHighlightedMessageId(null);
+        }, 3000);
       }
     }, 100);
   };
 
+  useEffect(() => {
+    if(selectedMessage != null){
+      scrollToMessage(selectedMessage);
+    }
+  }, [selectedMessage]);
+
   const isValidViewUserId =
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
+
   return (
     <div
       ref={containerRef}
       className="messages-container h-[70vh] overflow-y-auto flex flex-col p-4"
       onScroll={handleScroll}
     >
+      <div ref={topSentinelRef}></div>
       {isLoading && (
         <div className="loading-indicator text-center py-2">Loading...</div>
       )}
@@ -318,11 +490,10 @@ const ChatMessages = ({
               </div>
 
               {messages.map((msg) => {
-
                 if (msg.is_history == 1) {
                   return (
                     <div
-                      key={msg.id}
+                      key={`${msg.id}-${msg.created_at}`}
                       className="w-full flex justify-center my-2"
                     >
                       <div className="bg-gray-100 text-[10px] text-gray-500 px-2 py-1 rounded text-center flex items-center space-x-2">
@@ -337,8 +508,6 @@ const ChatMessages = ({
                   );
                 }
 
-
-
                 const isSent = isValidViewUserId
                   ? msg.sender_id == view_user_id
                   : msg.sender_id == user.id;
@@ -350,10 +519,10 @@ const ChatMessages = ({
                     onMouseEnter={() => setHoveredMessageId(msg.id)}
                     onMouseLeave={() => setHoveredMessageId(null)}
                     style={{
-
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
                         isReply && replyMsgId !== msg.id ? "blur(3px)" : "none",
+
                       //backgroundColor:
                       //isReply && replyMsgId === msg.id ? "#FCFEFFFF" : "transparent", // Highlight
                       boxShadow:
@@ -363,26 +532,38 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper rounded py-2 w-full flex ${isSent ? "justify-end" : "justify-start"
-                      } mb-2 relative hover:bg-gray-100 border border-transparent hover:border-gray-300 msg-number-${msg.id}`}
+                    className={`message-wrapper rounded py-2 w-full flex ${
+                      isSent ? "justify-end" : "justify-start"
+                    }  ${
+                      highlightedMessageId === msg.id
+                        ? "animate-pulse-highlight border-yellow-500 bg-yellow-50"
+                        : ""
+                    } mb-2 relative hover:bg-gray-100 border border-transparent hover:border-gray-300 msg-number-${
+                      msg.id
+                    }`}
                   >
                     <div
-                      className={`text-xs mb-1 px-1 ${isSent
-                        ? "text-right text-blue-600"
-                        : "text-left text-gray-600"
-                        }`}
+                      className={`text-xs mb-1 px-1 ${
+                        isSent
+                          ? "text-right text-blue-600"
+                          : "text-left text-gray-600"
+                      }`}
                     >
-                      {isSent && !view_user_id ? "You" : msg.sender_name ?? "Unknown User"}
+                      {isSent && !view_user_id
+                        ? "You"
+                        : msg.sender_name ?? "Unknown User"}
                     </div>
                     <div
-                      className={`message relative max-w-[70%] ${isSent
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200 text-black"
-                        } rounded-2xl px-3 py-2`}
+                      className={`message relative max-w-[70%] ${
+                        isSent
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-black"
+                      } rounded-2xl px-3 py-2`}
                     >
-                      <div className="message-content"
-                      >
-                        <div dangerouslySetInnerHTML={{ __html: msg.message }}></div>
+                      <div className="message-content">
+                        <div
+                          dangerouslySetInnerHTML={{ __html: msg.message }}
+                        ></div>
                         {(() => {
                           let pinned = [];
 
@@ -432,11 +613,16 @@ const ChatMessages = ({
                                   className="reply-box bg-white border-l-4 border-blue-500 p-2 rounded text-sm text-gray-800 shadow-sm"
                                 >
                                   <div className="font-semibold text-blue-600">
-                                    {reply.sender_id == user?.id && !view_user_id
+                                    {reply.sender_id == user?.id &&
+                                    !view_user_id
                                       ? "You"
                                       : reply.reply_user_name || "User"}
                                   </div>
-                                  <div dangerouslySetInnerHTML={{ __html: reply.reply_message }}></div>
+                                  <div
+                                    dangerouslySetInnerHTML={{
+                                      __html: reply.reply_message,
+                                    }}
+                                  ></div>
                                   <div className="text-xs text-gray-500 mt-1">
                                     {formatTime(reply.reply_at)}
                                   </div>
@@ -447,8 +633,9 @@ const ChatMessages = ({
                         })()}
                       </div>
                       <div
-                        className={`message-time text-xs opacity-70 ${isSent ? "text-right" : "text-left"
-                          } mt-1`}
+                        className={`message-time text-xs opacity-70 ${
+                          isSent ? "text-right" : "text-left"
+                        } mt-1`}
                       >
                         {formatTime(msg.created_at)}
                       </div>
@@ -477,10 +664,10 @@ const ChatMessages = ({
                         </button>
 
                         <button
-                          onClick={() => handleForward(msg.id)}
+                          onClick={() => handleReminder(msg.id)}
                           className="action-button p-1 text-gray-600 hover:bg-gray-100 rounded-full mx-1"
                         >
-                          <Forward size={15} />
+                          <BellDot size={15} />
                         </button>
 
                         <button
@@ -497,6 +684,7 @@ const ChatMessages = ({
             </div>
           ))
         )}
+        {latestMessageId && <ReadPersons messageId={latestMessageId} />}
       </div>
 
       <AnimatePresence>

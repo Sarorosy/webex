@@ -12,7 +12,7 @@ import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import {ScaleLoader} from 'react-spinners';
+import { ScaleLoader } from "react-spinners";
 
 const ChatSidebar = ({
   view_user_id,
@@ -36,7 +36,7 @@ const ChatSidebar = ({
 
     socket.on("online-users", (ids) => {
       setOnlineUserIds(ids);
-      console.log(ids)
+      console.log(ids);
     });
 
     socket.on("favouriteUpdated", ({ id, favourites, type }) => {
@@ -64,37 +64,87 @@ const ChatSidebar = ({
     }
   }, [view_user_id, user]);
 
-  const [sideBarLoading, setSideBarLoading] = useState(false)
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        setSideBarLoading(true);
-        const res = await fetch(
-          "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
-          {
-            method: "POST",
-            headers: {
-              "Content-type": "application/json",
-            },
-            body: JSON.stringify({
-              userId: view_user_id ? view_user_id : user.id,
-            }),
-          }
-        );
-        const data = await res.json();
-        if (data.status) {
-          setChats(data.data || []);
-        } else {
-          console.error("Error fetching chats data");
+  const [sideBarLoading, setSideBarLoading] = useState(false);
+  const fetchChats = async (load = true) => {
+    try {
+      setSideBarLoading(load);
+      const res = await fetch(
+        "https://webexback.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: view_user_id ? view_user_id : user.id,
+          }),
         }
-      } catch (err) {
-        console.error("Error fetching chats:", err);
-      }finally{
-        setSideBarLoading(false)
+      );
+      const data = await res.json();
+      if (data.status) {
+        setChats(data.data || []);
+        updateChatLoginStatus(data.data || []);
+      } else {
+        console.error("Error fetching chats data");
       }
-    };
+    } catch (err) {
+      console.error("Error fetching chats:", err);
+    } finally {
+      setSideBarLoading(false);
+    }
+  };
 
-    fetchChats();
+  const updateChatLoginStatus = async (chatList) => {
+  try {
+    const updatedChats = await Promise.all(
+      chatList.map(async (chat) => {
+        let logged_in_status = true;
+
+        if (chat.type === "user" && chat.user_type !== "admin") {
+          try {
+            let url = "";
+            if (chat.user_panel === "AP") {
+              url = "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
+            } else if (chat.user_panel === "SP") {
+              url = "https://elementk.in/spbackend/api/login-history/check-login-status";
+            }
+
+            if (url) {
+              const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email: chat.email }),
+              });
+
+              const result = await res.json();
+              if (result.message === "Loggedin") {
+                logged_in_status = true;
+              }else{
+                logged_in_status = false;
+              }
+            }
+          } catch (err) {
+            console.error("Error checking status for", chat.email, err);
+          }
+        }
+
+        return {
+          ...chat,
+          logged_in_status,
+        };
+      })
+    );
+
+    setChats(updatedChats); // now safely update state
+  } catch (err) {
+    console.error("Error updating login status:", err);
+  }
+};
+
+  useEffect(() => {
+    fetchChats(true);
   }, [view_user_id]);
 
   useEffect(() => {
@@ -136,6 +186,74 @@ const ChatSidebar = ({
     }
   }, [chats, activeTab, searchQuery]);
 
+  useEffect(() => {
+  connectSocket();
+  const socket = getSocket();
+
+  const handleIncoming = (msgOrReply, isReply = false) => {
+  if (!msgOrReply) return;
+
+  const msg = isReply ? msgOrReply : msgOrReply;  // No need for msgOrReply.reply
+
+  console.log(msg)
+
+  if (!msg || !msg.sender_id || !msg.receiver_id) {
+    console.warn("Malformed message or reply:", msgOrReply);
+    return;
+  }
+
+  const otherUserId =
+    msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
+
+  const isRelevant =
+    msg.sender_id == user?.id || msg.receiver_id == user.id;
+
+  if (!isRelevant) return;
+
+  setChats((prevChats) => {
+    const index = prevChats.findIndex(
+      (chat) => chat.id == otherUserId 
+    );
+
+    if (index === -1) {
+      fetchChats(false);
+      return prevChats;
+    }
+
+    const updatedChats = [...prevChats];
+    updatedChats[index] = {
+      ...updatedChats[index],
+      last_interacted_time: new Date().toISOString(),
+    };
+
+    const updated = updatedChats.splice(index, 1)[0];
+    updatedChats.unshift(updated);
+
+    return updatedChats;
+  });
+};
+
+
+  const handleNewMessageSidebar = (msg) => handleIncoming(msg, false);
+  const handleNewReplySidebar = (reply) => {
+  console.log("Incoming reply from socket:", reply);
+  handleIncoming(reply, true);
+};
+
+
+  socket.off("new_message", handleNewMessageSidebar);
+  socket.on("new_message", handleNewMessageSidebar);
+
+  socket.off("new_reply", handleNewMessageSidebar);
+  socket.on("new_reply", handleNewMessageSidebar);
+
+  return () => {
+    socket.off("new_message", handleNewMessageSidebar);
+    socket.off("new_reply", handleNewMessageSidebar);
+  };
+}, [user?.id]);
+
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -158,7 +276,7 @@ const ChatSidebar = ({
       socket.off("favouriteUpdated");
     };
   }, []);
- 
+
   return (
     <div className="w-1/4 bg-gray-100 p-4 overflow-y-auto border-r sticky top-0">
       <div>
@@ -217,19 +335,18 @@ const ChatSidebar = ({
         </div>
       </div>
 
-      
       {sideBarLoading ? (
-      <div className="mx-auto flex justicy-center w-full">
-      <ScaleLoader
-      className="mx-auto"
-        color="#ea580c"
-        height={14}
-        width={3}
-        radius={2}
-        margin={2}
-      />
-    </div>
-    ) : activeTab === "all" ? (
+        <div className="mx-auto flex justicy-center w-full">
+          <ScaleLoader
+            className="mx-auto"
+            color="#ea580c"
+            height={14}
+            width={3}
+            radius={2}
+            margin={2}
+          />
+        </div>
+      ) : activeTab === "all" ? (
         <>
           {filteredData.some((chat) =>
             JSON.parse(chat.favourites || "[]").includes(user.id)
@@ -258,18 +375,18 @@ const ChatSidebar = ({
                   <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                     {chat.profile_pic ? (
                       <img
-                        src={"http://localhost:5000" + chat.profile_pic}
+                        src={"https://webexback.onrender.com" + chat.profile_pic}
                         alt="Profile"
                         className="w-10 h-10 rounded-full mx-auto object-cover border"
                       />
                     ) : (
                       chat.name[0]
                     )}
-                     {onlineUserIds.includes(chat.id) && (
-    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
-  )}
+                    {onlineUserIds.includes(chat.id) && (
+                      <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                    )}
                   </div>
-                  <span className="truncate">{chat.name}</span>
+                  <span className={`truncate ${chat.logged_in_status ? "" : "text-red-500"}`}>{chat.name}</span>
                   {isFavourite && (
                     <Star
                       size={18}
@@ -302,7 +419,7 @@ const ChatSidebar = ({
               <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                 {chat.profile_pic ? (
                   <img
-                    src={"http://localhost:5000" + chat.profile_pic}
+                    src={"https://webexback.onrender.com" + chat.profile_pic}
                     alt="Profile"
                     className="w-10 h-10 rounded-full mx-auto object-cover border"
                   />
@@ -310,10 +427,10 @@ const ChatSidebar = ({
                   chat.name[0]
                 )}
                 {onlineUserIds.includes(chat.id) && (
-    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
-  )}
+                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                )}
               </div>
-              <span className="truncate">{chat.name}</span>
+              <span className={`truncate ${chat.logged_in_status ? "" : "text-red-500"}`}>{chat.name}</span>
               {isFavourite && (
                 <Star
                   size={18}

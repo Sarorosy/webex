@@ -23,7 +23,7 @@ const ChatSend = ({
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+      const res = await fetch(`https://webexback.onrender.com/api/groups/members/${userId}`);
       const data = await res.json();
 
       if (data.status) {
@@ -32,7 +32,7 @@ const ChatSend = ({
           userName: member.name,
           userColor: '#6A0572',
           profilePic: member.profile_pic
-            ? `http://localhost:5000${member.profile_pic}`
+            ? `https://webexback.onrender.com${member.profile_pic}`
             : null,
         }));
 
@@ -78,10 +78,9 @@ const ChatSend = ({
         />
       ) : (
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm leading-none"
+          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
           style={{
             backgroundColor: data.userColor,
-            lineHeight: "2rem", // ensures vertical centering
           }}
         >
           {data.userName?.charAt(0).toUpperCase()}
@@ -119,7 +118,7 @@ const ChatSend = ({
 
     try {
       setSubmitBtnDisabled(true);
-      const res = await fetch("http://localhost:5000/api/chats/send", {
+      const res = await fetch("https://webexback.onrender.com/api/chats/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

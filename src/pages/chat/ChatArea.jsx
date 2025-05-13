@@ -7,6 +7,7 @@ import TypingIndicator from "./TypingIndicator";
 import ChatHeader from "./ChatHeader";
 import { AnimatePresence } from "framer-motion";
 import GroupInfo from "../groups/GroupInfo";
+import SearchResults from "./SearchResults";
 
 const ChatArea = ({view_user_id, selectedUser }) => {
   const [messages, setMessages] = useState([
@@ -59,15 +60,11 @@ const ChatArea = ({view_user_id, selectedUser }) => {
     }
   }, [user?.id, selectedUser.id]);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { id: Date.now(), sender: "You", text: input }]);
-    setInput("");
-  };
+ 
 
   useEffect(() => {
     socket.on("typing", ({ from, to }) => {
-      if (to === currentUser.id && from === selectedUser.id) {
+      if (to == user.id && from == selectedUser.id) {
         setIsTyping(true);
 
         // Hide typing after 2 seconds of inactivity
@@ -81,13 +78,20 @@ const ChatArea = ({view_user_id, selectedUser }) => {
     };
   }, [selectedUser?.id]);
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+
+  
+
   return (
     <div className="flex flex-col flex-1 p-4 bg-white rounded shadow">
-      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} />
+      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults}/>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
-        <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} />
+        <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
       </div>
 
       {/* Message Input */}
@@ -107,6 +111,13 @@ const ChatArea = ({view_user_id, selectedUser }) => {
           <GroupInfo selectedGroup={selectedGroup} onClose={()=>{setGroupInfoOpen(false)}} />
         )}
       </AnimatePresence>
+
+      <SearchResults
+        searchOpen={searchOpen}
+        query={query}
+        searchResults={searchResults}
+        setSelectedMessage={setSelectedMessage}
+      />
     </div>
   );
 };

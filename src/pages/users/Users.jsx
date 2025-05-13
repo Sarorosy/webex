@@ -34,7 +34,7 @@ const Users = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/users/fetchallusers");
+            const response = await fetch("https://webexback.onrender.com/api/users/fetchallusers");
             const data = await response.json();
             if (data.status) {
                 setUsers(data.data);
@@ -68,7 +68,7 @@ const Users = () => {
     const confirmDelete = async () => {
         if (!selectedUser) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/users/delete/${selectedUser}`, {
+            const response = await fetch(`https://webexback.onrender.com/api/users/delete/${selectedUser}`, {
                 method: "DELETE",
             });
 
@@ -133,7 +133,7 @@ const Users = () => {
                                             <div className="bg-red-300 mx-auto w-10 h-10 rounded-full flex items-center justify-center"><Trash2 size={22} className="text-red-600" /></div>
                                         ) : user.profile_pic ? (
                                             <img
-                                                src={"http://localhost:5000" + user.profile_pic}
+                                                src={"https://webexback.onrender.com" + user.profile_pic}
                                                 alt="Profile"
                                                 className="w-10 h-10 rounded-full mx-auto object-cover border"
                                             />

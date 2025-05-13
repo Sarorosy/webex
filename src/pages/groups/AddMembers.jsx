@@ -15,7 +15,7 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
   const fetchGroupMembersAndUsers = async () => {
     try {
       // Step 1: Fetch group members
-      const res = await fetch(`http://localhost:5000/api/groups/members/${groupId}`);
+      const res = await fetch(`https://webexback.onrender.com/api/groups/members/${groupId}`);
       const data = await res.json();
 
       if (data.status) {
@@ -23,7 +23,7 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
         setGroupMemberIds(ids); // Optional: still store them if needed
 
         // Step 2: Fetch users excluding these IDs
-        const userRes = await fetch('http://localhost:5000/api/users/getusersexcluding', {
+        const userRes = await fetch('https://webexback.onrender.com/api/users/getusersexcluding', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ exclude_ids: ids }),
@@ -53,7 +53,7 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
     label: u.name,
   }));
 
-  const baseURL = "http://localhost:5000";
+  const baseURL = "https://webexback.onrender.com";
 
   // Custom Option with avatar
   const CustomOption = (props) => {
@@ -102,7 +102,7 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
     const handleSubmit = async(ids) => {
         try{
             setSubmitting(true);
-            const response = await fetch("http://localhost:5000/api/groups/add-members", {
+            const response = await fetch("https://webexback.onrender.com/api/groups/add-members", {
                 method : "POST",
                 headers : { "Content-type" : "application/json"},
                 body : JSON.stringify({

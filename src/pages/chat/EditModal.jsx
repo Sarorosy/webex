@@ -52,7 +52,7 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
 
     try {
       setSubmitBtnDisabled(true);
-      const res = await fetch(`http://localhost:5000/api/chats/edit/${msgId}`, {
+      const res = await fetch(`https://webexback.onrender.com/api/chats/edit/${msgId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: value.trim() }),

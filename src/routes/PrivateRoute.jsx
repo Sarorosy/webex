@@ -6,5 +6,14 @@ export default function PrivateRoute() {
 
   if (loading) return <div className="text-center p-10">Loading...</div>;
 
-  return user ? <Outlet /> : <Navigate to="/login" />;
+  const getTodayDate = () => {
+    return new Date().toISOString().split("T")[0]; 
+  };
+
+  const loginDate = user?.login_date?.split("T")[0]; 
+  const todayDate = getTodayDate();
+
+  const isValidLogin = user && loginDate === todayDate;
+
+  return isValidLogin ? <Outlet /> : <Navigate to="/login" />;
 }

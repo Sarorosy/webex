@@ -23,7 +23,7 @@ const ManageGroups = () => {
   const fetchGroups = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/groups/all");
+      const res = await fetch("https://webexback.onrender.com/api/groups/all");
       const data = await res.json();
       setGroups(data.groups || []);
     } catch (err) {
@@ -119,7 +119,7 @@ const ManageGroups = () => {
                         <img
                           src={
                             member.profile_pic
-                              ? `http://localhost:5000${member.profile_pic}`
+                              ? `https://webexback.onrender.com${member.profile_pic}`
                               : "https://ui-avatars.com/api/?name=" +
                                 encodeURIComponent(member.user_name)
                           }
