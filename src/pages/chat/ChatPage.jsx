@@ -74,7 +74,7 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex flex-col p-1 border rounded sticky top-0 n-height">
+    <div className="flex flex-col border rounded sticky top-0 n-height">
       <div className="flex flex-1 overflow-hidden">
         <ChatSidebar
           view_user_id={view_user_id}

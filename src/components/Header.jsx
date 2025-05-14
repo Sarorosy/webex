@@ -128,7 +128,7 @@ export default function Header() {
           }}
         >
           <span role="img" aria-label="plate">
-            <img src={logo} className="w-25 h-10" />
+            <img src={logo} className="logo-n" />
           </span>{" "}
         </h1>
 
@@ -136,11 +136,11 @@ export default function Header() {
           <div className="flex items-center space-x-4 text-sm">
             <div className="relative py-0.5" ref={searchRef}>
               {/* Search Input */}
-              <div className="relative flex items-center border border-gray-300 rounded-xl shadow-sm bg-white px-3 py-1">
-                <Search className="w-5 h-5 text-gray-500" />
+              <div className="relative flex items-center border border-gray-300 rounded shadow-sm bg-white px-2 py-1">
+                <Search size={15} className="text-gray-500" />
                 <input
                   type="text"
-                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0"
+                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0  f-13"
                   placeholder="Search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -152,7 +152,7 @@ export default function Header() {
 
               {/* Dropdown Results */}
               {showResults && (
-                <div className="absolute w-[400px] bg-white shadow-lg border border-gray-200 rounded-xl mt-0 topmost px-3 py-2 z-50">
+                <div className="absolute w-[300px] n-bg-light shadow-lg border border-gray-200 rounded mt-2 topmost px-2 py-2 z-50">
                   <div className="flex gap-3 mb-3 mx-auto">
                     <button
                       onClick={() => setActiveTab("spaces")}
@@ -282,9 +282,9 @@ export default function Header() {
               onClick={() => navigate("/chat")}
               data-tooltip-id="my-tooltip"
               data-tooltip-content="Chat Board"
-              className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+              className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
             >
-              <MessagesSquare className="w-4 h-4 mr-2" />
+              <MessagesSquare size={12} className="mr-1" />
               Chat
             </button>
 
@@ -293,9 +293,9 @@ export default function Header() {
                 onClick={() => navigate("/dashboard")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Admin Dashboard"
-                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
+                <LayoutDashboard size={12} className="mr-1" />
                 Dashbaord
               </button>
             )}
@@ -304,9 +304,9 @@ export default function Header() {
                 onClick={() => navigate("/manage-groups")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Manage groups"
-                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
-                <Group className="w-4 h-4 mr-2" />
+                <Group size={12} className="mr-1" />
                 Groups
               </button>
             ) : (
@@ -314,9 +314,9 @@ export default function Header() {
                 onClick={() => setCreateNewSpace(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Create New Space"
-                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
-                <Group className="w-4 h-4 mr-2" />
+                <Group size={12} className="mr-1" />
                 New Space
               </button>
             )}
@@ -325,9 +325,9 @@ export default function Header() {
                 onClick={() => navigate("/manage-users")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Manage Users"
-                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
-                <Users className="w-4 h-4 mr-2" />
+                <Users size={12} className="mr-1" />
                 Manage Users
               </button>
             )}
@@ -336,18 +336,18 @@ export default function Header() {
                 onClick={() => navigate('/profile')}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={user.email}
-                className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"
+                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
-                <CircleUserRound className="w-4 h-4 mr-2" />
+                <CircleUserRound size={12} className="mr-1" />
                 Welcome, <span className="font-semibold ml-1">{user.name}</span>
               </button>
               <button
                 onClick={logout}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Logout"
-                className="flex hover:bg-red-500 hover:text-white items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition"
+                className="flex hover:bg-red-500 hover:text-white items-center px-2 py-2 rounded-md bg-gray-100 text-black  transition"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut size={15} className="" />
               </button>
             </div>
           </div>

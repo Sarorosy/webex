@@ -10,8 +10,8 @@ export default function UserLayout() {
       <Header />
       
       {/* Main content should scroll, others stay fixed */}
-      <main className="flex-grow px-2 py-2">
-        <div className="bg-white rounded shadow-md p-2">
+      <main className="flex-grow">
+        <div className="bg-white rounded shadow-md">
           <Outlet />
         </div>
       </main>
