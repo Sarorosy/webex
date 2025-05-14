@@ -105,3 +105,7 @@ div#commentsMention[placeholder]:empty:before {
 .f-14{
     font-size: 14px;
 }
+
+.n-height {
+    height: 87vh;
+}
