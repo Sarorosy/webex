@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react"; // Optional close icon
 
-const Requests = () => {
+const Requests = ({ onClose }) => {
   const [userRequests, setUserRequests] = useState([]);
   const [groupRequests, setGroupRequests] = useState([]);
-  const [limitToIncrease, setLimitToIncrease] = useState(1);
-  const [activeRow, setActiveRow] = useState(null);
   const [limitUpdates, setLimitUpdates] = useState({});
+  const [activeRow, setActiveRow] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserRequests = async () => {
@@ -93,138 +94,164 @@ const Requests = () => {
     }
   };
 
-  if (loading)
-    return <div className="p-4 text-sm text-gray-500">Loading requests...</div>;
-
   return (
-    <div className="p-4 space-y-8 flex flex-col border rounded sticky top-0 n-height">
-      {/* User Limit Requests */}
-      <div className="n-bg-light p-3 shadow-md">
-        <h2 className="text-mg font-semibold mb-3 text-gray-800">
-          User Limit Requests
-        </h2>
-        {userRequests.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No pending user limit requests.
-          </p>
-        ) : (
-          <div className="overflow-x-auto bg-white rounded">
-            <table className="min-w-full text-sm text-left text-gray-700">
-              <thead className="bg-gray-300 border-b">
-                <tr>
-                  <th className="px-4 py-2">S.no</th>
-                  <th className="px-4 py-2">Sender</th>
-                  <th className="px-4 py-2">Request For</th>
-                  <th className="px-4 py-2">Group</th>
-                  <th className="px-4 py-2">Requested At</th>
-                  <th className="px-4 py-2 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {userRequests.map((req, index) => (
-                  <tr key={req.id} className="hover:bg-gray-50 border-b">
-                    <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{req.sender_name}</td>
-                    <td className="px-4 py-2">{req.user_name}</td>
-                    <td className="px-4 py-2">{req.group_name}</td>
-                    <td className="px-4 py-2">{req.requested_at}</td>
-                    <td className="px-4 py-2 text-center">
-                      <button
-                        onClick={() => handleUserApprove(req.id)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded transition-colors duration-200"
-                      >
-                        Approve
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex">
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40"
+          onClick={onClose}
+        ></div>
 
-      {/* Group Limit Requests */}
-      <div className="n-bg-light p-3 shadow-md">
-        <h2 className="text-md font-semibold mb-3 text-gray-800">
-          Group Limit Requests
-        </h2>
-        {groupRequests.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No pending group limit requests.
-          </p>
-        ) : (
-          <div className="overflow-x-auto bg-white rounded">
-            <table className="min-w-full text-sm text-left text-gray-700">
-              <thead className="bg-gray-300 border-b">
-                <tr>
-                  <th className="px-4 py-2">S.no</th>
-                  <th className="px-4 py-2">Sender</th>
-                  <th className="px-4 py-2">Group</th>
-                  <th className="px-4 py-2">Existing Limit</th>
-                  <th className="px-4 py-2">Requested At</th>
-                  <th className="px-4 py-2 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupRequests.map((req, index) => {
-                  const isActive = activeRow === req.id;
-                  const currentLimit = limitUpdates[req.id] ?? 1;
+        {/* Offcanvas Panel */}
+        <motion.div
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "-100%" }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="relative w-full max-w-2xl bg-white h-full shadow-xl overflow-y-auto p-4"
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-                  return (
-                    <tr key={req.id} className="hover:bg-gray-50 border-b">
-                      <td className="px-4 py-2">{index + 1}</td>
-                      <td className="px-4 py-2">{req.sender_name}</td>
-                      <td className="px-4 py-2">{req.group_name}</td>
-                      <td className="px-4 py-2">{req.member_limit}</td>
-                      <td className="px-4 py-2">{req.requested_at}</td>
-                      <td className="px-4 py-2 text-center">
-                        {isActive ? (
-                          <div className="flex items-center justify-center space-x-2">
-                            <button
-                              onClick={() => handleGroupLimitChange(req.id, -1)}
-                              className="bg-gray-300 px-2 rounded"
-                            >
-                              -
-                            </button>
-                            <span>{currentLimit}</span>
-                            <button
-                              onClick={() => handleGroupLimitChange(req.id, 1)}
-                              className="bg-gray-300 px-2 rounded"
-                            >
-                              +
-                            </button>
-                            <button
-                              onClick={() => handleGroupApprove(req.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
-                            >
-                              Approve
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setActiveRow(req.id);
-                              setLimitUpdates((prev) => ({
-                                ...prev,
-                                [req.id]:  1,
-                              }));
-                            }}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 f-13 rounded"
-                          >
-                            Increase
-                          </button>
-                        )}
-                      </td>
+          <div className="space-y-8">
+            {/* User Requests */}
+            <div className="n-bg-light p-3 shadow-md">
+              <h2 className="text-md font-semibold mb-3 text-gray-800">
+                User Limit Requests
+              </h2>
+              {loading ? (
+                <p className="text-sm text-gray-500">Loading requests...</p>
+              ) : userRequests.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No pending user limit requests.
+                </p>
+              ) : (
+                <table className="min-w-full text-sm text-left text-gray-700">
+                  <thead className="bg-gray-300 border-b">
+                    <tr>
+                      <th className="px-4 py-2">S.no</th>
+                      <th className="px-4 py-2">Sender</th>
+                      <th className="px-4 py-2">Request For</th>
+                      <th className="px-4 py-2">Group</th>
+                      <th className="px-4 py-2">Requested At</th>
+                      <th className="px-4 py-2 text-center">Action</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {userRequests.map((req, index) => (
+                      <tr key={req.id} className="hover:bg-gray-50 border-b">
+                        <td className="px-4 py-2">{index + 1}</td>
+                        <td className="px-4 py-2">{req.sender_name}</td>
+                        <td className="px-4 py-2">{req.user_name}</td>
+                        <td className="px-4 py-2">{req.group_name}</td>
+                        <td className="px-4 py-2">{req.requested_at}</td>
+                        <td className="px-4 py-2 text-center">
+                          <button
+                            onClick={() => handleUserApprove(req.id)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
+                          >
+                            Approve
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Group Requests */}
+            <div className="n-bg-light p-3 shadow-md">
+              <h2 className="text-md font-semibold mb-3 text-gray-800">
+                Group Limit Requests
+              </h2>
+              {groupRequests.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  No pending group limit requests.
+                </p>
+              ) : (
+                <table className="min-w-full text-sm text-left text-gray-700">
+                  <thead className="bg-gray-300 border-b">
+                    <tr>
+                      <th className="px-4 py-2">S.no</th>
+                      <th className="px-4 py-2">Sender</th>
+                      <th className="px-4 py-2">Group</th>
+                      <th className="px-4 py-2">Existing Limit</th>
+                      <th className="px-4 py-2">Requested At</th>
+                      <th className="px-4 py-2 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groupRequests.map((req, index) => {
+                      const isActive = activeRow === req.id;
+                      const currentLimit = limitUpdates[req.id] ?? 1;
+
+                      return (
+                        <tr key={req.id} className="hover:bg-gray-50 border-b">
+                          <td className="px-4 py-2">{index + 1}</td>
+                          <td className="px-4 py-2">{req.sender_name}</td>
+                          <td className="px-4 py-2">{req.group_name}</td>
+                          <td className="px-4 py-2">{req.member_limit}</td>
+                          <td className="px-4 py-2">{req.requested_at}</td>
+                          <td className="px-4 py-2 text-center">
+                            {isActive ? (
+                              <div className="flex items-center justify-center space-x-2">
+                                <button
+                                  onClick={() =>
+                                    handleGroupLimitChange(req.id, -1)
+                                  }
+                                  className="bg-gray-300 px-2 rounded"
+                                >
+                                  -
+                                </button>
+                                <span>{currentLimit}</span>
+                                <button
+                                  onClick={() =>
+                                    handleGroupLimitChange(req.id, 1)
+                                  }
+                                  className="bg-gray-300 px-2 rounded"
+                                >
+                                  +
+                                </button>
+                                <button
+                                  onClick={() => handleGroupApprove(req.id)}
+                                  className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
+                                >
+                                  Approve
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActiveRow(req.id);
+                                  setLimitUpdates((prev) => ({
+                                    ...prev,
+                                    [req.id]: 1,
+                                  }));
+                                }}
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 f-13 rounded"
+                              >
+                                Increase
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
-        )}
+        </motion.div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 };
 

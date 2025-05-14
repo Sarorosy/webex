@@ -24,6 +24,7 @@ import { ScaleLoader } from "react-spinners";
 import ReminderPopup from "../pages/chat/ReminderPopup.jsx";
 
 import { getSocket, connectSocket } from "../utils/Socket.jsx";
+import Requests from "../pages/requests/Requests.jsx";
 
 export default function Header() {
   const { user,login, logout } = useAuth();
@@ -34,6 +35,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [createNewSpace, setCreateNewSpace] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
 
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -290,7 +292,7 @@ export default function Header() {
 
             {(user.user_type == "admin" || user.user_type == "subadmin") && (
               <button
-                onClick={() => navigate("/dashboard")}
+                onClick={() => setRequestsOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Admin Dashboard"
                 className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
@@ -363,6 +365,9 @@ export default function Header() {
               setCreateNewSpace(false);
             }}
           />
+        )}
+        {requestsOpen && (
+          <Requests onClose={()=>{setRequestsOpen(false)}} />
         )}
         <ReminderPopup />
       </AnimatePresence>
