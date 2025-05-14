@@ -44,7 +44,7 @@ const ReminderPopup = () => {
           <div className="bg-blue-600 text-white flex justify-between items-center px-4 py-3">
             <div className="flex items-center gap-2">
               <img src={bell} alt="Bell" className="w-6 h-6" />
-              <h3 className="font-semibold text-lg">Weekend Alarm</h3>
+              <h3 className="font-semibold text-lg">Reminder Alert</h3>
             </div>
             <button onClick={handleClose} className="text-white hover:text-gray-200">
               <X className="w-5 h-5" />

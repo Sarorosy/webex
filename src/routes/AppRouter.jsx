@@ -9,6 +9,7 @@ import Users from '../pages/users/Users';
 import ChatPage from '../pages/chat/ChatPage';
 import ManageGroups from "../pages/groups/ManageGroups";
 import Requests from "../pages/requests/Requests";
+import Profile from "../pages/user/Profile";
 
 export default function AppRouter() {
   return (
@@ -28,6 +29,7 @@ export default function AppRouter() {
 
             
             <Route path="/dashboard" element={<Requests />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
 
