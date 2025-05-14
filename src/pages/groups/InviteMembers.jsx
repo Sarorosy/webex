@@ -13,7 +13,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const baseURL = "https://webexback.onrender.com";
+  const baseURL = "http://localhost:5000";
 
   useEffect(() => {
     const fetchGroupMembersAndUsers = async () => {
@@ -23,7 +23,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
         // Step 2: Fetch users excluding these IDs
         const userRes = await fetch(
-          "https://webexback.onrender.com/api/users/getusersexcluding",
+          "http://localhost:5000/api/users/getusersexcluding",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
