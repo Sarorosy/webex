@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react"; // Optional close icon
+import { User, Users, X } from "lucide-react"; // Optional close icon
 
 const Requests = ({ onClose }) => {
   const [userRequests, setUserRequests] = useState([]);
@@ -110,32 +110,40 @@ const Requests = ({ onClose }) => {
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="relative w-full max-w-2xl bg-white h-full shadow-xl overflow-y-auto p-4"
+          className="relative w-full max-w-3xl bg-white h-full shadow-xl overflow-y-auto"
         >
           {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+            <div className="">
+                <h4 className="text-lg font-semibold">Requests</h4>
+            </div>
+            <div>
+              <button
+                onClick={onClose}
+                className="p-1 rounded hover:bg-gray-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-          <div className="space-y-8">
+          </div>
 
-            <div className="flex space-x-2 mb-4">
-  <button
-    onClick={() => setTab(1)}
-    className={`px-4 py-2 rounded ${tab === 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
-  >
-    User Requests
-  </button>
-  <button
-    onClick={() => setTab(2)}
-    className={`px-4 py-2 rounded ${tab === 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
-  >
-    Group Requests
-  </button>
-</div>
+          <div className="space-y-4 p-4">
+
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setTab(1)}
+                className={`flex items-center px-2 gap-1 py-1 f-13 rounded ${tab === 1 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+              >
+                <User size={13} /> User Requests
+              </button>
+              <button
+                onClick={() => setTab(2)}
+                className={`flex items-center px-2 gap-1 py-1 f-13 rounded ${tab === 2 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+              >
+                <Users size={13} /> Group Requests
+              </button>
+            </div>
             <div className="space-y-8">
   {tab === 1 && (
     <div className="n-bg-light p-3 shadow-md">
@@ -149,8 +157,8 @@ const Requests = ({ onClose }) => {
           No pending user limit requests.
         </p>
       ) : (
-        <table className="min-w-full text-sm text-left text-gray-700">
-          <thead className="bg-gray-300 border-b">
+        <table className="min-w-full f-13 text-left text-gray-700">
+          <thead className="bg-gray-300 border-b thead-no-breakword">
             <tr>
               <th className="px-4 py-2">S.no</th>
               <th className="px-4 py-2">Sender</th>

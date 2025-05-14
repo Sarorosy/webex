@@ -119,3 +119,8 @@ div#commentsMention[placeholder]:empty:before {
 .n-bg-light{
     background-color: rgb(248 249 250) !important;
 }
+
+
+.thead-no-breakword{
+    white-space: nowrap;
+}

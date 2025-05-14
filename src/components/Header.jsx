@@ -294,11 +294,11 @@ export default function Header() {
               <button
                 onClick={() => setRequestsOpen(true)}
                 data-tooltip-id="my-tooltip"
-                data-tooltip-content="Admin Dashboard"
+                data-tooltip-content="Admin Requests"
                 className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
               >
                 <LayoutDashboard size={12} className="mr-1" />
-                Dashbaord
+                Requests
               </button>
             )}
             {user.user_type == "admin" ? (

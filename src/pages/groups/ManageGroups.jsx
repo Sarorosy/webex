@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Info,
   Trash2,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AddGroup from "./AddGroup";
@@ -88,50 +89,61 @@ const ManageGroups = () => {
 
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <h1 className="text-2xl font-semibold">Manage Groups</h1>
-        <div className="flex gap-2">
+    <div className="p-6">
+      
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+        <div className="">
+            <h4 className="text-lg font-semibold">Manage Groups</h4>
+        </div>
+        <div>
           <button
-            onClick={fetchGroups}
-            className="flex items-center gap-2 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"
+            
+            className="p-1 rounded hover:bg-gray-200"
           >
-            <RefreshCcw size={18} />
-            Refresh
-          </button>
-          <button
-            onClick={() => setAddGroup(true)}
-            className="flex items-center gap-2 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"
-          >
-            <Plus size={18} />
-            Add Group
+            <X className="w-5 h-5" />
           </button>
         </div>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      </div>
+      <div className="flex gap-2 mb-3 justify-end">
+        <button
+          onClick={fetchGroups}
+          className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+        >
+          <RefreshCcw size={12} />
+          Refresh
+        </button>
+        <button
+          onClick={() => setAddGroup(true)}
+          className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+        >
+          <Plus size={12} />
+          Add Group
+        </button>
+      </div>
+      <div className="space-y-3">
         {groups.map((group) => (
-          <div key={group.group_id} className="border p-4 rounded shadow">
-            <div className=" mb-2">
+          <div key={group.group_id} className="border px-2 py-2 rounded shadow">
+            <div className="flex justify-between items-end gap-2">
               <div>
-                <p className="font-medium text-lg">{group.group_name}</p>
+                <p className="font-medium text-md">{group.group_name}</p>
                 <div className="flex items-center mt-2">
-                  <p className="text-sm text-gray-600 border rounded-full px-1 py-0.5">
+                  <p className="f-13 text-gray-600 border rounded-full px-1 py-0.5">
                     {group.members?.length || 0} members
                   </p>
                   {group.members?.length > 0 && (
                     <button
                       onClick={() => toggleGroup(group.group_id)}
-                      className="text-orange-600 flex items-center text-sm hover:underline ml-2"
+                      className="text-orange-600 flex items-center f-13 hover:underline ml-2"
                     >
-                      <Users size={18} className="mr-1" />
+                      <Users size={12} className="mr-1" />
                       {expandedGroupId === group.group_id
                         ? "Hide Members"
                         : "View Members"}
                       {expandedGroupId === group.group_id ? (
-                        <ChevronUp className="ml-1" size={16} />
+                        <ChevronUp className="ml-1" size={12} />
                       ) : (
-                        <ChevronDown className="ml-1" size={16} />
+                        <ChevronDown className="ml-1" size={12} />
                       )}
                     </button>
                   )}
@@ -142,23 +154,23 @@ const ManageGroups = () => {
                 onClick={()=>{
                   handleViewGroup(group)
                 }}
-                className="p-2 border rounded hover:bg-blue-200">
-                  <Info size={18} />
+                className="p-2 border rounded hover:bg-blue-200 text-blue-800">
+                  <Info size={13} />
                 </button>
                 <button 
                 onClick={()=>{
                   handleEditGroup(group)
                 }}
-                className="p-2 border rounded hover:bg-orange-200">
-                  <Pencil size={18} />
+                className="p-2 border rounded hover:bg-orange-200 text-orange-800">
+                  <Pencil size={13} />
                 </button>
                 <button 
                 onClick={()=>{
                   setSelectedGroup(group);
                   setDeleteOpen(true);
                 }}
-                className="p-2 border rounded hover:bg-red-200">
-                  <Trash2 size={18} />
+                className="p-2 border rounded hover:bg-red-200 text-red-800">
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>

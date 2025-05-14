@@ -8,6 +8,8 @@ import {
   Frown,
   Trash2,
   MessagesSquare,
+  X,
+  PlusIcon,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence } from "framer-motion";
@@ -138,50 +140,55 @@ const Users = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
+    <div className="p-6 bg-white rounded-lg shadow-md">
       {/* Header and Search */}
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-semibold">Users</h2>
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+        <div className="">
+            <h4 className="text-lg font-semibold">Users</h4>
+        </div>
+        <div>
+          <button
+            className="p-1 rounded hover:bg-gray-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+      </div>
+      <div className="flex justify-end gap-2 items-center mb-3">
         <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
-          <Search size={16} className="text-gray-500" />
+          <Search size={13} className="text-gray-500" />
           <input
             type="text"
             placeholder="Search users..."
-            className="bg-transparent outline-none text-sm"
+            className="bg-transparent outline-none f-13"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="bg-blue-600 text-white px-3 py-1 rounded-md flex items-center gap-1 hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-blue-700 transition"
         >
-          <CirclePlus size={16} />
+          <PlusIcon size={12} />
           Add User
         </button>
       </div>
 
       {/* Users List */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-200 shadow-sm rounded-lg text-sm">
-          <thead>
-            <tr className="bg-gray-100 text-gray-600">
-              <th className="border p-2">Profile</th>
-              <th className="border p-2">Name</th>
-              <th className="border p-2">Email</th>
-              <th className="border p-2">Panel</th>
-              <th className="border p-2">Type</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div className="">
+          
+          <div>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
-                <tr
+                <div
                   key={user.id}
-                  className="border text-center hover:bg-gray-50 transition"
+                  className="f-13 mb-2 border p-3 flex justify-between items-end"
                 >
-                  <td className="border p-2">
+
+                <div className="flex gap-2">
+                  <div className="text-center">
                     {user.trashed == 1 ? (
                       <div className="bg-red-300 mx-auto w-10 h-10 rounded-full flex items-center justify-center">
                         <Trash2 size={22} className="text-red-600" />
@@ -190,56 +197,60 @@ const Users = () => {
                       <img
                         src={"http://localhost:5000" + user.profile_pic}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full mx-auto object-cover border"
+                        className="w-10 h-10 rounded-full object-cover border"
                       />
                     ) : (
                       <div
                         className={`w-10 h-10 ${getRandomColor(
                           user.id
-                        )} text-white flex items-center justify-center rounded-full text-xs font-bold mx-auto`}
+                        )} text-white flex items-center justify-center rounded-full text-xs font-bold`}
                       >
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                  </td>
-
-                  <td
-                    className="border p-2  font-medium"
-                    style={{
-                      color: user.trashed == 1 ? "red" : "#4b5563",
-                      textDecoration: user.trashed == 1 ? "line-through" : "",
-                    }}
-                  >
-                    {user.name}
-                  </td>
-                  <td
-                    className="border p-2 "
-                    style={{
-                      color: user.trashed == 1 ? "red" : "#4b5563",
-                      textDecoration: user.trashed == 1 ? "line-through" : "",
-                    }}
-                  >
-                    {user.email}
-                  </td>
-                  <td
-                    className="border p-2 "
-                    style={{
-                      color: user.trashed == 1 ? "red" : "#4b5563",
-                      textDecoration: user.trashed == 1 ? "line-through" : "",
-                    }}
-                  >
-                    {user.user_panel}
-                  </td>
-                  <td
-                    className="border p-2 "
-                    style={{
-                      color: user.trashed == 1 ? "red" : "#4b5563",
-                      textDecoration: user.trashed == 1 ? "line-through" : "",
-                    }}
-                  >
-                    {user.user_type}
-                  </td>
-                  <td className="border p-2 ">
+                    <div
+                      className=""
+                      style={{
+                        color: user.trashed == 1 ? "red" : "#4b5563",
+                        textDecoration: user.trashed == 1 ? "line-through" : "",
+                      }}
+                    >
+                      {user.user_panel}
+                    </div>
+                  </div>
+                  <div>
+                      <div
+                        className="font-medium"
+                        style={{
+                          color: user.trashed == 1 ? "red" : "#4b5563",
+                          textDecoration: user.trashed == 1 ? "line-through" : "",
+                        }}
+                      >
+                        {user.name}
+                      </div>
+                      <div
+                        className=""
+                        style={{
+                          color: user.trashed == 1 ? "red" : "#4b5563",
+                          textDecoration: user.trashed == 1 ? "line-through" : "",
+                        }}
+                      >
+                        {user.email}
+                      </div>
+                      <div
+                        className=""
+                        style={{
+                          color: user.trashed == 1 ? "red" : "#4b5563",
+                          textDecoration: user.trashed == 1 ? "line-through" : "",
+                        }}
+                      >
+                        {user.user_type}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  
+                  <div className="">
                     {user.trashed == 1 ? (
                       <div
                         className="text-red flex items-center justify-center"
@@ -283,18 +294,18 @@ const Users = () => {
                         </button>
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))
             ) : (
-              <tr>
-                <td colSpan="5" className="text-center p-3 text-gray-500">
+              <div>
+                <div colSpan="5" className="text-center p-3 text-gray-500">
                   No users found.
-                </td>
-              </tr>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
       <AnimatePresence>
         {addOpen && (
