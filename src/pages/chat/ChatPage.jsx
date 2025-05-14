@@ -41,6 +41,7 @@ const ChatPage = () => {
     }
   }, [passedState]); // ✅ Only run when passedState changes
 
+
   const [leftGroupOpen, setLeftGroupOpen] = useState(false);
 
   const confirmLeft = async () => {

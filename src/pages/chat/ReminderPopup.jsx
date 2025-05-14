@@ -46,20 +46,29 @@ const ReminderPopup = () => {
               <img src={bell} alt="Bell" className="w-6 h-6" />
               <h3 className="font-semibold text-lg">Reminder Alert</h3>
             </div>
-            <button onClick={handleClose} className="text-white hover:text-gray-200">
+            <button
+              onClick={handleClose}
+              className="text-white hover:text-gray-200"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="p-4 space-y-3">
             <p className="text-gray-700 text-sm">
-              <strong>Message:</strong> {reminder.message}
+              <strong>Message:</strong>
+              <div
+                className="prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: reminder.message }}
+              ></div>
             </p>
             <div className="text-sm text-gray-500">
-              <p><strong>Time:</strong> {new Date(reminder.time).toLocaleTimeString()}</p>
+              <p>
+                <strong>Time:</strong>{" "}
+                {new Date(reminder.time).toLocaleTimeString()}
+              </p>
             </div>
           </div>
-
         </motion.div>
       )}
     </AnimatePresence>
