@@ -97,10 +97,10 @@ const Requests = () => {
     return <div className="p-4 text-sm text-gray-500">Loading requests...</div>;
 
   return (
-    <div className="p-4 space-y-8">
+    <div className="p-4 space-y-8 flex flex-col border rounded sticky top-0 n-height">
       {/* User Limit Requests */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">
+      <div className="n-bg-light p-3 shadow-md">
+        <h2 className="text-mg font-semibold mb-3 text-gray-800">
           User Limit Requests
         </h2>
         {userRequests.length === 0 ? (
@@ -108,9 +108,9 @@ const Requests = () => {
             No pending user limit requests.
           </p>
         ) : (
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+          <div className="overflow-x-auto bg-white rounded">
             <table className="min-w-full text-sm text-left text-gray-700">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-300 border-b">
                 <tr>
                   <th className="px-4 py-2">S.no</th>
                   <th className="px-4 py-2">Sender</th>
@@ -131,7 +131,7 @@ const Requests = () => {
                     <td className="px-4 py-2 text-center">
                       <button
                         onClick={() => handleUserApprove(req.id)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-md transition-colors duration-200"
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded transition-colors duration-200"
                       >
                         Approve
                       </button>
@@ -145,8 +145,8 @@ const Requests = () => {
       </div>
 
       {/* Group Limit Requests */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 text-gray-800">
+      <div className="n-bg-light p-3 shadow-md">
+        <h2 className="text-md font-semibold mb-3 text-gray-800">
           Group Limit Requests
         </h2>
         {groupRequests.length === 0 ? (
@@ -154,9 +154,9 @@ const Requests = () => {
             No pending group limit requests.
           </p>
         ) : (
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+          <div className="overflow-x-auto bg-white rounded">
             <table className="min-w-full text-sm text-left text-gray-700">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-300 border-b">
                 <tr>
                   <th className="px-4 py-2">S.no</th>
                   <th className="px-4 py-2">Sender</th>
@@ -196,7 +196,7 @@ const Requests = () => {
                             </button>
                             <button
                               onClick={() => handleGroupApprove(req.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
                             >
                               Approve
                             </button>
@@ -210,7 +210,7 @@ const Requests = () => {
                                 [req.id]:  1,
                               }));
                             }}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md"
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 f-13 rounded"
                           >
                             Increase
                           </button>

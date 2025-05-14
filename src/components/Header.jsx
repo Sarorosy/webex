@@ -140,7 +140,7 @@ export default function Header() {
                 <Search size={15} className="text-gray-500" />
                 <input
                   type="text"
-                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0  f-13"
+                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0 f-13"
                   placeholder="Search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
