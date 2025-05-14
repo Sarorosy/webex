@@ -126,9 +126,10 @@ const ChatMessages = ({
         setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
         setSkip(skip + olderMessages.length);
 
-        // Only set hasMore to false if less than limit was returned
-        setHasMore(olderMessages.length === limit);
-        hasMoreRef.current = olderMessages.length === limit;
+        const moreAvailable = olderMessages.length === limit;
+        setHasMore(moreAvailable);
+        hasMoreRef.current = moreAvailable;
+
 
         setTimeout(() => {
           const newScrollHeight = container.scrollHeight;
@@ -136,6 +137,7 @@ const ChatMessages = ({
         }, 10);
       } else {
         setHasMore(false);
+        hasMoreRef.current = false;
       }
     }
   };
@@ -184,6 +186,7 @@ const ChatMessages = ({
             }, 10);
           } else {
             setHasMore(false);
+            hasMoreRef.current = false;
           }
         }
       },
@@ -204,6 +207,7 @@ const ChatMessages = ({
       if (topSentinelRef.current) {
         observer.unobserve(topSentinelRef.current);
         console.log("Observer detached from topSentinelRef");
+        observer.disconnect();
       }
     };
   }, [skip, hasMore, isLoading]);

@@ -47,10 +47,11 @@ const ManageGroups = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({group_id: selectedGroup.id})
+        body: JSON.stringify({group_id: selectedGroup.group_id})
       })
       const data = await response.json();
       if(data.status){
+        setDeleteOpen(false)
         fetchGroups();
         toast.success(data.message || "Success");
       }else{

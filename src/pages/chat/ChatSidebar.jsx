@@ -31,31 +31,65 @@ const ChatSidebar = ({
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
   useEffect(() => {
-    connectSocket();
-    const socket = getSocket();
+  connectSocket();
+  const socket = getSocket();
 
-    socket.emit("user-connected", user.id);
-
-    socket.on("online-users", (ids) => {
-      setOnlineUserIds(ids);
-      console.log(ids);
-    });
-
-    socket.on("favouriteUpdated", ({ id, favourites, type }) => {
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === id && chat.type === type
-            ? { ...chat, favourites: JSON.stringify(favourites) }
-            : chat
-        )
+  const handleGroupLeft = ({ id, user_id, type }) => {
+    if (user_id == user?.id) {
+      setChats((prevChats) =>
+        prevChats.filter((chat) => !(chat.id == id && chat.type === type))
       );
-    });
+    }
+  };
 
-    return () => {
-      socket.off("favouriteUpdated");
-      socket.off("online-users");
-    };
-  }, []);
+  const handleGroupUpdated = (data) => {
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat.id == data.id && chat.type === "group") {
+          return {
+            ...chat,
+            name: data.name,
+            group: data.group,
+          };
+        }
+        return chat;
+      })
+    );
+  };
+
+  const handleGroupCreated = (group) => {
+    if (
+      Array.isArray(group.selected_members) &&
+      group.selected_members.includes(user?.id)
+    ) {
+      const { selected_members, ...chatData } = group;
+      setChats((prevChats) => [...prevChats, chatData]);
+    }
+  };
+
+  const handleGroupDeleted = (data) => {
+    setChats((prevChats) =>
+      prevChats.filter((chat) => !(chat.id == data.id && chat.type === "group"))
+    );
+
+    if (selectedUser?.id == data.id && selectedUser?.type === "group") {
+      onSelect(null);
+    }
+  };
+
+  socket.on("group_left", handleGroupLeft);
+  socket.on("group_updated", handleGroupUpdated);
+  socket.on("group_created", handleGroupCreated);
+  socket.on("group_deleted", handleGroupDeleted);
+
+  return () => {
+    socket.off("group_left", handleGroupLeft);
+    socket.off("group_updated", handleGroupUpdated);
+    socket.off("group_created", handleGroupCreated);
+    socket.off("group_deleted", handleGroupDeleted);
+  };
+}, [user?.id, selectedUser]);
+
 
   useEffect(() => {
     if (view_user_id && user.user_type) {

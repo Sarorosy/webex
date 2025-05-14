@@ -23,8 +23,10 @@ import { useSelectedUser } from "../utils/SelectedUserContext.jsx";
 import { ScaleLoader } from "react-spinners";
 import ReminderPopup from "../pages/chat/ReminderPopup.jsx";
 
+import { getSocket, connectSocket } from "../utils/Socket.jsx";
+
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user,login, logout } = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
@@ -82,6 +84,26 @@ export default function Header() {
       controller.abort();
     };
   }, [query, user]);
+
+  useEffect(() => {
+  connectSocket();
+  const socket = getSocket();
+
+  const handleUserUpdated = (updatedUser) => {
+    console.log("one")
+    if (updatedUser?.id == user?.id) {
+      console.log("two")
+      login(updatedUser);
+    }
+  };
+
+  socket.on("user_updated", handleUserUpdated);
+
+  return () => {
+    socket.off("user_updated", handleUserUpdated);
+  };
+}, [user?.id]);
+
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -266,7 +288,7 @@ export default function Header() {
               Chat
             </button>
 
-            {user.user_type == "admin" && (
+            {(user.user_type == "admin" || user.user_type == "subadmin") && (
               <button
                 onClick={() => navigate("/dashboard")}
                 data-tooltip-id="my-tooltip"
@@ -311,7 +333,7 @@ export default function Header() {
             )}
             <div className="flex items-center" ref={dropdownRef}>
               <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
+                onClick={() => navigate('/profile')}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={user.email}
                 className="flex items-center px-3 py-2 rounded-md bg-gray-100 text-black  transition mr-3"

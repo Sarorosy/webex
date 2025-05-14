@@ -6,6 +6,8 @@ import "@syncfusion/ej2-base/styles/material.css";
 import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
+import { Paperclip, X } from "lucide-react";
 
 const ChatSend = ({
   type,
@@ -18,19 +20,23 @@ const ChatSend = ({
   setReplyMessage,
 }) => {
   const [value, setValue] = useState("");
-  
+
   const [groupUsers, setGroupUsers] = useState([]);
+  const { messageLoading, setMessageLoading } = useSelectedUser();
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+      const res = await fetch(
+        `http://localhost:5000/api/groups/members/${userId}`
+      );
       const data = await res.json();
 
       if (data.status) {
         const transformedUsers = data.members.map((member, index) => ({
           id: member.id,
           userName: member.name,
-          userColor: '#6A0572',
+          userColor: "#6A0572",
           profilePic: member.profile_pic
             ? `http://localhost:5000${member.profile_pic}`
             : null,
@@ -49,12 +55,11 @@ const ChatSend = ({
     if (type === "group") {
       fetchUsers();
     }
-  }, [type, userId]); 
+  }, [type, userId]);
 
   useEffect(() => {
     console.log("Fetched Group Users:", groupUsers);
   }, [groupUsers]);
-
 
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
@@ -85,12 +90,10 @@ const ChatSend = ({
         >
           {data.userName?.charAt(0).toUpperCase()}
         </div>
-
       )}
       <span>{data.userName}</span>
     </div>
   );
-
 
   const handleInput = (e) => {
     setValue(e.target.value);
@@ -103,50 +106,59 @@ const ChatSend = ({
   };
 
   const handleSend = async () => {
-    if (!value.trim()) return;
+  if (!value.trim() && !selectedFile) return;
 
-      const urlRegex = /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
+  const urlRegex =
+    /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
 
   const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
     let href = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      href = 'https://' + url;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      href = "https://" + url;
     }
     return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
   });
 
+  try {
+    setSubmitBtnDisabled(true);
+    setMessageLoading(true);
 
-    try {
-      setSubmitBtnDisabled(true);
-      const res = await fetch("http://localhost:5000/api/chats/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          isReply,
-          replyMsgId,
-          user_type : type,
-          sender_id: user.id,
-          receiver_id: userId,
-          message: linkifiedMessage,
-          sender_name: user.name,
-          profile_pic : user.profile_pic,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Message send failed");
-
-      setValue(""); // Clear textarea
-      setIsReply(false);
-      setReplyMsgId(null);
-      setReplyMessage(null);
-    } catch (error) {
-      console.error("Send error:", error);
-    } finally {
-      setSubmitBtnDisabled(false);
-      setValue('')
-      document.getElementById("chatInput").innerHTML = "";
+    const formData = new FormData();
+    formData.append("isReply", isReply);
+    if (isReply && replyMsgId) formData.append("replyMsgId", replyMsgId);
+    formData.append("user_type", type);
+    formData.append("sender_id", user.id);
+    formData.append("receiver_id", userId);
+    formData.append("message", linkifiedMessage);
+    formData.append("sender_name", user.name);
+    formData.append("profile_pic", user.profile_pic);
+    formData.append("is_file", selectedFile ? "1" : "0");
+    if (selectedFile) {
+      formData.append("file", selectedFile); // key should match `req.file`
     }
-  };
+
+    const res = await fetch("http://localhost:5000/api/chats/send", {
+      method: "POST",
+      body: formData, // No need for headers, browser sets Content-Type with boundary
+    });
+
+    if (!res.ok) throw new Error("Message send failed");
+
+    setValue(""); // Clear textarea
+    setSelectedFile(null); // Clear file
+    setIsReply(false);
+    setReplyMsgId(null);
+    setReplyMessage(null);
+  } catch (error) {
+    console.error("Send error:", error);
+  } finally {
+    setSubmitBtnDisabled(false);
+    setMessageLoading(false);
+    setValue("");
+    document.getElementById("chatInput").innerHTML = "";
+  }
+};
+
 
   useEffect(() => {
     // Logging the selected users when the state changes
@@ -160,48 +172,48 @@ const ChatSend = ({
 
   // Select event handler
   const handleSelect = (e) => {
-  const selectedUser = e.itemData;
-  const userId = selectedUser.id;
-  const userName = selectedUser.userName;
+    const selectedUser = e.itemData;
+    const userId = selectedUser.id;
+    const userName = selectedUser.userName;
 
-  // Check if the user is already in the selectedUsers array
-  if (!selectedUsers.some((user) => user.id === userId)) {
-    // Add the selected user to the array
-    setSelectedUsers((prevState) => [
-      ...prevState,
-      { id: userId, name: userName },
-    ]);
-  }
+    // Check if the user is already in the selectedUsers array
+    if (!selectedUsers.some((user) => user.id === userId)) {
+      // Add the selected user to the array
+      setSelectedUsers((prevState) => [
+        ...prevState,
+        { id: userId, name: userName },
+      ]);
+    }
 
-  // Let the MentionComponent update the DOM first
-  setTimeout(() => {
-    const chatInput = document.getElementById("chatInput");
-    
-    // Create a space text node
-    const spaceNode = document.createTextNode(" ");
-    
-    // Insert space at the end of the content
-    const selection = window.getSelection();
-    const range = document.createRange();
-    
-    // Set cursor at the end of the contentEditable div
-    range.selectNodeContents(chatInput);
-    range.collapse(false); // Collapse to end
-    selection.removeAllRanges();
-    selection.addRange(range);
-    
-    // Insert space at cursor position
-    document.execCommand("insertText", false, " ");
-    
-    // Update the value state with the new content
-    setValue(chatInput.innerHTML);
-    
-    // Focus back on the input
-    chatInput.focus();
-    
-    console.log(`Selected user ID: ${userId}, Name: ${userName}`);
-  }, 0);
-};
+    // Let the MentionComponent update the DOM first
+    setTimeout(() => {
+      const chatInput = document.getElementById("chatInput");
+
+      // Create a space text node
+      const spaceNode = document.createTextNode(" ");
+
+      // Insert space at the end of the content
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      // Set cursor at the end of the contentEditable div
+      range.selectNodeContents(chatInput);
+      range.collapse(false); // Collapse to end
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Insert space at cursor position
+      document.execCommand("insertText", false, " ");
+
+      // Update the value state with the new content
+      setValue(chatInput.innerHTML);
+
+      // Focus back on the input
+      chatInput.focus();
+
+      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
+    }, 0);
+  };
 
   // Input change handler to track value changes
   const handleInputChange = (e) => {
@@ -213,7 +225,10 @@ const ChatSend = ({
     <>
       {isReply && (
         <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center">
-          <div>Replying to : <div dangerouslySetInnerHTML={{ __html: replyMessage }}></div></div>
+          <div>
+            Replying to :{" "}
+            <div dangerouslySetInnerHTML={{ __html: replyMessage }}></div>
+          </div>
           <button
             onClick={() => {
               setIsReply(false);
@@ -226,8 +241,26 @@ const ChatSend = ({
           </button>
         </div>
       )}
-      <div className="chat-send-container space-x-2 flex items-end justify-between mx-auto">
+      <div className="flex items-center gap-2 mt-2">
+        {/* Paperclip icon (file input trigger) */}
 
+        {/* Show selected file with X */}
+        {selectedFile && (
+          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm">
+            <span className="mr-2 truncate max-w-[150px]">
+              {selectedFile.name}
+            </span>
+            <button
+              onClick={() => setSelectedFile(null)}
+              className="text-gray-500 hover:text-red-500"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="chat-send-container space-x-2 flex items-end justify-between mx-auto">
         {type === "group" ? (
           <div className="relative w-full">
             {value.trim() === "" && (
@@ -265,13 +298,26 @@ const ChatSend = ({
           />
         )}
 
-        <button
-          onClick={handleSend}
-          disabled={submitBtnDisabled}
-          className="mt-2 w-24 bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition"
-        >
-          Send
-        </button>
+        <div className=" ">
+          {!isReply && (
+            <label className="cursor-pointer text-gray-600 hover:text-gray-900">
+              <Paperclip size={20} />
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+              />
+            </label>
+          )}
+
+          <button
+            onClick={handleSend}
+            disabled={submitBtnDisabled}
+            className="mt-2 w-24 bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </>
   );
