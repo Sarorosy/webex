@@ -106,7 +106,7 @@ export default function Header() {
           }}
         >
           <span role="img" aria-label="plate">
-            <img src={logo} className="w-25 h-14" />
+            <img src={logo} className="w-25 h-10" />
           </span>{" "}
         </h1>
 
