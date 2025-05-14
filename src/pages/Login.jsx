@@ -25,7 +25,7 @@ export default function Login() {
         const loginDate = loginDateObj.toISOString().split("T")[0];
 
         if (loginDate === today) {
-          navigate("/");
+          navigate("/chat");
         }
       }
     }
@@ -43,7 +43,7 @@ export default function Login() {
 
     try {
       const response = await fetch(
-        "https://webexback.onrender.com/api/users/login", // Adjust endpoint if needed
+        "http://localhost:5000/api/users/login", // Adjust endpoint if needed
         {
           method: "POST",
           headers: {
@@ -57,13 +57,18 @@ export default function Login() {
 
       if (data.status) {
         if (data.data.user_type != "admin") {
+
           setTempUser(data.data);
           setUserPanel(data.data.user_panel);
           setShowWebCode(true);
+
+          // login(data.data);
+          // navigate("/chat");
+
         } else {
           toast.success("Login successful!");
           login(data.data);
-          navigate("/");
+          navigate("/chat");
         }
       } else {
         toast.error(data.message || "Invalid credentials.");
@@ -102,7 +107,7 @@ export default function Login() {
         if (data.status == "true") {
           toast.success("Code verified successfully.");
           login(tempUser); // Call the login function with the user data
-          navigate("/");
+          navigate("/chat");
         } else {
           toast.error(data.message || "Invalid Code");
         }
@@ -121,7 +126,7 @@ export default function Login() {
         if (data.status == "true") {
           toast.success("Code verified successfully.");
           login(tempUser); // Call the login function with the user data
-          navigate("/");
+          navigate("/chat");
         } else {
           toast.error(data.message || "Invalid Code.");
         }

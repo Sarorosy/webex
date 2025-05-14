@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 import Select , {components} from 'react-select';
 import { useAuth } from '../../utils/idb'; // assuming your custom hook is here
 
-const AddMembers = ({ groupId, onClose, onSelect }) => {
+const AddMembers = ({ groupId, onClose, members }) => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [groupMemberIds, setGroupMemberIds] = useState([]);
@@ -14,12 +14,8 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
   useEffect(() => {
   const fetchGroupMembersAndUsers = async () => {
     try {
-      // Step 1: Fetch group members
-      const res = await fetch(`https://webexback.onrender.com/api/groups/members/${groupId}`);
-      const data = await res.json();
-
-      if (data.status) {
-        const ids = data.members.map((member) => member.id);
+      
+        const ids = Array.isArray(members) ? members.map((member) => member.id) : [];
         setGroupMemberIds(ids); // Optional: still store them if needed
 
         // Step 2: Fetch users excluding these IDs
@@ -30,7 +26,7 @@ const AddMembers = ({ groupId, onClose, onSelect }) => {
         });
         const userData = await userRes.json();
         setUsers(userData.data || []);
-      }
+      
     } catch (err) {
       console.error('Error fetching group members or users:', err);
     } finally {

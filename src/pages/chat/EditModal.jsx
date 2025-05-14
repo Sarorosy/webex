@@ -1,12 +1,13 @@
-import React, { useState , useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import "./chatStyles.css";
 import { MentionComponent } from "@syncfusion/ej2-react-dropdowns";
 import "@syncfusion/ej2-base/styles/material.css";
 import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
+import { connectSocket, getSocket } from "../../utils/Socket";
 
-const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
+const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
   const [value, setValue] = useState(message);
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -14,24 +15,51 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
   const chatInputRef = useRef(null);
 
   useEffect(() => {
-  if (chatInputRef.current) {
-    chatInputRef.current.innerHTML = message; // Set initial content
-  }
-}, [message]);
+    if (chatInputRef.current) {
+      chatInputRef.current.innerHTML = message; // Set initial content
+    }
+  }, [message]);
 
+  const dummyUsers = [
+    { id: 1, userName: "Sarah Johnson", userColor: "#FF6B6B" },
+    { id: 2, userName: "Michael Chen", userColor: "#4ECDC4" },
+    { id: 3, userName: "Aisha Patel", userColor: "#FFD166" },
+    { id: 4, userName: "David Kim", userColor: "#6A0572" },
+    { id: 5, userName: "Elena Rodriguez", userColor: "#1A936F" },
+  ];
+  const [groupUsers, setGroupUsers] = useState([]);
+  
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+        const data = await res.json();
+  
+        if (data.status) {
+          const transformedUsers = data.members.map((member, index) => ({
+            id: member.id,
+            userName: member.name,
+            userColor: '#6A0572',
+            profilePic: member.profile_pic
+              ? `http://localhost:5000${member.profile_pic}`
+              : null,
+          }));
+  
+          setGroupUsers(transformedUsers);
+        } else {
+          console.error(data.message || "Failed to fetch group members");
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+  
+    useEffect(() => {
+      if (type === "group") {
+        fetchUsers();
+      }
+    }, [type, userId]); 
 
-
- const dummyUsers = [
-     { id: 1, userName: "Sarah Johnson", userColor: "#FF6B6B" },
-     { id: 2, userName: "Michael Chen", userColor: "#4ECDC4" },
-     { id: 3, userName: "Aisha Patel", userColor: "#FFD166" },
-     { id: 4, userName: "David Kim", userColor: "#6A0572" },
-     { id: 5, userName: "Elena Rodriguez", userColor: "#1A936F" },
-   ];
-   const [mentionData, setMentionData] = useState(
-     dummyUsers.map((u) => u.userName)
-   );
-   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
+  const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
 
   const onSearch = (event) => {
     const query = event.query.toLowerCase();
@@ -41,9 +69,26 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
     setSuggestions(filteredUsers);
   };
 
-  const itemTemplate = (item) => (
-    <div className="p-clearfix">
-      <span>{item.nickname}</span>
+  const itemTemplate = (data) => (
+    <div className="flex items-center gap-2 p-2">
+      {data.profilePic ? (
+        <img
+          src={data.profilePic}
+          alt={data.userName}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
+          style={{
+            backgroundColor: data.userColor,
+          }}
+        >
+          {data.userName?.charAt(0).toUpperCase()}
+        </div>
+
+      )}
+      <span>{data.userName}</span>
     </div>
   );
 
@@ -52,15 +97,16 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
 
     try {
       setSubmitBtnDisabled(true);
-      const res = await fetch(`https://webexback.onrender.com/api/chats/edit/${msgId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: value.trim() }),
+      const socket = getSocket();
+      connectSocket(user?.id);
+
+      // Emit 'edit_message' event with the updated message data
+      socket.emit("edit_message", {
+        msgId,
+        message: value.trim(),
+        userId: user.id, // User ID to identify who is editing
       });
 
-      if (!res.ok) throw new Error("Message update failed");
-
-      onUpdate && onUpdate(value.trim());
       onClose();
     } catch (error) {
       console.error("Edit error:", error);
@@ -70,37 +116,59 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
   };
 
   useEffect(() => {
-      // Logging the selected users when the state changes
-      console.log("Selected users updated:", selectedUsers);
-    }, [selectedUsers]); // Runs every time selectedUsers changes
-  
-    useEffect(() => {
-      // Logging value updates every time value changes
-      console.log("Value updated:", value);
-    }, [value]); // Runs every time value changes
-  
-    // Select event handler
-    const handleSelect = (e) => {
-      const selectedUser = e.itemData;
-      const userId = selectedUser.id;
-      const userName = selectedUser.userName;
-  
-      // Check if the user is already in the selectedUsers array
-      if (!selectedUsers.some((user) => user.id === userId)) {
-        // Add the selected user to the array
-        setSelectedUsers((prevState) => [
-          ...prevState,
-          { id: userId, name: userName },
-        ]);
-      }
-  
-      // Append a space after selecting the user and update the input value
-      const updatedValue = value + `@${userName} `;
-      setValue(updatedValue);
-  
-      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
-    };
-// Input change handler to track value changes
+    // Logging the selected users when the state changes
+    console.log("Selected users updated:", selectedUsers);
+  }, [selectedUsers]); // Runs every time selectedUsers changes
+
+  useEffect(() => {
+    // Logging value updates every time value changes
+    console.log("Value updated:", value);
+  }, [value]); // Runs every time value changes
+
+  const handleSelect = (e) => {
+  const selectedUser = e.itemData;
+  const userId = selectedUser.id;
+  const userName = selectedUser.userName;
+
+  // Check if the user is already in the selectedUsers array
+  if (!selectedUsers.some((user) => user.id === userId)) {
+    // Add the selected user to the array
+    setSelectedUsers((prevState) => [
+      ...prevState,
+      { id: userId, name: userName },
+    ]);
+  }
+
+  // Let the MentionComponent update the DOM first
+  setTimeout(() => {
+    const chatInput = document.getElementById("chatInput");
+    
+    // Create a space text node
+    const spaceNode = document.createTextNode(" ");
+    
+    // Insert space at the end of the content
+    const selection = window.getSelection();
+    const range = document.createRange();
+    
+    // Set cursor at the end of the contentEditable div
+    range.selectNodeContents(chatInput);
+    range.collapse(false); // Collapse to end
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Insert space at cursor position
+    document.execCommand("insertText", false, " ");
+    
+    // Update the value state with the new content
+    setValue(chatInput.innerHTML);
+    
+    // Focus back on the input
+    chatInput.focus();
+    
+    console.log(`Selected user ID: ${userId}, Name: ${userName}`);
+  }, 0);
+};
+  // Input change handler to track value changes
   const handleInputChange = (e) => {
     setValue(e.target.innerHTML);
     console.log("Input changed, new value:", e.target.innerHTML);
@@ -122,31 +190,32 @@ const EditModal = ({ msgId, message, type, onClose, onUpdate }) => {
         <h2 className="text-lg font-semibold mb-4">Edit Message</h2>
         {type === "group" ? (
           <div className="relative w-full">
-                      {value.trim() === "" && (
-                        <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
-                          Type @ to mention someone...
-                        </div>
-                      )}
-                      <div
-                        id="chatInput"
-                         ref={chatInputRef}
-                        contentEditable
-                        className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
-                        placeholder="Type @ to mention someone..."
-                        onInput={handleInputChange} // Track changes in the input
-                      ></div>
-          
-                      <MentionComponent
-                        dataSource={dummyUsers}
-                        fields={{ text: "userName" }}
-                        target="#chatInput"
-                        mentionChar="@"
-                        allowSpaces={true}
-                        popupHeight="200px"
-                        popupWidth="250px"
-                        select={handleSelect} // Attach the select event handler
-                      />
-                    </div>
+            {value.trim() === "" && (
+              <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                Type @ to mention someone...
+              </div>
+            )}
+            <div
+              id="chatInput"
+              ref={chatInputRef}
+              contentEditable
+              className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
+              placeholder="Type @ to mention someone..."
+              onInput={handleInputChange} // Track changes in the input
+            ></div>
+
+            <MentionComponent
+              dataSource={groupUsers}
+              fields={{ text: "userName" }}
+              target="#chatInput"
+              mentionChar="@"
+              allowSpaces={true}
+              popupHeight="200px"
+              popupWidth="250px"
+              itemTemplate={itemTemplate}
+              select={handleSelect} // Attach the select event handler
+            />
+          </div>
         ) : (
           <textarea
             value={value}

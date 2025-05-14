@@ -1,4 +1,4 @@
-import { Search, Star, X } from "lucide-react";
+import { Pin, Search, Star, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
@@ -10,10 +10,12 @@ const ChatHeader = ({
   handleGroupInfoClick,
   searchOpen,
   setSearchOpen,
+  setPinMessagesOpen,
   setSelectedMessage,
   query,
   setQuery,
-  setSearchResults
+  setSearchResults,
+  setLeftGroupOpen
 }) => {
   const { user } = useAuth();
   
@@ -31,10 +33,11 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("https://webexback.onrender.com/api/messages/find", {
+        const res = await fetch("http://localhost:5000/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            type: selectedUser?.type,
             query,
             logged_in_userid: user.id,
             find_in_userid: selectedUser?.id,
@@ -56,7 +59,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback.onrender.com/api/chats/favourite", {
+      const res = await fetch("http://localhost:5000/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -85,7 +88,7 @@ const ChatHeader = ({
   return (
     <div className="relative">
       {/* HEADER */}
-      <div className="flex items-center justify-between gap-3 border-b pb-3 px-4 py-3 bg-orange-100 rounded-t-lg shadow-inner">
+      <div className="flex items-center justify-between gap-3 border-b pb-3 px-4 py-6 chat-header-bg rounded-t-lg shadow-inner">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedUser?.profile_pic ? (
@@ -93,7 +96,7 @@ const ChatHeader = ({
                 src={
                   selectedUser.profile_pic.startsWith("http")
                     ? selectedUser.profile_pic
-                    : "https://webexback.onrender.com" + selectedUser.profile_pic
+                    : "http://localhost:5000" + selectedUser.profile_pic
                 }
                 alt="Profile"
                 className="w-10 h-10 rounded-full object-cover border"
@@ -137,7 +140,9 @@ const ChatHeader = ({
               >
                 Group Info
               </button>
-              <button className="px-3 py-1 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 transition">
+              <button 
+              onClick={() => setLeftGroupOpen(true)}
+              className="px-3 py-1 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 transition">
                 Leave Group
               </button>
             </div>
@@ -171,6 +176,12 @@ const ChatHeader = ({
               <Search size={17} />
             </button>
           )}
+          <button
+              onClick={() => setPinMessagesOpen(true)}
+              className="p-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 transition"
+            >
+              <Pin size={17} />
+            </button>
         </div>
       </div>
 

@@ -13,6 +13,7 @@ import { getSocket, connectSocket } from "../../utils/Socket";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
 
 const ChatSidebar = ({
   view_user_id,
@@ -20,6 +21,7 @@ const ChatSidebar = ({
   selectedUser,
   onSelect,
 }) => {
+  const { messageLoading, setMessageLoading } = useSelectedUser();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [chats, setChats] = useState([]); // Will store groups and users
@@ -66,82 +68,86 @@ const ChatSidebar = ({
 
   const [sideBarLoading, setSideBarLoading] = useState(false);
   const fetchChats = async (load = true) => {
-    try {
-      setSideBarLoading(load);
-      const res = await fetch(
-        "https://webexback.onrender.com/api/chats/getGroupsAndUsersInteracted",
-        {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: view_user_id ? view_user_id : user.id,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.status) {
-        setChats(data.data || []);
-        updateChatLoginStatus(data.data || []);
-      } else {
-        console.error("Error fetching chats data");
-      }
-    } catch (err) {
-      console.error("Error fetching chats:", err);
-    } finally {
-      setSideBarLoading(false);
-    }
-  };
-
-  const updateChatLoginStatus = async (chatList) => {
   try {
-    const updatedChats = await Promise.all(
-      chatList.map(async (chat) => {
-        let logged_in_status = true;
-
-        if (chat.type === "user" && chat.user_type !== "admin") {
-          try {
-            let url = "";
-            if (chat.user_panel === "AP") {
-              url = "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
-            } else if (chat.user_panel === "SP") {
-              url = "https://elementk.in/spbackend/api/login-history/check-login-status";
-            }
-
-            if (url) {
-              const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ email: chat.email }),
-              });
-
-              const result = await res.json();
-              if (result.message === "Loggedin") {
-                logged_in_status = true;
-              }else{
-                logged_in_status = false;
-              }
-            }
-          } catch (err) {
-            console.error("Error checking status for", chat.email, err);
-          }
-        }
-
-        return {
-          ...chat,
-          logged_in_status,
-        };
-      })
+    setSideBarLoading(load);
+    const res = await fetch(
+      "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: view_user_id ? view_user_id : user.id,
+        }),
+      }
     );
-
-    setChats(updatedChats); // now safely update state
+    const data = await res.json();
+    if (data.status) {
+      const filteredChats = (data.data || []).filter(item => item.id !== undefined);
+      setChats(filteredChats);
+      updateChatLoginStatus(filteredChats);
+    } else {
+      console.error("Error fetching chats data");
+    }
   } catch (err) {
-    console.error("Error updating login status:", err);
+    console.error("Error fetching chats:", err);
+  } finally {
+    setSideBarLoading(false);
   }
 };
+
+
+  const updateChatLoginStatus = async (chatList) => {
+    try {
+      const updatedChats = await Promise.all(
+        chatList.map(async (chat) => {
+          let logged_in_status = true;
+
+          if (chat.type === "user" && chat.user_type !== "admin") {
+            try {
+              let url = "";
+              if (chat.user_panel === "AP") {
+                url =
+                  "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
+              } else if (chat.user_panel === "SP") {
+                url =
+                  "https://elementk.in/spbackend/api/login-history/check-login-status";
+              }
+
+              if (url) {
+                const res = await fetch(url, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ email: chat.email }),
+                });
+
+                const result = await res.json();
+                if (result.message === "Loggedin") {
+                  logged_in_status = true;
+                } else {
+                  logged_in_status = false;
+                }
+              }
+            } catch (err) {
+              console.error("Error checking status for", chat.email, err);
+            }
+          }
+
+          return {
+            ...chat,
+            logged_in_status,
+          };
+        })
+      );
+
+      setChats(updatedChats); // now safely update state
+    } catch (err) {
+      console.error("Error updating login status:", err);
+    }
+  };
 
   useEffect(() => {
     fetchChats(true);
@@ -187,72 +193,67 @@ const ChatSidebar = ({
   }, [chats, activeTab, searchQuery]);
 
   useEffect(() => {
-  connectSocket();
-  const socket = getSocket();
+    connectSocket();
+    const socket = getSocket();
 
-  const handleIncoming = (msgOrReply, isReply = false) => {
-  if (!msgOrReply) return;
+    const handleIncoming = (msgOrReply, isReply = false) => {
+      if (!msgOrReply) return;
 
-  const msg = isReply ? msgOrReply : msgOrReply;  // No need for msgOrReply.reply
+      const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
 
-  console.log(msg)
+      console.log(msg);
 
-  if (!msg || !msg.sender_id || !msg.receiver_id) {
-    console.warn("Malformed message or reply:", msgOrReply);
-    return;
-  }
+      if (!msg || !msg.sender_id || !msg.receiver_id) {
+        console.warn("Malformed message or reply:", msgOrReply);
+        return;
+      }
 
-  const otherUserId =
-    msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
+      const otherUserId =
+        msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
 
-  const isRelevant =
-    msg.sender_id == user?.id || msg.receiver_id == user.id;
+      const isRelevant =
+        msg.sender_id == user?.id || msg.receiver_id == user.id;
 
-  if (!isRelevant) return;
+      if (!isRelevant) return;
 
-  setChats((prevChats) => {
-    const index = prevChats.findIndex(
-      (chat) => chat.id == otherUserId 
-    );
+      setChats((prevChats) => {
+        const index = prevChats.findIndex((chat) => chat.id == otherUserId);
 
-    if (index === -1) {
-      fetchChats(false);
-      return prevChats;
-    }
+        if (index === -1) {
+          fetchChats(false);
+          return prevChats;
+        }
 
-    const updatedChats = [...prevChats];
-    updatedChats[index] = {
-      ...updatedChats[index],
-      last_interacted_time: new Date().toISOString(),
+        const updatedChats = [...prevChats];
+        updatedChats[index] = {
+          ...updatedChats[index],
+          last_interacted_time: new Date().toISOString(),
+        };
+
+        const updated = updatedChats.splice(index, 1)[0];
+        updatedChats.unshift(updated);
+
+        return updatedChats;
+      });
     };
 
-    const updated = updatedChats.splice(index, 1)[0];
-    updatedChats.unshift(updated);
+    const handleNewMessageSidebar = (msg) => handleIncoming(msg, false);
+    const handleNewReplySidebar = (reply) => {
+      console.log("Incoming reply from socket:", reply);
+      handleIncoming(reply, true);
+    };
 
-    return updatedChats;
-  });
-};
-
-
-  const handleNewMessageSidebar = (msg) => handleIncoming(msg, false);
-  const handleNewReplySidebar = (reply) => {
-  console.log("Incoming reply from socket:", reply);
-  handleIncoming(reply, true);
-};
-
-
-  socket.off("new_message", handleNewMessageSidebar);
-  socket.on("new_message", handleNewMessageSidebar);
-
-  socket.off("new_reply", handleNewMessageSidebar);
-  socket.on("new_reply", handleNewMessageSidebar);
-
-  return () => {
     socket.off("new_message", handleNewMessageSidebar);
-    socket.off("new_reply", handleNewMessageSidebar);
-  };
-}, [user?.id]);
+    socket.on("new_message", handleNewMessageSidebar);
 
+    socket.off("new_reply", handleNewMessageSidebar);
+    socket.on("new_reply", handleNewMessageSidebar);
+
+    return () => {
+      socket.off("new_message", handleNewMessageSidebar);
+      socket.off("new_reply", handleNewMessageSidebar);
+    };
+  }, [user?.id]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -277,8 +278,62 @@ const ChatSidebar = ({
     };
   }, []);
 
+  useEffect(() => {
+  connectSocket();
+  const socket = getSocket();
+
+  const handleGroupLeft = ({ id, user_id, type }) => {
+    if (user_id == user?.id) {
+      setChats((prevChats) =>
+        prevChats.filter((chat) => !(chat.id == id && chat.type === type))
+      );
+    }
+  };
+
+  const handleGroupUpdated = (data) => {
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat.id == data.id && chat.type === "group") {
+          return {
+            ...chat,
+            name: data.name,
+            group: data.group,
+          };
+        }
+        return chat;
+      })
+    );
+  };
+
+  const handleGroupCreated = (group) => {
+    if (
+      Array.isArray(group.selected_members) &&
+      group.selected_members.includes(user?.id)
+    ) {
+      // Remove selected_members from the group payload if you don't want it stored
+      const { selected_members, ...chatData } = group;
+      setChats((prevChats) => [...prevChats, chatData]);
+    }
+  };
+
+  socket.on("group_left", handleGroupLeft);
+  socket.on("group_updated", handleGroupUpdated);
+  socket.on("group_created", handleGroupCreated);
+
+  return () => {
+    socket.off("group_left", handleGroupLeft);
+    socket.off("group_updated", handleGroupUpdated);
+    socket.off("group_created", handleGroupCreated);
+  };
+}, [user?.id]);
+
+
   return (
-    <div className="w-1/4 bg-gray-100 p-4 overflow-y-auto border-r sticky top-0">
+    <div
+      className={`w-1/4 bg-gray-100 p-4 overflow-y-auto border-r sticky top-0 ${
+        messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
+      }`}
+    >
       <div>
         {view_user_name && (
           <div className="flex items-center gap-2 mb-1   rounded">
@@ -375,7 +430,7 @@ const ChatSidebar = ({
                   <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                     {chat.profile_pic ? (
                       <img
-                        src={"https://webexback.onrender.com" + chat.profile_pic}
+                        src={"http://localhost:5000" + chat.profile_pic}
                         alt="Profile"
                         className="w-10 h-10 rounded-full mx-auto object-cover border"
                       />
@@ -386,7 +441,16 @@ const ChatSidebar = ({
                       <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
                     )}
                   </div>
-                  <span className={`truncate ${chat.logged_in_status ? "" : "text-red-500"}`}>{chat.name}</span>
+                  <span
+                    className={`truncate ${
+                      chat.logged_in_status == true ||
+                      chat.logged_in_status == null
+                        ? ""
+                        : "text-red-500"
+                    }`}
+                  >
+                    {chat.name}
+                  </span>
                   {isFavourite && (
                     <Star
                       size={18}
@@ -419,7 +483,7 @@ const ChatSidebar = ({
               <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                 {chat.profile_pic ? (
                   <img
-                    src={"https://webexback.onrender.com" + chat.profile_pic}
+                    src={"http://localhost:5000" + chat.profile_pic}
                     alt="Profile"
                     className="w-10 h-10 rounded-full mx-auto object-cover border"
                   />
@@ -430,7 +494,15 @@ const ChatSidebar = ({
                   <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
                 )}
               </div>
-              <span className={`truncate ${chat.logged_in_status ? "" : "text-red-500"}`}>{chat.name}</span>
+              <span
+                className={`truncate ${
+                  chat.logged_in_status == true || chat.logged_in_status == null
+                    ? ""
+                    : "text-red-500"
+                }`}
+              >
+                {chat.name}
+              </span>
               {isFavourite && (
                 <Star
                   size={18}

@@ -16,11 +16,11 @@ export default function UserLayout() {
         </div>
       </main>
 
-      <footer className="border-t border-[#092e4650] bg-white text-[#092e46] px-4 py-3 relative flex items-center shrink-0">
+      {/* <footer className="border-t border-[#092e4650] bg-white text-[#092e46] px-4 py-3 relative flex items-center shrink-0">
         <p className="absolute left-1/2 transform -translate-x-1/2 text-sm text-[#092e46]">
           © {new Date().getFullYear()} Rapid Collaborate. All Rights Reserved.
         </p>
-      </footer>
+      </footer> */}
     </div>
   );
 }

@@ -8,12 +8,11 @@ import ChatHeader from "./ChatHeader";
 import { AnimatePresence } from "framer-motion";
 import GroupInfo from "../groups/GroupInfo";
 import SearchResults from "./SearchResults";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
+import PinnedMessages from "./PinnedMessages";
 
-const ChatArea = ({view_user_id, selectedUser }) => {
-  const [messages, setMessages] = useState([
-    { id: 1, sender: "You", text: "Hello!" },
-    { id: 2, sender: selectedUser?.name || "User", text: "Hi there!" },
-  ]);
+const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessage, setLeftGroupOpen }) => {
+  
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
@@ -79,18 +78,20 @@ const ChatArea = ({view_user_id, selectedUser }) => {
   }, [selectedUser?.id]);
 
   const [searchOpen, setSearchOpen] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [pinMessagesOpen, setPinMessagesOpen] = useState(false);
+  
+  // const [selectedMessage, setSelectedMessage] = useState(null);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
   
 
   return (
-    <div className="flex flex-col flex-1 p-4 bg-white rounded shadow">
-      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults}/>
+    <div className="flex flex-col flex-1 p-1 bg-white rounded shadow">
+      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults} setPinMessagesOpen={setPinMessagesOpen} setLeftGroupOpen={setLeftGroupOpen} />
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
+      <div className=" overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
         <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
       </div>
 
@@ -118,6 +119,10 @@ const ChatArea = ({view_user_id, selectedUser }) => {
         searchResults={searchResults}
         setSelectedMessage={setSelectedMessage}
       />
+
+      {pinMessagesOpen && (
+        <PinnedMessages userId={user?.id} searchUserId={selectedUser?.id} type={selectedUser?.type} onClose={()=>{setPinMessagesOpen(false)}} setSelectedMessage={setSelectedMessage} />
+      )}
     </div>
   );
 };

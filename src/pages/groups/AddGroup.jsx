@@ -5,7 +5,7 @@ import Select, { components } from "react-select";
 import { useAuth } from '../../utils/idb';
 import toast from 'react-hot-toast';
 
-const AddGroup = ({ onClose }) => {
+const AddGroup = ({ onClose , finalFunction}) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -18,7 +18,7 @@ const AddGroup = ({ onClose }) => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('https://webexback.onrender.com/api/users/getusersforgroup', {
+        const res = await fetch('http://localhost:5000/api/users/getusersforgroup', {
           method: "POST",
           headers: {
             "Content-type": "application/json"
@@ -39,7 +39,7 @@ const AddGroup = ({ onClose }) => {
   
     try {
       setCreating(true)
-      const response = await fetch('https://webexback.onrender.com/api/groups/create', {
+      const response = await fetch('http://localhost:5000/api/groups/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,6 +58,7 @@ const AddGroup = ({ onClose }) => {
       if (data.status) {
         toast.success('Group created successfully!');
         onClose(); // Close the modal after creation
+        finalFunction();
       } else {
         toast.error(data.message || 'Error creating group');
       }
@@ -78,7 +79,7 @@ const AddGroup = ({ onClose }) => {
     });
   };
 
-  const baseURL = "https://webexback.onrender.com";
+  const baseURL = "http://localhost:5000";
 
   // Custom Option with avatar
   const CustomOption = (props) => {
@@ -154,19 +155,7 @@ const AddGroup = ({ onClose }) => {
             />
           </div>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder='Group for'
-              className="w-full p-2 border rounded-md"
-              rows="1"
-            />
-          </div>
+          
 
           {user?.user_type != "user" && (
             <div>

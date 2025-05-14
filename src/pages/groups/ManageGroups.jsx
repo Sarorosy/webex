@@ -6,9 +6,15 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  Info,
+  Trash2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AddGroup from "./AddGroup";
+import GroupInfo from "./GroupInfo";
+import EditGroup from "./EditGroup";
+import toast from "react-hot-toast";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const ManageGroups = () => {
   const [groups, setGroups] = useState([]);
@@ -20,10 +26,45 @@ const ManageGroups = () => {
     fetchGroups();
   }, []);
 
+  
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const handleViewGroup = (group) => {
+    setSelectedGroup(group);
+    setViewOpen(true);
+  }
+  const handleEditGroup = (group) => {
+    setSelectedGroup(group);
+    setEditOpen(true);
+  }
+  const handleDeleteGroup = async () => {
+    try{
+      const response = await fetch("http://localhost:5000/api/groups/delete",{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({group_id: selectedGroup.id})
+      })
+      const data = await response.json();
+      if(data.status){
+        fetchGroups();
+        toast.success(data.message || "Success");
+      }else{
+        toast.error(data.message || "Error deleting group");
+      }
+    }catch(err){
+      console.log(err);
+    }
+  }
+
   const fetchGroups = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://webexback.onrender.com/api/groups/all");
+      const res = await fetch("http://localhost:5000/api/groups/all");
       const data = await res.json();
       setGroups(data.groups || []);
     } catch (err) {
@@ -43,6 +84,7 @@ const ManageGroups = () => {
       </div>
     )
   }
+
 
   return (
     <div className="p-6 space-y-6">
@@ -69,10 +111,9 @@ const ManageGroups = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {groups.map((group) => (
           <div key={group.group_id} className="border p-4 rounded shadow">
-            <div className="flex justify-between items-center mb-2">
+            <div className=" mb-2">
               <div>
                 <p className="font-medium text-lg">{group.group_name}</p>
-                <p className="text-gray-500 text-sm">{group.description}</p>
                 <div className="flex items-center mt-2">
                   <p className="text-sm text-gray-600 border rounded-full px-1 py-0.5">
                     {group.members?.length || 0} members
@@ -95,9 +136,28 @@ const ManageGroups = () => {
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button className="p-2 border rounded hover:bg-gray-100">
+              <div className="flex justify-end items-end gap-2">
+                <button 
+                onClick={()=>{
+                  handleViewGroup(group)
+                }}
+                className="p-2 border rounded hover:bg-blue-200">
+                  <Info size={18} />
+                </button>
+                <button 
+                onClick={()=>{
+                  handleEditGroup(group)
+                }}
+                className="p-2 border rounded hover:bg-orange-200">
                   <Pencil size={18} />
+                </button>
+                <button 
+                onClick={()=>{
+                  setSelectedGroup(group);
+                  setDeleteOpen(true);
+                }}
+                className="p-2 border rounded hover:bg-red-200">
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
@@ -119,7 +179,7 @@ const ManageGroups = () => {
                         <img
                           src={
                             member.profile_pic
-                              ? `https://webexback.onrender.com${member.profile_pic}`
+                              ? `http://localhost:5000${member.profile_pic}`
                               : "https://ui-avatars.com/api/?name=" +
                                 encodeURIComponent(member.user_name)
                           }
@@ -145,7 +205,17 @@ const ManageGroups = () => {
       </div>
 
       <AnimatePresence>
-        {addGroup && <AddGroup onClose={() => setAddGroup(false)} />}
+        {addGroup && <AddGroup onClose={() => setAddGroup(false)} finalFunction={fetchGroups} />}
+        {viewOpen && selectedGroup && <GroupInfo selectedGroup={{id:selectedGroup.group_id,name:selectedGroup?.group_name}} onClose={()=>{setViewOpen(false)}} />}
+        {editOpen && <EditGroup selectedGroup={selectedGroup}  onClose={() => setEditOpen(false)} finalFunction={fetchGroups} />}
+        {deleteOpen && (
+          <ConfirmationModal
+                title="Are you sure you want to delete this group?"
+                message="This action cannot be undone."
+                onYes={handleDeleteGroup} 
+                onClose={() => setDeleteOpen(false)}
+            />
+        )}
       </AnimatePresence>
     </div>
   );

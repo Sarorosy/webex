@@ -5,8 +5,12 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useAuth } from "../../utils/idb";
 import AddMembers from "./AddMembers";
+import InviteMembers from "./InviteMembers";
+import toast from "react-hot-toast";
 
 const GroupInfo = ({ selectedGroup, onClose }) => {
+
+  console.log(selectedGroup)
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [loadingGroup, setLoadingGroup] = useState(true);
@@ -14,6 +18,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const { user } = useAuth();
 
   const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [inviteMemberOpen, setInviteMemberOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
   const handleAddMemberClick = (groupId) => {
@@ -21,15 +26,20 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
     setAddMemberOpen(true);
   }
 
+  const handleInviteMemberClick = (groupId) => {
+    setSelectedGroupId(groupId);
+    setInviteMemberOpen(true);
+  }
+
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        const groupRes = await fetch(`https://webexback.onrender.com/api/groups/group/${selectedGroup.id}`);
+        const groupRes = await fetch(`http://localhost:5000/api/groups/group/${selectedGroup.id}`);
         const groupData = await groupRes.json();
         if (groupData.status) setGroup(groupData.group);
         setLoadingGroup(false);
 
-        const membersRes = await fetch(`https://webexback.onrender.com/api/groups/members/${selectedGroup.id}`);
+        const membersRes = await fetch(`http://localhost:5000/api/groups/members/${selectedGroup.id}`);
         const membersData = await membersRes.json();
         if (membersData.status) setMembers(membersData.members);
         setLoadingMembers(false);
@@ -42,6 +52,30 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
     fetchGroupData();
   }, [selectedGroup]);
+
+  const handleSendRequest = async() =>{
+    try{
+      const response = await fetch("http://localhost:5000/api/grouplimit/send",{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            group_id: selectedGroup.id,
+            sender_id: user.id
+            })
+      })
+      const data = await response.json()
+      if(data.status){
+        toast.success(data.message || "Request Sent Succesfully");
+        onClose()
+      }else{
+        toast.error(data.message || "Failed to send request");
+      }
+    }catch{
+      console.error("Error sending request");
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-end justify-center">
@@ -89,13 +123,22 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                       <div className="flex items-center">
                         <span className="font-medium text-red-500 bg-red-100 px-1 py-1 rounded">Member Limit Full</span>{" "}
                         <span className="ml-2">
-                          <button className="bg-orange-500 text-white px-2 py-1 rounded">Send Request</button> to Increase Limit ?
+                          <button className="bg-orange-500 text-white px-2 py-1 rounded"
+                          onClick={handleSendRequest}
+                          >Send Request</button> to Increase Limit ?
                         </span>
                       </div>
                     ) : (
+                      <div className="flex items-center space-x-2">
+
                       <button 
                       onClick={()=>{handleAddMemberClick(selectedGroup?.id)}}
                       className="bg-orange-500 text-white px-2 py-1 rounded">Add Member(s)</button>
+
+                      <button 
+                      onClick={()=>{handleInviteMemberClick(selectedGroup?.id)}}
+                      className="bg-orange-500 text-white px-2 py-1 rounded">Invite Member(s)</button>
+                      </div>
                     )
                   )}
                 </div>
@@ -127,12 +170,12 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                   key={member.id}
                   className="flex items-center gap-4 p-4 bg-white rounded-xl shadow hover:shadow-md transition"
                 >
-                  <div className="w-11 h-11 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
                     {member.profile_pic ? (
                       <img
-                        src={`https://webexback.onrender.com${member.profile_pic}`}
+                        src={`http://localhost:5000${member.profile_pic}`}
                         alt={member.name}
-                        className="w-full h-full object-cover"
+                        className="w-10 h-full object-cover"
                       />
                     ) : (
                       member.name?.charAt(0).toUpperCase()
@@ -152,8 +195,12 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
       </motion.div>
       <AnimatePresence>
         {addMemberOpen && (
-          <AddMembers groupId={selectedGroupId} onClose={()=>{setAddMemberOpen(false)}} onSelect={(ids) => console.log(ids)} />
+          <AddMembers groupId={selectedGroupId} onClose={()=>{setAddMemberOpen(false)}} onSelect={(ids) => console.log(ids)} members={members} />
 
+        )}
+
+        {inviteMemberOpen && (
+          <InviteMembers groupId={selectedGroupId} onClose={()=>{setInviteMemberOpen(false)}} onSelect={(ids) => console.log(ids)} members={members} />
         )}
       </AnimatePresence>
     </div>

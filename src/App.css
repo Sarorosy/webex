@@ -57,3 +57,14 @@ div#commentsMention[placeholder]:empty:before {
 .chat-messages-container-div{
   /* background-image: url('./assets/chat-bg.jpg'); */
 }
+.chat-header-bg{
+  background-image: url('./assets/pexels-padrinan-19670.jpg');
+  object-fit: cover;
+  background-position: center;
+  background-size: cover;
+
+}
+
+.cur-wait{
+  cursor: wait !important;
+}

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import toast from "react-hot-toast";
-import { BellDot, Forward, MapPin, Pen, Pin, Reply } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import { BellDot, Pen, Pin, Reply, ArrowDown, Trash2, MessageSquare,Clock } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import EditModal from "./EditModal";
 import ReadPersons from "./ReadPersons";
+import ReminderModal from "./ReminderModal";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
 
 const ChatMessages = ({
   view_user_id,
@@ -18,6 +20,8 @@ const ChatMessages = ({
   setReplyMessage,
   selectedMessage,
 }) => {
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const { messageLoading, setMessageLoading } = useSelectedUser();
   const [messages, setMessages] = useState([]);
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -43,9 +47,10 @@ const ChatMessages = ({
     try {
       isFetchingRef.current = true;
       setIsLoading(true);
+      setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback.onrender.com/api/chats/messages?sender_id=${
+        `http://localhost:5000/api/chats/messages?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -68,6 +73,7 @@ const ChatMessages = ({
     } finally {
       isFetchingRef.current = false;
       setIsLoading(false);
+      setMessageLoading(false);
     }
   };
   useEffect(() => {
@@ -107,6 +113,10 @@ const ChatMessages = ({
 
     if (!container || isLoading || isFetchingRef.current) return;
 
+    const isAtBottom = 
+      container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setShowScrollToBottom(!isAtBottom);
+
     if (container.scrollTop < 100) {
       const prevScrollHeight = container.scrollHeight;
 
@@ -127,6 +137,15 @@ const ChatMessages = ({
       } else {
         setHasMore(false);
       }
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
     }
   };
 
@@ -228,12 +247,23 @@ const ChatMessages = ({
             user_type: msg.user_type,
           });
 
-          setTimeout(() => {
-            if (containerRef.current) {
-              containerRef.current.scrollTop =
-                containerRef.current.scrollHeight;
-            }
-          }, 0);
+          const isAtBottom =
+            containerRef.current.scrollHeight -
+              containerRef.current.scrollTop -
+              containerRef.current.clientHeight <
+            100;
+
+          if (!isAtBottom) {
+            setShowScrollToBottom(true);
+          } else {
+            // If user is at the bottom, scroll to show the new message
+            setTimeout(() => {
+              if (containerRef.current) {
+                containerRef.current.scrollTop =
+                  containerRef.current.scrollHeight;
+              }
+            }, 0);
+          }
         }
       };
 
@@ -280,6 +310,37 @@ const ChatMessages = ({
       mounted = false;
     };
   }, [user?.id, userId]);
+
+  useEffect(() => {
+    const socket = getSocket();
+    connectSocket(user.id);
+
+    const handleMessageEdited = (data) => {
+      const { msgId, message, userId } = data;
+
+      setMessages((prevMessages) => {
+        const updatedMessages = prevMessages.map((msg) =>
+          msg.id == msgId ? { ...msg, message, is_edited: 1 } : msg
+        );
+
+        return updatedMessages;
+      });
+    };
+
+    const handleMessageDelete = (msgId) => {
+      setMessages(
+        (prevMessages) => prevMessages.filter((msg) => msg.id !== msgId) // Remove deleted message from the state
+      );
+    };
+
+    socket.on("message_edited", handleMessageEdited);
+    socket.on("message_delete", handleMessageDelete);
+
+    return () => {
+      socket.off("message_edited", handleMessageEdited);
+      socket.off("message_delete", handleMessageDelete);
+    };
+  }, [user.id]);
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -332,14 +393,19 @@ const ChatMessages = ({
     setReplyMessage(messageText);
   };
 
+  const [selectedMessageForReminder, setSelectedMessageForReminder] =
+    useState(null);
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+
   const handleReminder = (msgId) => {
     console.log("Forward message:", msgId);
-    toast.success("Reminder clicked for message " + msgId);
+    setSelectedMessageForReminder(msgId);
+    setReminderModalOpen(true);
   };
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -368,93 +434,117 @@ const ChatMessages = ({
     }
   };
 
+  const handleDeleteMsg = (msgId) => {
+    try {
+      // Emit the 'delete_message' event to the server
+      const socket = getSocket(); // Assuming you have a socket connection
+      socket.emit("delete_message", msgId);
+
+      // Mark the message as deleted (set is_deleted = 1) in the state
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === msgId ? { ...msg, is_deleted: 1 } : msg
+        )
+      );
+
+      console.log(`Message with ID ${msgId} marked as deleted`);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast.error("Failed to delete message");
+    }
+  };
+
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
   const scrollToMessage = async (selectedMessage) => {
-    // Check if the message is already in the current messages array
-    let existingMessage = messages.find((msg) => msg.id === selectedMessage.id);
+    if (selectedMessage) {
+      // Check if the message is already in the current messages array
+      let existingMessage = messages.find(
+        (msg) => msg.id == selectedMessage.id
+      );
 
-    // If message is not found, we'll implement a multi-step fetch strategy
-    if (!existingMessage) {
-      try {
-        // First, try to fetch messages around the selected message's timestamp
-        const fetchAroundMessageUrl = new URL(
-          "https://webexback.onrender.com/api/chats/messages"
-        );
-        fetchAroundMessageUrl.searchParams.append(
-          "sender_id",
-          selectedMessage.sender_id
-        );
-        fetchAroundMessageUrl.searchParams.append(
-          "receiver_id",
-          selectedMessage.receiver_id
-        );
-        fetchAroundMessageUrl.searchParams.append(
-          "created_at",
-          selectedMessage.created_at
-        );
-        fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
-
-        const response = await fetch(fetchAroundMessageUrl.toString());
-
-        if (!response.ok) {
-          throw new Error(
-            "Failed to fetch messages around the selected message"
+      // If message is not found, we'll implement a multi-step fetch strategy
+      if (!existingMessage) {
+        try {
+          // First, try to fetch messages around the selected message's timestamp
+          const fetchAroundMessageUrl = new URL(
+            "http://localhost:5000/api/chats/messages"
           );
+          fetchAroundMessageUrl.searchParams.append(
+            "sender_id",
+            selectedMessage.sender_id
+          );
+          fetchAroundMessageUrl.searchParams.append(
+            "receiver_id",
+            selectedMessage.receiver_id
+          );
+          fetchAroundMessageUrl.searchParams.append(
+            "created_at",
+            selectedMessage.created_at
+          );
+          fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
+
+          const response = await fetch(fetchAroundMessageUrl.toString());
+
+          if (!response.ok) {
+            throw new Error(
+              "Failed to fetch messages around the selected message"
+            );
+          }
+
+          const fetchedMessages = await response.json();
+
+          // Merge and deduplicate messages
+          const mergedMessages = [...messages, ...fetchedMessages]
+            .filter(
+              (msg, index, self) =>
+                index ===
+                self.findIndex(
+                  (t) => t.id == msg.id && t.created_at == msg.created_at
+                )
+            )
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+          // Update messages state
+          setMessages(mergedMessages);
+
+          // Find the specific message
+          existingMessage = mergedMessages.find(
+            (msg) => msg.id == selectedMessage.id
+          );
+        } catch (error) {
+          console.error("Error fetching messages:", error);
+          return;
         }
+      }
 
-        const fetchedMessages = await response.json();
-
-        // Merge and deduplicate messages
-        const mergedMessages = [...messages, ...fetchedMessages]
-          .filter(
-            (msg, index, self) =>
-              index ===
-              self.findIndex(
-                (t) => t.id === msg.id && t.created_at === msg.created_at
-              )
-          )
-          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-        // Update messages state
-        setMessages(mergedMessages);
-
-        // Find the specific message
-        existingMessage = mergedMessages.find(
-          (msg) => msg.id === selectedMessage.id
-        );
-      } catch (error) {
-        console.error("Error fetching messages:", error);
+      // If message is still not found after fetching
+      if (!existingMessage) {
+        //toast.error("Message not found");
         return;
       }
+
+      // Scroll to the message and highlight
+      setTimeout(() => {
+        const el = messageRefs.current[selectedMessage.id];
+        if (el && containerRef.current) {
+          // Scroll to message
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          // Set highlighted message
+          setHighlightedMessageId(selectedMessage.id);
+
+          // Remove highlight after 3 seconds
+          setTimeout(() => {
+             setHighlightedMessageId(null);
+          }, 5000);
+        }
+      }, 100);
     }
-
-    // If message is still not found after fetching
-    if (!existingMessage) {
-      toast.error("Message not found");
-      return;
-    }
-
-    // Scroll to the message and highlight
-    setTimeout(() => {
-      const el = messageRefs.current[selectedMessage.id];
-      if (el && containerRef.current) {
-        // Scroll to message
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-
-        // Set highlighted message
-        setHighlightedMessageId(selectedMessage.id);
-
-        // Remove highlight after 3 seconds
-        setTimeout(() => {
-         // setHighlightedMessageId(null);
-        }, 3000);
-      }
-    }, 100);
   };
 
   useEffect(() => {
-    if(selectedMessage != null){
+    if (selectedMessage != null) {
       scrollToMessage(selectedMessage);
     }
   }, [selectedMessage]);
@@ -465,28 +555,39 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className="messages-container h-[70vh] overflow-y-auto flex flex-col p-4"
+      className="messages-container  h-[70vh] overflow-y-auto flex flex-col p-4 bg-gradient-to-b from-blue-50 to-white"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
       {isLoading && (
-        <div className="loading-indicator text-center py-2">Loading...</div>
+        <div className="loading-indicator flex justify-center py-4">
+          <div className="animate-pulse flex space-x-2 items-center bg-white rounded-lg px-4 py-2 shadow-sm">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></div>
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200"></div>
+            <span className="text-blue-700 font-medium ml-2">Loading...</span>
+          </div>
+        </div>
       )}
 
       <div className="message-full-box w-full flex flex-col">
         {Object.keys(groupedMessages).length === 0 && !isLoading ? (
-          <div className="no-messages text-center py-8 text-gray-500">
-            No messages yet. Start a conversation!
+          <div className="no-messages flex flex-col items-center justify-center py-16 text-gray-500">
+            <div className="p-4 bg-white rounded-full mb-4 shadow-md">
+              <MessageSquare size={40} className="text-blue-400" />
+            </div>
+            <p className="text-lg font-medium text-gray-600">No messages yet</p>
+            <p className="text-sm text-gray-400">Start a conversation!</p>
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
             <div key={date}>
-              <div className="date-separator flex items-center text-center text-xs text-gray-500 mt-4 mb-2 ">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="px-4 bg-gray-200 rounded-full">
+              <div className="date-separator flex items-center text-center text-xs mt-6 mb-4">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
                   {formatDate(messages[0].created_at)}
                 </span>
-                <div className="flex-grow border-t border-gray-300"></div>
+                <div className="flex-grow border-t border-gray-200"></div>
               </div>
 
               {messages.map((msg) => {
@@ -496,11 +597,29 @@ const ChatMessages = ({
                       key={`${msg.id}-${msg.created_at}`}
                       className="w-full flex justify-center my-2"
                     >
-                      <div className="bg-gray-100 text-[10px] text-gray-500 px-2 py-1 rounded text-center flex items-center space-x-2">
+                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1.5 rounded-full text-center flex items-center space-x-2 shadow-sm">
                         <div>
                           {msg.sender_name ?? ""} {msg.message}
                         </div>
-                        <div className=" text-[9px] opacity-70">
+                        <div className="text-[9px] opacity-70">
+                          {formatTime(msg.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                if (msg.is_deleted == 1) {
+                  return (
+                    <div
+                      key={`${msg.id}-${msg.created_at}`}
+                      className="w-full flex justify-center my-2"
+                    >
+                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1.5 rounded-full text-center flex items-center space-x-2 shadow-sm">
+                        <Trash2 size={10} className="text-gray-500 mr-1" />
+                        <div>
+                          {msg.sender_name ?? ""} deleted their own message
+                        </div>
+                        <div className="text-[9px] opacity-70">
                           {formatTime(msg.created_at)}
                         </div>
                       </div>
@@ -514,54 +633,67 @@ const ChatMessages = ({
 
                 return (
                   <div
-                    key={msg.id}
+                    key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
                     onMouseEnter={() => setHoveredMessageId(msg.id)}
                     onMouseLeave={() => setHoveredMessageId(null)}
+                    onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
                         isReply && replyMsgId !== msg.id ? "blur(3px)" : "none",
-
-                      //backgroundColor:
-                      //isReply && replyMsgId === msg.id ? "#FCFEFFFF" : "transparent", // Highlight
                       boxShadow:
                         isReply && replyMsgId === msg.id
-                          ? "0px 0px 5px #3D3D3DFF"
-                          : "none", // Glow effect
+                          ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
+                          : "none",
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper rounded py-2 w-full flex ${
-                      isSent ? "justify-end" : "justify-start"
-                    }  ${
+                    className={`message-wrapper rounded-lg py-2 w-full flex ${
+                      isSent ? "flex-row-reverse" : "justify-start"
+                    } ${
                       highlightedMessageId === msg.id
-                        ? "animate-pulse-highlight border-yellow-500 bg-yellow-50"
+                        ? "animate-pulse-highlight bg-yellow-50"
                         : ""
-                    } mb-2 relative hover:bg-gray-100 border border-transparent hover:border-gray-300 msg-number-${
+                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
                       msg.id
-                    }`}
+                    } ${isSent ? "pr-2" : "pl-2"}`}
                   >
                     <div
-                      className={`text-xs mb-1 px-1 ${
-                        isSent
-                          ? "text-right text-blue-600"
-                          : "text-left text-gray-600"
-                      }`}
+                      className={`flex flex-col ${
+                        isSent ? "items-end mr-2" : "items-start ml-2"
+                      } mt-1`}
                     >
-                      {isSent && !view_user_id
-                        ? "You"
-                        : msg.sender_name ?? "Unknown User"}
+                      {msg.profile_pic ? (
+                        <img
+                          src={"http://localhost:5000" + msg.profile_pic}
+                          className="h-8 w-8 rounded-full border-2 border-white shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex justify-center items-center h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
+                          {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
+                        </div>
+                      )}
+                      <span className={`text-xs mt-1 font-medium ${
+                        isSent ? "text-blue-600" : "text-gray-600"
+                      }`}>
+                        {isSent && !view_user_id
+                          ? "You"
+                          : msg.sender_name ?? "Unknown User"}
+                      </span>
                     </div>
                     <div
                       className={`message relative max-w-[70%] ${
                         isSent
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-black"
-                      } rounded-2xl px-3 py-2`}
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                          : "bg-white text-gray-800 border border-gray-200"
+                      } rounded-2xl px-4 py-3 shadow-sm ${
+                        isSent ? "rounded-tr-sm" : "rounded-tl-sm"
+                      }`}
                     >
                       <div className="message-content">
                         <div
+                          className="prose prose-sm max-w-none"
                           dangerouslySetInnerHTML={{ __html: msg.message }}
                         ></div>
                         {(() => {
@@ -581,10 +713,10 @@ const ChatMessages = ({
                             pinned.includes(
                               isValidViewUserId ? view_user_id : user?.id
                             ) ? (
-                            <span className="absolute top-[-8px] right-[-3px]">
+                            <span className="absolute top-[-8px] right-[-3px] animate-pulse">
                               <Pin
                                 size={18}
-                                className="text-orange-600 fill-orange-600 rotate-45"
+                                className="text-orange-500 fill-orange-500 rotate-45"
                               />
                             </span>
                           ) : null;
@@ -606,24 +738,29 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2">
+                            <div className="mt-3 space-y-2.5">
                               {replies.map((reply) => (
                                 <div
-                                  key={reply.id}
-                                  className="reply-box bg-white border-l-4 border-blue-500 p-2 rounded text-sm text-gray-800 shadow-sm"
+                                  key={`${reply.id}-${reply.created_at}`}
+                                  className="reply-box bg-gray-50 border-l-4 border-blue-400 p-3 rounded-md text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow"
                                 >
-                                  <div className="font-semibold text-blue-600">
+                                  <div className="font-semibold text-blue-700 flex items-center gap-2 mb-1">
+                                    <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                      <Reply size={10} className="text-blue-600" />
+                                    </div>
                                     {reply.sender_id == user?.id &&
                                     !view_user_id
                                       ? "You"
                                       : reply.reply_user_name || "User"}
                                   </div>
                                   <div
+                                    className="prose prose-sm max-w-none"
                                     dangerouslySetInnerHTML={{
                                       __html: reply.reply_message,
                                     }}
                                   ></div>
-                                  <div className="text-xs text-gray-500 mt-1">
+                                  <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                    <Clock size={10} className="mr-1" />
                                     {formatTime(reply.reply_at)}
                                   </div>
                                 </div>
@@ -633,24 +770,31 @@ const ChatMessages = ({
                         })()}
                       </div>
                       <div
-                        className={`message-time text-xs opacity-70 ${
-                          isSent ? "text-right" : "text-left"
-                        } mt-1`}
+                        className={`message-time flex items-center text-xs ${
+                          isSent ? "justify-end" : "justify-start"
+                        } mt-1.5 ${isSent ? "text-blue-100" : "text-gray-400"}`}
                       >
+                        {msg.is_edited == 1 && (
+                          <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
+                            <Pen size={8} className="mr-0.5" /> edited
+                          </p>
+                        )}{" "}
+                        <Clock size={10} className="mr-1" />
                         {formatTime(msg.created_at)}
                       </div>
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div
-                        className="border  message-actions absolute -top-5 bg-white rounded-full shadow-md flex p-1 z-10"
+                        className="message-actions absolute -top-8 bg-white rounded-full shadow-lg flex p-1 z-10 border border-gray-200 transition-all duration-200"
                         style={{
-                          [isSent ? "left" : "right"]: "0",
+                          [isSent ? "left" : "right"]: "2%",
                         }}
                       >
                         {isSent && (
                           <button
                             onClick={() => handleEdit(msg.id, msg.message)}
-                            className="action-button p-1 text-gray-600 hover:bg-gray-100 rounded-full mx-1"
+                            className="action-button p-1.5 text-blue-600 hover:bg-blue-50 rounded-full mx-1 transition-colors"
+                            title="Edit message"
                           >
                             <Pen size={15} />
                           </button>
@@ -658,24 +802,37 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handleReply(msg.id, msg.message)}
-                          className="action-button p-1 text-gray-600 hover:bg-gray-100 rounded-full mx-1"
+                          className="action-button p-1.5 text-green-600 hover:bg-green-50 rounded-full mx-1 transition-colors"
+                          title="Reply"
                         >
                           <Reply size={15} />
                         </button>
 
                         <button
                           onClick={() => handleReminder(msg.id)}
-                          className="action-button p-1 text-gray-600 hover:bg-gray-100 rounded-full mx-1"
+                          className="action-button p-1.5 text-purple-600 hover:bg-purple-50 rounded-full mx-1 transition-colors"
+                          title="Set reminder"
                         >
                           <BellDot size={15} />
                         </button>
 
                         <button
                           onClick={() => handlePinMsg(msg.id)}
-                          className="action-button p-1 text-gray-600 hover:bg-gray-100 rounded-full mx-1 rotate-45"
+                          className="action-button p-1.5 text-orange-600 hover:bg-orange-50 rounded-full mx-1 rotate-45 transition-colors"
+                          title="Pin message"
                         >
                           <Pin size={15} />
                         </button>
+                        
+                        {isSent && (
+                          <button
+                            onClick={() => handleDeleteMsg(msg.id)}
+                            className="action-button p-1.5 text-red-500 hover:bg-red-50 rounded-full mx-1 transition-colors" 
+                            title="Delete message"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -690,6 +847,7 @@ const ChatMessages = ({
       <AnimatePresence>
         {editModalOpen && (
           <EditModal
+            userId={userId}
             msgId={editMsgId}
             message={editMessage}
             type={userType}
@@ -697,6 +855,28 @@ const ChatMessages = ({
               setEditModalOpen(false);
             }}
           />
+        )}
+        {reminderModalOpen && (
+          <ReminderModal
+            msgId={selectedMessageForReminder}
+            userId={user?.id}
+            onClose={() => {
+              setReminderModalOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showScrollToBottom && (
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            onClick={scrollToBottom}
+            className="absolute bottom-36 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
+          >
+            <ArrowDown size={20} />
+          </motion.button>
         )}
       </AnimatePresence>
     </div>

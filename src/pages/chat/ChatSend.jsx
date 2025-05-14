@@ -23,7 +23,7 @@ const ChatSend = ({
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch(`https://webexback.onrender.com/api/groups/members/${userId}`);
+      const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
       const data = await res.json();
 
       if (data.status) {
@@ -32,7 +32,7 @@ const ChatSend = ({
           userName: member.name,
           userColor: '#6A0572',
           profilePic: member.profile_pic
-            ? `https://webexback.onrender.com${member.profile_pic}`
+            ? `http://localhost:5000${member.profile_pic}`
             : null,
         }));
 
@@ -49,7 +49,7 @@ const ChatSend = ({
     if (type === "group") {
       fetchUsers();
     }
-  }, [type, userId]); // also re-fetch if userId changes
+  }, [type, userId]); 
 
   useEffect(() => {
     console.log("Fetched Group Users:", groupUsers);
@@ -118,7 +118,7 @@ const ChatSend = ({
 
     try {
       setSubmitBtnDisabled(true);
-      const res = await fetch("https://webexback.onrender.com/api/chats/send", {
+      const res = await fetch("http://localhost:5000/api/chats/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -129,6 +129,7 @@ const ChatSend = ({
           receiver_id: userId,
           message: linkifiedMessage,
           sender_name: user.name,
+          profile_pic : user.profile_pic,
         }),
       });
 
@@ -159,25 +160,48 @@ const ChatSend = ({
 
   // Select event handler
   const handleSelect = (e) => {
-    const selectedUser = e.itemData;
-    const userId = selectedUser.id;
-    const userName = selectedUser.userName;
+  const selectedUser = e.itemData;
+  const userId = selectedUser.id;
+  const userName = selectedUser.userName;
 
-    // Check if the user is already in the selectedUsers array
-    if (!selectedUsers.some((user) => user.id === userId)) {
-      // Add the selected user to the array
-      setSelectedUsers((prevState) => [
-        ...prevState,
-        { id: userId, name: userName },
-      ]);
-    }
+  // Check if the user is already in the selectedUsers array
+  if (!selectedUsers.some((user) => user.id === userId)) {
+    // Add the selected user to the array
+    setSelectedUsers((prevState) => [
+      ...prevState,
+      { id: userId, name: userName },
+    ]);
+  }
 
-    // Append a space after selecting the user and update the input value
-    const updatedValue = value + `@${userName} `;
-    setValue(updatedValue);
-
+  // Let the MentionComponent update the DOM first
+  setTimeout(() => {
+    const chatInput = document.getElementById("chatInput");
+    
+    // Create a space text node
+    const spaceNode = document.createTextNode(" ");
+    
+    // Insert space at the end of the content
+    const selection = window.getSelection();
+    const range = document.createRange();
+    
+    // Set cursor at the end of the contentEditable div
+    range.selectNodeContents(chatInput);
+    range.collapse(false); // Collapse to end
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Insert space at cursor position
+    document.execCommand("insertText", false, " ");
+    
+    // Update the value state with the new content
+    setValue(chatInput.innerHTML);
+    
+    // Focus back on the input
+    chatInput.focus();
+    
     console.log(`Selected user ID: ${userId}, Name: ${userName}`);
-  };
+  }, 0);
+};
 
   // Input change handler to track value changes
   const handleInputChange = (e) => {
