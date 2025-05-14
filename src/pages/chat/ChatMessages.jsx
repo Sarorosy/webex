@@ -759,7 +759,15 @@ const ChatMessages = ({
                                     />
                                   )}
                                   <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
-                                    {msg.filename}
+                                    
+                                    <a
+                                      href={fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-600 hover:underline"
+                                    >
+                                      {msg.filename}
+                                    </a>
                                   </span>
                                 </summary>
 
@@ -769,16 +777,16 @@ const ChatMessages = ({
                                     <img
                                       src={fileUrl}
                                       alt={msg.filename}
-                                      className="rounded-md shadow max-w-full max-h-60 object-contain"
+                                      className="rounded-md shadow max-w-36 h-full object-contain"
                                     />
                                   ) : (
                                     <a
                                       href={fileUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-blue-600 hover:underline"
+                                      className="text-sm text-blue-600 hover:underline flex items-center"
                                     >
-                                      <SquareArrowOutUpRightIcon size={18} />
+                                      open <SquareArrowOutUpRightIcon size={18} className="ml-1" />
                                     </a>
                                   )}
                                 </div>
