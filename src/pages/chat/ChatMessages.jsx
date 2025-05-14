@@ -15,6 +15,7 @@ import {
   ImageIcon,
   VideoIcon,
   FileSpreadsheet,
+  SquareArrowOutUpRightIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EditModal from "./EditModal";
@@ -710,33 +711,81 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      {msg.is_file == 1 && msg.filename && (
-                        <div className="w-full mb-2">
-                          <a
-                            href={`http://localhost:5000/uploads/chatuploads/${msg.filename}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 bg-white/80 border border-gray-300 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition duration-200"
-                          >
-                            {(() => {
-                              const ext = msg.filename.split('.').pop().toLowerCase();
-                              if (["png", "jpg", "jpeg", "avif", "webp"].includes(ext)) {
-                                return <ImageIcon className="text-pink-500" size={22} />;
-                              } else if (["mp4", "mov"].includes(ext)) {
-                                return <VideoIcon className="text-purple-600" size={22} />;
-                              } else if (["doc", "docx", "xls", "xlsx"].includes(ext)) {
-                                return <FileSpreadsheet className="text-green-600" size={22} />;
-                              } else {
-                                return <FileText className="text-blue-600" size={22} />;
-                              }
-                            })()}
-                            <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
-                              {msg.filename}
-                            </span>
-                          </a>
-                        </div>
-                      )}
+                      {msg.is_file == 1 &&
+                        msg.filename &&
+                        (() => {
+                          const ext = msg.filename
+                            .split(".")
+                            .pop()
+                            .toLowerCase();
+                          const isImage = [
+                            "png",
+                            "jpg",
+                            "jpeg",
+                            "avif",
+                            "webp",
+                          ].includes(ext);
+                          const fileUrl = `http://localhost:5000/uploads/chatuploads/${msg.filename}`;
 
+                          return (
+                            <div className="w-full mb-3">
+                              {/* File Info Box */}
+                              <details
+                                open
+                                className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
+                              >
+                                <summary className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                                  {isImage ? (
+                                    <ImageIcon
+                                      className="text-pink-500"
+                                      size={22}
+                                    />
+                                  ) : ext === "mp4" || ext === "mov" ? (
+                                    <VideoIcon
+                                      className="text-purple-600"
+                                      size={22}
+                                    />
+                                  ) : ["doc", "docx", "xls", "xlsx"].includes(
+                                      ext
+                                    ) ? (
+                                    <FileSpreadsheet
+                                      className="text-green-600"
+                                      size={22}
+                                    />
+                                  ) : (
+                                    <FileText
+                                      className="text-blue-600"
+                                      size={22}
+                                    />
+                                  )}
+                                  <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
+                                    {msg.filename}
+                                  </span>
+                                </summary>
+
+                                {/* File Preview */}
+                                <div className="p-3 border-t border-gray-200">
+                                  {isImage ? (
+                                    <img
+                                      src={fileUrl}
+                                      alt={msg.filename}
+                                      className="rounded-md shadow max-w-full max-h-60 object-contain"
+                                    />
+                                  ) : (
+                                    <a
+                                      href={fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-blue-600 hover:underline"
+                                    >
+                                      <SquareArrowOutUpRightIcon size={18} />
+                                    </a>
+                                  )}
+                                </div>
+                              </details>
+                            </div>
+                          );
+                        })()}
 
                       <div className="message-content">
                         <div
