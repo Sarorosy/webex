@@ -2,7 +2,20 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import toast from "react-hot-toast";
-import { BellDot, Pen, Pin, Reply, ArrowDown, Trash2, MessageSquare,Clock } from "lucide-react";
+import {
+  BellDot,
+  Pen,
+  Pin,
+  Reply,
+  ArrowDown,
+  Trash2,
+  MessageSquare,
+  Clock,
+  FileText,
+  ImageIcon,
+  VideoIcon,
+  FileSpreadsheet,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EditModal from "./EditModal";
 import ReadPersons from "./ReadPersons";
@@ -113,8 +126,9 @@ const ChatMessages = ({
 
     if (!container || isLoading || isFetchingRef.current) return;
 
-    const isAtBottom = 
-      container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    const isAtBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <
+      100;
     setShowScrollToBottom(!isAtBottom);
 
     if (container.scrollTop < 100) {
@@ -129,7 +143,6 @@ const ChatMessages = ({
         const moreAvailable = olderMessages.length === limit;
         setHasMore(moreAvailable);
         hasMoreRef.current = moreAvailable;
-
 
         setTimeout(() => {
           const newScrollHeight = container.scrollHeight;
@@ -146,7 +159,7 @@ const ChatMessages = ({
     if (containerRef.current) {
       containerRef.current.scrollTo({
         top: containerRef.current.scrollHeight,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   };
@@ -540,7 +553,7 @@ const ChatMessages = ({
 
           // Remove highlight after 3 seconds
           setTimeout(() => {
-             setHighlightedMessageId(null);
+            setHighlightedMessageId(null);
           }, 5000);
         }
       }, 100);
@@ -678,9 +691,11 @@ const ChatMessages = ({
                           {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
                         </div>
                       )}
-                      <span className={`text-xs mt-1 font-medium ${
-                        isSent ? "text-blue-600" : "text-gray-600"
-                      }`}>
+                      <span
+                        className={`text-xs mt-1 font-medium ${
+                          isSent ? "text-blue-600" : "text-gray-600"
+                        }`}
+                      >
                         {isSent && !view_user_id
                           ? "You"
                           : msg.sender_name ?? "Unknown User"}
@@ -695,6 +710,34 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
+                      {msg.is_file == 1 && msg.filename && (
+                        <div className="w-full mb-2">
+                          <a
+                            href={`http://localhost:5000/uploads/chatuploads/${msg.filename}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 bg-white/80 border border-gray-300 rounded-lg px-3 py-2 shadow-sm hover:shadow-md transition duration-200"
+                          >
+                            {(() => {
+                              const ext = msg.filename.split('.').pop().toLowerCase();
+                              if (["png", "jpg", "jpeg", "avif", "webp"].includes(ext)) {
+                                return <ImageIcon className="text-pink-500" size={22} />;
+                              } else if (["mp4", "mov"].includes(ext)) {
+                                return <VideoIcon className="text-purple-600" size={22} />;
+                              } else if (["doc", "docx", "xls", "xlsx"].includes(ext)) {
+                                return <FileSpreadsheet className="text-green-600" size={22} />;
+                              } else {
+                                return <FileText className="text-blue-600" size={22} />;
+                              }
+                            })()}
+                            <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
+                              {msg.filename}
+                            </span>
+                          </a>
+                        </div>
+                      )}
+
+
                       <div className="message-content">
                         <div
                           className="prose prose-sm max-w-none"
@@ -750,7 +793,10 @@ const ChatMessages = ({
                                 >
                                   <div className="font-semibold text-blue-700 flex items-center gap-2 mb-1">
                                     <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
-                                      <Reply size={10} className="text-blue-600" />
+                                      <Reply
+                                        size={10}
+                                        className="text-blue-600"
+                                      />
                                     </div>
                                     {reply.sender_id == user?.id &&
                                     !view_user_id
@@ -827,11 +873,11 @@ const ChatMessages = ({
                         >
                           <Pin size={15} />
                         </button>
-                        
+
                         {isSent && (
                           <button
                             onClick={() => handleDeleteMsg(msg.id)}
-                            className="action-button p-1.5 text-red-500 hover:bg-red-50 rounded-full mx-1 transition-colors" 
+                            className="action-button p-1.5 text-red-500 hover:bg-red-50 rounded-full mx-1 transition-colors"
                             title="Delete message"
                           >
                             <Trash2 size={15} />

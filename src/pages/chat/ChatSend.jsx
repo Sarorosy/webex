@@ -8,6 +8,7 @@ import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import { Paperclip, X } from "lucide-react";
+import { ScaleLoader } from "react-spinners";
 
 const ChatSend = ({
   type,
@@ -134,7 +135,7 @@ const ChatSend = ({
     formData.append("profile_pic", user.profile_pic);
     formData.append("is_file", selectedFile ? "1" : "0");
     if (selectedFile) {
-      formData.append("file", selectedFile); // key should match `req.file`
+      formData.append("selectedFile", selectedFile); // key should match `req.file`
     }
 
     const res = await fetch("http://localhost:5000/api/chats/send", {
@@ -246,7 +247,7 @@ const ChatSend = ({
 
         {/* Show selected file with X */}
         {selectedFile && (
-          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm">
+          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile">
             <span className="mr-2 truncate max-w-[150px]">
               {selectedFile.name}
             </span>
@@ -313,9 +314,10 @@ const ChatSend = ({
           <button
             onClick={handleSend}
             disabled={submitBtnDisabled}
-            className="mt-2 w-24 bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition"
+            className="mt-2 w-24 bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition "
           >
-            Send
+            {submitBtnDisabled ? "Sending..." : "Send"}
+            
           </button>
         </div>
       </div>
