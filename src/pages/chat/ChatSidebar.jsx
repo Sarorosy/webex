@@ -292,6 +292,7 @@ const ChatSidebar = ({
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
           read_status: (msg.sender_id != user?.id && selectedUser?.id != msg.sender_id) ? 1 : 0,
+          unread_count: (updatedChats[index]?.unread_count || 0) + 1
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -536,7 +537,9 @@ const ChatSidebar = ({
                   )}
                   </div>
                   {chat.read_status === 1 && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                    <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
+                      {chat.unread_count ?? 1}
+                    </div>
                   )}
                 </div>
 
@@ -607,7 +610,9 @@ const ChatSidebar = ({
                 )}
               </div>
               {chat.read_status === 1 && (
-                <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
+                   {chat.unread_count ?? 1}
+                </div>
               )}
             </div>
           );
