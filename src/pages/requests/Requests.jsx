@@ -128,22 +128,22 @@ const Requests = ({ onClose }) => {
 
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-4  p-4">
 
-            <div className="flex space-x-2 mb-4">
-  <button
-    onClick={() => setTab(1)}
-    className={`px-4 py-2 rounded ${tab === 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
-  >
-    User Requests
-  </button>
-  <button
-    onClick={() => setTab(2)}
-    className={`px-4 py-2 rounded ${tab === 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
-  >
-    Group Requests
-  </button>
-</div>
+            <div className="flex space-x-2 mb-2">
+              <button
+                onClick={() => setTab(1)}
+                className={`px-2 py-1 f-13 rounded ${tab === 1 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+              >
+                User Requests
+              </button>
+              <button
+                onClick={() => setTab(2)}
+                className={`px-2 py-1 f-13 rounded ${tab === 2 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+              >
+                Group Requests
+              </button>
+            </div>
             <div className="space-y-8">
   {tab === 1 && (
     <div className="n-bg-light p-3 shadow-md">
@@ -157,7 +157,7 @@ const Requests = ({ onClose }) => {
           No pending user limit requests.
         </p>
       ) : (
-        <table className="min-w-full text-sm text-left text-gray-700">
+        <table className="min-w-full f-13 text-left text-gray-700">
           <thead className="bg-gray-300 border-b">
             <tr>
               <th className="px-4 py-2">S.no</th>
@@ -202,7 +202,7 @@ const Requests = ({ onClose }) => {
                       No pending group limit requests.
                     </p>
                   ) : (
-                    <table className="min-w-full text-sm text-left text-gray-700">
+                    <table className="min-w-full f-13 text-left text-gray-700">
                       <thead className="bg-gray-300 border-b">
                         <tr>
                           <th className="px-4 py-2">S.no</th>

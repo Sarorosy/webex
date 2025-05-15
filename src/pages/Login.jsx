@@ -181,7 +181,7 @@ export default function Login() {
             <input
               type="email"
               placeholder="Email"
-              className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D]"
+              className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D] f-14"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -190,7 +190,7 @@ export default function Login() {
             <input
               type="password"
               placeholder="Password"
-              className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D]"
+              className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D] f-14"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
