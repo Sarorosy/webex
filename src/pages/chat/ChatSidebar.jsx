@@ -393,11 +393,11 @@ const ChatSidebar = ({
 
   return (
     <div
-      className={`w-1/4 bg-gray-100 p-4 overflow-y-auto border-r sticky top-0 ${
+      className={`w-1/4 bg-gray-100 p-4 px-2  border-r ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div>
+      <div className="px-3">
         {view_user_name && (
           <div className="flex items-center gap-2 mb-1   rounded">
             Chats of{" "}
@@ -407,103 +407,175 @@ const ChatSidebar = ({
             </span>
           </div>
         )}
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-2">
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Search Groups, Persons"
-            className="p-2 border rounded-md w-full "
+            className="p-2 py-1 border rounded-md w-full "
           />
         </div>
-        <div className="flex justify-start gap-2 mb-4  p-1">
+        <div className="flex justify-start gap-2 mb-4 ">
           <button
             onClick={() => setActiveTab("all")}
-            className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${
+            className={`flex items-center gap-1 px-2 py-1 rounded  ${
               activeTab === "all"
-                ? "bg-gray-200 text-black font-semibold"
-                : "text-gray-600"
+                ? "bg-orange-500 text-white font-semibold border border-orange-500"
+                : "text-gray-600 border border-orange-500"
             }`}
           >
-            <Users size={16} />
+            <Users size={12} />
             All
           </button>
           <button
             onClick={() => setActiveTab("direct")}
-            className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${
+            className={`flex items-center gap-1 px-2 py-1 rounded  ${
               activeTab === "direct"
-                ? "bg-gray-200 text-black font-semibold"
-                : "text-gray-600"
+                ? "bg-orange-500 text-white font-semibold border border-orange-500"
+                : "text-gray-600 border border-orange-500"
             }`}
           >
-            <User size={16} />
+            <User size={12} />
             Direct
           </button>
           <button
             onClick={() => setActiveTab("group")}
-            className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${
+            className={`flex items-center gap-1 px-2 py-1 rounded  ${
               activeTab === "group"
-                ? "bg-gray-200 text-black font-semibold"
-                : "text-gray-600"
+                ? "bg-orange-500 text-white font-semibold border border-orange-500"
+                : "text-gray-600 border border-orange-500"
             }`}
           >
-            <Users2 size={16} />
+            <Users2 size={12} />
             Group
           </button>
         </div>
       </div>
 
-      {sideBarLoading ? (
-        <div className="mx-auto flex justicy-center w-full">
-          <ScaleLoader
-            className="mx-auto"
-            color="#ea580c"
-            height={14}
-            width={3}
-            radius={2}
-            margin={2}
-          />
-        </div>
-      ) : activeTab === "all" ? (
-        <>
-          {filteredData.some((chat) =>
-            JSON.parse(chat.favourites || "[]").includes(user.id)
-          ) && (
-            <div className="text-xs text-gray-500 mt-2 mb-1">Favourites</div>
-          )}
-          {filteredData.map((chat, idx) => {
+      <div className="px-2 m-list-h">
+        {sideBarLoading ? (
+          <div className="mx-auto flex justicy-center w-full">
+            <ScaleLoader
+              className="mx-auto"
+              color="#ea580c"
+              height={14}
+              width={3}
+              radius={2}
+              margin={2}
+            />
+          </div>
+        ) : activeTab === "all" ? (
+          <>
+            {filteredData.some((chat) =>
+              JSON.parse(chat.favourites || "[]").includes(user.id)
+            ) && (
+              <div className="text-gray-600 mt-2 mb-1 px-2">Favourites</div>
+            )}
+            {filteredData.map((chat, idx) => {
+              const isFavourite = JSON.parse(chat.favourites || "[]").includes(
+                user.id
+              );
+
+              const nextChat = filteredData[idx + 1];
+              const isLastFavourite =
+                isFavourite &&
+                (!nextChat ||
+                  !JSON.parse(nextChat.favourites || "[]").includes(user.id));
+
+              return (
+                <React.Fragment key={chat.id}>
+                  <div
+                    onClick={() => {
+                      onSelect(chat);
+                      const updatedChats = chats.map((c) => {
+                        if (c.id == chat.id && c.type === chat.type) {
+                          return { ...c, read_status: 0 };
+                        }
+                        return c;
+                      });
+                      
+                      setChats(updatedChats);
+
+                    }}
+                    className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
+                      selectedUser?.id === chat.id && "bg-gray-300"
+                    } ${
+                      chat.read_status && chat.read_status == 1 ? "font-bold" : ""
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                    <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
+                      {chat.profile_pic ? (
+                        <img
+                          src={"http://localhost:5000" + chat.profile_pic}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full mx-auto object-cover border"
+                        />
+                      ) : (
+                        chat.name[0]
+                      )}
+                      {onlineUserIds.includes(chat.id) && (
+                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                      )}
+                    </div>
+                    <span
+                      className={`truncate text-clip text-ellipsis w-100 ${
+                        chat.logged_in_status == true ||
+                        chat.logged_in_status == null
+                          ? ""
+                          : "text-red-500"
+                      }`}
+                    >
+                      {chat.name}
+                    </span>
+                    {isFavourite && (
+                      <Star
+                        size={18}
+                        className="ml-2 fill-yellow-500 text-yellow-500"
+                      />
+                    )}
+                    </div>
+                    {chat.read_status === 1 && (
+                      <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                    )}
+                  </div>
+
+                  {isLastFavourite && (
+                    <div className="border-b border-gray-300 mb-1 mx-1"></div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </>
+        ) : (
+          // Non-"all" tab rendering stays same
+          filteredData.map((chat) => {
             const isFavourite = JSON.parse(chat.favourites || "[]").includes(
               user.id
             );
-
-            const nextChat = filteredData[idx + 1];
-            const isLastFavourite =
-              isFavourite &&
-              (!nextChat ||
-                !JSON.parse(nextChat.favourites || "[]").includes(user.id));
-
             return (
-              <React.Fragment key={chat.id}>
-                <div
-                  onClick={() => {
-                    onSelect(chat);
-                    const updatedChats = chats.map((c) => {
-                      if (c.id == chat.id && c.type === chat.type) {
-                        return { ...c, read_status: 0 };
-                      }
-                      return c;
-                    });
-                    
-                    setChats(updatedChats);
+              <div
+                key={chat.id}
+                onClick={() => {
+                      onSelect(chat);
+                      const updatedChats = chats.map((c) => {
+                        if (c.id == chat.id && c.type === chat.type) {
+                          return { ...c, read_status: 0 };
+                        }
+                        return c;
+                      });
+                      
+                      setChats(updatedChats);
 
-                  }}
-                  className={`flex items-center justify-between space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
-                    selectedUser?.id === chat.id && "bg-gray-300"
-                  } ${
-                    chat.read_status && chat.read_status == 1 ? "font-bold" : ""
-                  }`}
-                >
-                  <div className="flex items-center space-x-2">
+                    }}
+                className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
+                  selectedUser?.id === chat.id && "bg-gray-300"
+                } ${
+                  chat.read_status && chat.read_status == 1 ? "font-bold" : ""
+                }`}
+              >
+                <div className="flex items-center space-x-2">
                   <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                     {chat.profile_pic ? (
                       <img
@@ -534,85 +606,15 @@ const ChatSidebar = ({
                       className="ml-2 fill-yellow-500 text-yellow-500"
                     />
                   )}
-                  </div>
-                  {chat.read_status === 1 && (
-                    <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
-                  )}
                 </div>
-
-                {isLastFavourite && (
-                  <div className="border-b border-gray-300 my-2 mx-1"></div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </>
-      ) : (
-        // Non-"all" tab rendering stays same
-        filteredData.map((chat) => {
-          const isFavourite = JSON.parse(chat.favourites || "[]").includes(
-            user.id
-          );
-          return (
-            <div
-              key={chat.id}
-              onClick={() => {
-                    onSelect(chat);
-                    const updatedChats = chats.map((c) => {
-                      if (c.id == chat.id && c.type === chat.type) {
-                        return { ...c, read_status: 0 };
-                      }
-                      return c;
-                    });
-                    
-                    setChats(updatedChats);
-
-                  }}
-              className={`flex items-center justify-between space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
-                selectedUser?.id === chat.id && "bg-gray-300"
-              } ${
-                chat.read_status && chat.read_status == 1 ? "font-bold" : ""
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                  {chat.profile_pic ? (
-                    <img
-                      src={"http://localhost:5000" + chat.profile_pic}
-                      alt="Profile"
-                      className="w-10 h-10 rounded-full mx-auto object-cover border"
-                    />
-                  ) : (
-                    chat.name[0]
-                  )}
-                  {onlineUserIds.includes(chat.id) && (
-                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
-                  )}
-                </div>
-                <span
-                  className={`truncate ${
-                    chat.logged_in_status == true ||
-                    chat.logged_in_status == null
-                      ? ""
-                      : "text-red-500"
-                  }`}
-                >
-                  {chat.name}
-                </span>
-                {isFavourite && (
-                  <Star
-                    size={18}
-                    className="ml-2 fill-yellow-500 text-yellow-500"
-                  />
+                {chat.read_status === 1 && (
+                  <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
                 )}
               </div>
-              {chat.read_status === 1 && (
-                <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
-              )}
-            </div>
-          );
-        })
-      )}
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };

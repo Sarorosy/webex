@@ -124,3 +124,9 @@ div#commentsMention[placeholder]:empty:before {
 .thead-no-breakword{
     white-space: nowrap;
 }
+
+
+.m-list-h {
+    max-height: 78vh;
+    overflow-y: auto;
+}
