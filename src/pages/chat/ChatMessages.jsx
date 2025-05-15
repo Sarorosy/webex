@@ -589,10 +589,10 @@ const ChatMessages = ({
         </div>
       )}
 
-      <div className="message-full-box w-full flex flex-col space-y-4">
+      <div className="message-full-box w-full flex flex-col">
         {Object.keys(groupedMessages).length === 0 && !isLoading ? (
           <div className="no-messages flex flex-col items-center justify-center py-16 text-gray-500">
-            <div className="p-4 bg-white rounded-full shadow-md">
+            <div className="p-4 bg-white rounded-full mb-4 shadow-md">
               <MessageSquare size={40} className="text-blue-400" />
             </div>
             <p className="text-lg font-medium text-gray-600">No messages yet</p>
@@ -600,8 +600,8 @@ const ChatMessages = ({
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
-            <div key={date} className=" space-y-4">
-              <div className="date-separator flex items-center text-center text-xs ">
+            <div key={date}>
+              <div className="date-separator flex items-center text-center text-xs mt-6 mb-4">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
                   {formatDate(messages[0].created_at)}
@@ -668,15 +668,15 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper rounded-lg py-2 w-full flex ${
-                      isSent ? "flex-row-reverse" : "justify-start"
-                    } ${
-                      highlightedMessageId === msg.id
-                        ? "animate-pulse-highlight bg-yellow-50"
-                        : ""
-                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${msg.id} ${
-                      isSent ? "pr-2" : "pl-2"
-                    } ${isReply && replyMsgId == msg.id ? "ring-2 ring-blue-400 bg-blue-50 " : ""}`}
+                    className={`message-wrapper gap-2 rounded-lg py-2 w-full flex ${
+                            isSent ? "flex-row-reverse" : "justify-start"
+                          } ${
+                            highlightedMessageId === msg.id
+                              ? "animate-pulse-highlight bg-yellow-50"
+                              : ""
+                          } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${msg.id} ${
+                            isSent ? "pr-2" : "pl-2"
+                          } ${isReply && replyMsgId == msg.id ? "ring-2 ring-blue-400 bg-blue-50 " : ""}`}
                   >
                     <div
                       className={`flex flex-col ${
@@ -695,16 +695,6 @@ const ChatMessages = ({
                       )}
                       
                     </div>
-                    <div className="w-100">
-                    <span
-                        className={`text-xs font-medium ${
-                          isSent ? "text-blue-600" : "text-gray-600"
-                        }`}
-                      >
-                        {isSent && !view_user_id
-                          ? "You"
-                          : msg.sender_name ?? "Unknown User"}
-                      </span>
                     <div
                       className={`message relative max-w-[70%] ${
                         isSent
@@ -714,7 +704,15 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      
+                      <span
+                        className={`text-xs mt-1 font-medium ${
+                          isSent ? "text-blue-600" : "text-gray-600"
+                        }`}
+                      >
+                        {isSent && !view_user_id
+                          ? "You"
+                          : msg.sender_name ?? "Unknown User"}
+                      </span>
                       {msg.is_file == 1 &&
                         msg.filename &&
                         (() => {
@@ -894,7 +892,6 @@ const ChatMessages = ({
                         {formatTime(msg.created_at)}
                       </div>
                     </div>
-                    </div>
                     {hoveredMessageId === msg.id && (
                       <div
                         className="message-actions absolute -top-8 bg-white rounded-full shadow-lg flex p-1 z-10 border border-gray-200 transition-all duration-200"
@@ -949,10 +946,27 @@ const ChatMessages = ({
                     )}
                   </div>
                 );
+
+                
               })}
             </div>
           ))
         )}
+        <div>
+          <AnimatePresence>
+          {showScrollToBottom && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              onClick={scrollToBottom}
+              className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
+            >
+              <ArrowDown size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+        </div>
         {latestMessageId && <ReadPersons messageId={latestMessageId} />}
       </div>
 
@@ -978,19 +992,7 @@ const ChatMessages = ({
           />
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {showScrollToBottom && (
-          <motion.button
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            onClick={scrollToBottom}
-            className="absolute bottom-36 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
-          >
-            <ArrowDown size={20} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      
     </div>
   );
 };

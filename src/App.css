@@ -172,3 +172,11 @@ div#commentsMention[placeholder]:empty:before {
 	background-color: #e85720;
 	border: 2px solid #e85720;
 }
+
+
+
+.down-btn-set{
+  position: absolute;
+  bottom: 120px;
+  left: 61%;
+}

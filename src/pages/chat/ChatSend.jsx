@@ -281,6 +281,7 @@ const ChatSend = ({
         </div>
       )}
       <div className="flex items-center gap-2 mt-2">
+        
         {/* Paperclip icon (file input trigger) */}
 
         {/* Show selected file with X */}
