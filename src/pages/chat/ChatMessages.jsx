@@ -704,15 +704,15 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      <span
-                        className={`text-xs mt-1 font-medium ${
-                          isSent ? "text-blue-600" : "text-gray-600"
+                      <div
+                        className={`text-xs  mb-1 font-medium ${
+                          isSent ? "text-white-600 text-right" : "text-gray-600"
                         }`}
                       >
                         {isSent && !view_user_id
                           ? "You"
                           : msg.sender_name ?? "Unknown User"}
-                      </span>
+                      </div>
                       {msg.is_file == 1 &&
                         msg.filename &&
                         (() => {

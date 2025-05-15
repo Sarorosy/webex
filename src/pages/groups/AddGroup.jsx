@@ -131,15 +131,15 @@ const AddGroup = ({ onClose , finalFunction}) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-4xl h-full p-8 overflow-y-auto rounded-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold">Add Group</h2>
+      <div className="bg-white max-w-4xl overflow-y-auto rounded">
+        <div className="flex justify-between items-center p-2 bg-gray-500">
+          <h2 className="text-lg font-semibold">Add Group</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-red-500">
-            <X size={24} />
+            <X size={20} className='text-black' />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className=" p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Group Name

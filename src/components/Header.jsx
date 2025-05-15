@@ -160,7 +160,7 @@ export default function Header() {
               {/* Dropdown Results */}
               {showResults && (
                 <div className="absolute w-[300px] n-bg-light shadow-lg border border-gray-200 rounded mt-2 topmost px-2 py-2 z-50">
-                  <div className="flex gap-3 mb-3 mx-auto">
+                  <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
                     <button
                       onClick={() => setActiveTab("spaces")}
                       className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
