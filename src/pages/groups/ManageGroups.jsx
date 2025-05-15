@@ -17,7 +17,7 @@ import EditGroup from "./EditGroup";
 import toast from "react-hot-toast";
 import ConfirmationModal from "../../components/ConfirmationModal";
 
-const ManageGroups = () => {
+const ManageGroups = ({onClose}) => {
   const [groups, setGroups] = useState([]);
   const [addGroup, setAddGroup] = useState(false);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
@@ -79,159 +79,171 @@ const ManageGroups = () => {
   const toggleGroup = (id) => {
     setExpandedGroupId((prev) => (prev === id ? null : id));
   };
-  if(loading){
-    return (
-      <div className="text-center">
-        Loading..
-      </div>
-    )
-  }
+  
 
 
   return (
-    <div className="p-6">
-      
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
-        <div className="">
-            <h4 className="text-lg font-semibold">Manage Groups</h4>
-        </div>
-        <div>
-          <button
-            
-            className="p-1 rounded hover:bg-gray-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-      </div>
-      <div className="flex gap-2 mb-3 justify-end">
-        <button
-          onClick={fetchGroups}
-          className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
-        >
-          <RefreshCcw size={12} />
-          Refresh
-        </button>
-        <button
-          onClick={() => setAddGroup(true)}
-          className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
-        >
-          <Plus size={12} />
-          Add Group
-        </button>
-      </div>
-      <div className="space-y-3">
-        {groups.map((group) => (
-          <div key={group.group_id} className="border px-2 py-2 rounded shadow">
-            <div className="flex justify-between items-end gap-2">
-              <div>
-                <p className="font-medium text-md">{group.group_name}</p>
-                <div className="flex items-center mt-2">
-                  <p className="f-13 text-gray-600 border rounded-full px-1 py-0.5">
-                    {group.members?.length || 0} members
-                  </p>
-                  {group.members?.length > 0 && (
-                    <button
-                      onClick={() => toggleGroup(group.group_id)}
-                      className="text-orange-600 flex items-center f-13 hover:underline ml-2"
-                    >
-                      <Users size={12} className="mr-1" />
-                      {expandedGroupId === group.group_id
-                        ? "Hide Members"
-                        : "View Members"}
-                      {expandedGroupId === group.group_id ? (
-                        <ChevronUp className="ml-1" size={12} />
-                      ) : (
-                        <ChevronDown className="ml-1" size={12} />
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-end items-end gap-2">
-                <button 
-                onClick={()=>{
-                  handleViewGroup(group)
-                }}
-                className="p-2 border rounded hover:bg-blue-200 text-blue-800">
-                  <Info size={13} />
-                </button>
-                <button 
-                onClick={()=>{
-                  handleEditGroup(group)
-                }}
-                className="p-2 border rounded hover:bg-orange-200 text-orange-800">
-                  <Pencil size={13} />
-                </button>
-                <button 
-                onClick={()=>{
-                  setSelectedGroup(group);
-                  setDeleteOpen(true);
-                }}
-                className="p-2 border rounded hover:bg-red-200 text-red-800">
-                  <Trash2 size={13} />
-                </button>
-              </div>
+    <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center ">
+      <motion.div
+        initial={{ x: "-100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "-100%" }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="relative w-full max-w-3xl h-screen bg-white shadow-xl overflow-y-auto"
+      >
+        {loading ? (
+          <div className="h-full flex items-center justify-center text-lg font-semibold">
+            Loading...
+          </div>
+        ) : (
+          <>
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+              <h4 className="text-lg font-semibold">Manage Groups</h4>
+              <button onClick={onClose} className="p-1 rounded hover:bg-gray-200">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <AnimatePresence>
-              {expandedGroupId === group.group_id && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden mt-2"
-                >
-                  <div className="border-t pt-2 space-y-2">
-                    {group.members.map((member) => (
-                      <div
-                        key={member.user_id}
-                        className="flex items-center gap-3"
-                      >
-                        <img
-                          src={
-                            member.profile_pic
-                              ? `http://localhost:5000${member.profile_pic}`
-                              : "https://ui-avatars.com/api/?name=" +
-                                encodeURIComponent(member.user_name)
-                          }
-                          alt={member.user_name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-sm">
-                            {member.user_name}
-                          </p>
-                          <p className="text-gray-500 text-xs">
-                            {member.email}
-                          </p>
-                        </div>
+            {/* ACTION BUTTONS */}
+            <div className="flex gap-2 mb-3 justify-end px-4">
+              <button
+                onClick={fetchGroups}
+                className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+              >
+                <RefreshCcw size={12} />
+                Refresh
+              </button>
+              <button
+                onClick={() => setAddGroup(true)}
+                className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+              >
+                <Plus size={12} />
+                Add Group
+              </button>
+            </div>
+
+            {/* GROUP LIST */}
+            <div className="space-y-3 px-4 pb-4">
+              {groups.map((group) => (
+                <div key={group.group_id} className="border px-2 py-2 rounded shadow">
+                  <div className="flex justify-between items-end gap-2">
+                    <div>
+                      <p className="font-medium text-md">{group.group_name}</p>
+                      <div className="flex items-center mt-2">
+                        <p className="f-13 text-gray-600 border rounded-full px-1 py-0.5">
+                          {group.members?.length || 0} members
+                        </p>
+                        {group.members?.length > 0 && (
+                          <button
+                            onClick={() => toggleGroup(group.group_id)}
+                            className="text-orange-600 flex items-center f-13 hover:underline ml-2"
+                          >
+                            <Users size={12} className="mr-1" />
+                            {expandedGroupId === group.group_id ? "Hide Members" : "View Members"}
+                            {expandedGroupId === group.group_id ? (
+                              <ChevronUp className="ml-1" size={12} />
+                            ) : (
+                              <ChevronDown className="ml-1" size={12} />
+                            )}
+                          </button>
+                        )}
                       </div>
-                    ))}
+                    </div>
+                    <div className="flex justify-end items-end gap-2">
+                      <button
+                        onClick={() => handleViewGroup(group)}
+                        className="p-2 border rounded hover:bg-blue-200 text-blue-800"
+                      >
+                        <Info size={13} />
+                      </button>
+                      <button
+                        onClick={() => handleEditGroup(group)}
+                        className="p-2 border rounded hover:bg-orange-200 text-orange-800"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedGroup(group);
+                          setDeleteOpen(true);
+                        }}
+                        className="p-2 border rounded hover:bg-red-200 text-red-800"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
-                </motion.div>
+
+                  {/* Members Expandable */}
+                  <AnimatePresence>
+                    {expandedGroupId === group.group_id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden mt-2"
+                      >
+                        <div className="border-t pt-2 space-y-2">
+                          {group.members.map((member) => (
+                            <div key={member.user_id} className="flex items-center gap-3">
+                              <img
+                                src={
+                                  member.profile_pic
+                                    ? `http://localhost:5000${member.profile_pic}`
+                                    : "https://ui-avatars.com/api/?name=" +
+                                      encodeURIComponent(member.user_name)
+                                }
+                                alt={member.user_name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                              <div>
+                                <p className="font-medium text-sm">{member.user_name}</p>
+                                <p className="text-gray-500 text-xs">{member.email}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+
+            {/* Modals */}
+            <AnimatePresence>
+              {addGroup && (
+                <AddGroup onClose={() => setAddGroup(false)} finalFunction={fetchGroups} />
+              )}
+              {viewOpen && selectedGroup && (
+                <GroupInfo
+                  selectedGroup={{ id: selectedGroup.group_id, name: selectedGroup.group_name }}
+                  onClose={() => setViewOpen(false)}
+                />
+              )}
+              {editOpen && (
+                <EditGroup
+                  selectedGroup={selectedGroup}
+                  onClose={() => setEditOpen(false)}
+                  finalFunction={fetchGroups}
+                />
+              )}
+              {deleteOpen && (
+                <ConfirmationModal
+                  title="Are you sure you want to delete this group?"
+                  message="This action cannot be undone."
+                  onYes={handleDeleteGroup}
+                  onClose={() => setDeleteOpen(false)}
+                />
               )}
             </AnimatePresence>
-          </div>
-        ))}
-      </div>
-
-      <AnimatePresence>
-        {addGroup && <AddGroup onClose={() => setAddGroup(false)} finalFunction={fetchGroups} />}
-        {viewOpen && selectedGroup && <GroupInfo selectedGroup={{id:selectedGroup.group_id,name:selectedGroup?.group_name}} onClose={()=>{setViewOpen(false)}} />}
-        {editOpen && <EditGroup selectedGroup={selectedGroup}  onClose={() => setEditOpen(false)} finalFunction={fetchGroups} />}
-        {deleteOpen && (
-          <ConfirmationModal
-                title="Are you sure you want to delete this group?"
-                message="This action cannot be undone."
-                onYes={handleDeleteGroup} 
-                onClose={() => setDeleteOpen(false)}
-            />
+          </>
         )}
-      </AnimatePresence>
+      </motion.div>
     </div>
-  );
+);
+
 };
 
 export default ManageGroups;
