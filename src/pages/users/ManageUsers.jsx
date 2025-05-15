@@ -10,9 +10,12 @@ import {
   MessagesSquare,
   X,
   PlusIcon,
+  Mail,
+  Key,
+  KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence,motion } from "framer-motion";
 import AddUser from "./AddUser";
 import EditUser from "./EditUser";
 import ConfirmationModal from "../../components/ConfirmationModal";
@@ -34,7 +37,7 @@ const getRandomColor = (id) => {
   return colors[id % colors.length];
 };
 
-const Users = () => {
+const ManageUsers = ({onClose}) => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -140,14 +143,23 @@ const Users = () => {
   };
 
   return (
+    <AnimatePresence>
+    <motion.div
+      initial={{ x: '-100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '-100%' }}
+      transition={{ type: 'tween', duration: 0.3 }}
+      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-3xl w-full z-50 overflow-y-auto"
+    >
     <div className="p-6 bg-white rounded-lg shadow-md">
       {/* Header and Search */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200 ">
         <div className="">
             <h4 className="text-lg font-semibold">Users</h4>
         </div>
         <div>
           <button
+          onClick={onClose}
             className="p-1 rounded hover:bg-gray-200"
           >
             <X className="w-5 h-5" />
@@ -221,13 +233,13 @@ const Users = () => {
                         {user.name}
                       </div>
                       <div
-                        className=""
+                        className="flex flex-col justify-start items-start"
                         style={{
                           color: user.trashed == 1 ? "red" : "#4b5563",
                           textDecoration: user.trashed == 1 ? "line-through" : "",
                         }}
                       >
-                        {user.email}
+                       <span className="flex items-center"><Mail size={13} className="mr-2 font-bold"/> {user.email} </span> <span className="flex items-center"><KeyRound size={13} className="mr-2 font-bold" /> {user.password}</span>
                       </div>
                       <div className="flex gap-2 mt-1">
                         
@@ -342,7 +354,9 @@ const Users = () => {
         />
       )}
     </div>
+    </motion.div>
+    </AnimatePresence>
   );
 };
 
-export default Users;
+export default ManageUsers;
