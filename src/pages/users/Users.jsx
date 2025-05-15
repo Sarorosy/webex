@@ -208,15 +208,7 @@ const Users = () => {
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div
-                      className=""
-                      style={{
-                        color: user.trashed == 1 ? "red" : "#4b5563",
-                        textDecoration: user.trashed == 1 ? "line-through" : "",
-                      }}
-                    >
-                      {user.user_panel}
-                    </div>
+                    
                   </div>
                   <div>
                       <div
@@ -237,14 +229,28 @@ const Users = () => {
                       >
                         {user.email}
                       </div>
-                      <div
-                        className=""
-                        style={{
-                          color: user.trashed == 1 ? "red" : "#4b5563",
-                          textDecoration: user.trashed == 1 ? "line-through" : "",
-                        }}
-                      >
-                        {user.user_type}
+                      <div className="flex gap-2 mt-1">
+                        
+                        <div
+                          data-tooltip-id="my-tooltip"
+                          data-tooltip-content={user.user_panel == "AP" ? "Attendance Panel" : "Service Provider"}
+                          className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
+                          style={{
+                            color: user.trashed == 1 ? "red" : "#fff",
+                            textDecoration: user.trashed == 1 ? "line-through" : "",
+                          }}
+                        >
+                          {user.user_panel}
+                        </div>
+                        <div
+                          className=""
+                          style={{
+                            color: user.trashed == 1 ? "red" : "#4b5563",
+                            textDecoration: user.trashed == 1 ? "line-through" : "",
+                          }}
+                        >
+                          {user.user_type}
+                        </div>
                       </div>
                     </div>
                   </div>
