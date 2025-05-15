@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Mention } from "primereact/mention";
 import "./chatStyles.css";
 import { MentionComponent } from "@syncfusion/ej2-react-dropdowns";
@@ -21,7 +21,7 @@ const ChatSend = ({
   setReplyMessage,
 }) => {
   const [value, setValue] = useState("");
-
+  const mentionRef = useRef(null);
   const [groupUsers, setGroupUsers] = useState([]);
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [selectedFile, setSelectedFile] = useState(null);
@@ -34,7 +34,9 @@ const ChatSend = ({
       const data = await res.json();
 
       if (data.status) {
-        const transformedUsers = data.members.map((member, index) => ({
+        const transformedUsers = data.members
+        .filter((member) => member.id != user?.id) // Exclude self
+        .map((member) => ({
           id: member.id,
           userName: member.name,
           userColor: "#6A0572",
@@ -43,7 +45,7 @@ const ChatSend = ({
             : null,
         }));
 
-        setGroupUsers(transformedUsers);
+      setGroupUsers(transformedUsers);
       } else {
         console.error(data.message || "Failed to fetch group members");
       }
@@ -164,6 +166,16 @@ const ChatSend = ({
     setMessageLoading(false);
     setValue("");
     document.getElementById("chatInput").innerHTML = "";
+  }
+};
+
+const handleKeyDown = (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    const mentionOpen = mentionRef.current?.isPopupOpen || false;
+    if (!mentionOpen) {
+      e.preventDefault();
+      handleSend();
+    }
   }
 };
 
@@ -313,10 +325,12 @@ const ChatSend = ({
               className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
               onInput={handleInputChange} // Track changes in the input
+              onKeyDown={handleKeyDown}
             ></div>
 
             <MentionComponent
               dataSource={groupUsers}
+              ref={mentionRef}
               fields={{ text: "userName" }}
               target="#chatInput"
               mentionChar="@"
@@ -331,6 +345,7 @@ const ChatSend = ({
           <textarea
             value={value}
             onChange={handleInput}
+            onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             rows={5}
             className="w-full h-[80px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"

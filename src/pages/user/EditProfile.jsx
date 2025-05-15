@@ -40,6 +40,12 @@ const EditProfile = ({ onClose }) => {
             formData.append("name", name);
             formData.append("pronouns", pronouns);
             formData.append("bio", bio);
+
+            formData.append("office_name", officeName);
+            formData.append("city_name", cityName);
+            formData.append("user_panel", userPanel);
+            formData.append("max_group_count", maxGroupCount);
+
             
             if (profilePic) {
                 formData.append("profile_pic", profilePic); // Send as file
