@@ -231,11 +231,21 @@ const ChatSidebar = ({
     }
   }, [chats, activeTab, searchQuery]);
 
+   const sendNotification = (title, message) => {
+    if (window.electronAPI) {
+      window.electronAPI.notify(title, message);
+    } else {
+      console.warn("electron api not found")
+    }
+  };
+
   useEffect(() => {
     connectSocket();
     const socket = getSocket();
 
     const handleIncoming = (msgOrReply, isReply = false) => {
+
+      
       if (!msgOrReply) return;
       if (!chatsLoaded) return;
 
@@ -277,6 +287,8 @@ const ChatSidebar = ({
       if (!isRelevant) {
       return
       } 
+
+      sendNotification(msg.sender_name ?? "User" , msg.message ?? "New Message");
 
       setChats((prevChats) => {
         const index = prevChats.findIndex(
