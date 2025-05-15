@@ -240,7 +240,6 @@ const ChatSidebar = ({
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
 
-      console.log(msg);
 
       if (!msg || !msg.sender_id || !msg.receiver_id) {
         console.warn("Malformed message or reply:", msgOrReply);

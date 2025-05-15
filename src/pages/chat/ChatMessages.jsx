@@ -288,9 +288,10 @@ const ChatMessages = ({
       const handleNewReply = (reply) => {
         if (!mounted) return;
 
+        console.log("reply" , reply)
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
-            if (msg.id === reply.msg_id) {
+            if (msg.id == reply.msg_id) {
               let existingReplies = [];
 
               try {
