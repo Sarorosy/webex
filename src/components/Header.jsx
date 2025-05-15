@@ -25,6 +25,7 @@ import ReminderPopup from "../pages/chat/ReminderPopup.jsx";
 
 import { getSocket, connectSocket } from "../utils/Socket.jsx";
 import Requests from "../pages/requests/Requests.jsx";
+import ManageGroups from "../pages/groups/ManageGroups.jsx";
 
 export default function Header() {
   const { user,login, logout } = useAuth();
@@ -36,6 +37,7 @@ export default function Header() {
   const dropdownRef = useRef(null);
   const [createNewSpace, setCreateNewSpace] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
+  const [groupsOpen, setGroupsOpen] = useState(false);
 
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -303,7 +305,7 @@ export default function Header() {
             )}
             {user.user_type == "admin" ? (
               <button
-                onClick={() => navigate("/manage-groups")}
+                onClick={() => setGroupsOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Manage groups"
                 className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
@@ -368,6 +370,9 @@ export default function Header() {
         )}
         {requestsOpen && (
           <Requests onClose={()=>{setRequestsOpen(false)}} />
+        )}
+        {groupsOpen && (
+          <ManageGroups onClose={()=>{setGroupsOpen(false)}} />
         )}
         <ReminderPopup />
       </AnimatePresence>

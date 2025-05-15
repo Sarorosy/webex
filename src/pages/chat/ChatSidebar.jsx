@@ -412,11 +412,11 @@ const ChatSidebar = ({
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Search Spaces, Persons"
+            placeholder="Search Groups, Persons"
             className="p-2 border rounded-md w-full "
           />
         </div>
-        <div className="flex justify-start gap-2 mb-4 bg-white p-1">
+        <div className="flex justify-start gap-2 mb-4  p-1">
           <button
             onClick={() => setActiveTab("all")}
             className={`flex items-center gap-1 px-3 py-1 rounded text-sm ${
