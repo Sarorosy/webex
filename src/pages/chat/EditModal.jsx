@@ -173,6 +173,30 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
     setValue(e.target.innerHTML);
     console.log("Input changed, new value:", e.target.innerHTML);
   };
+
+  useEffect(() => {
+  // Create a dummy DOM to parse the HTML value
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = value;
+
+  // Get all mention names from spans
+  const mentionedNames = Array.from(
+    tempDiv.querySelectorAll('.e-mention-chip')
+  ).map((el) => el.textContent.trim());
+
+  // Filter out users no longer mentioned
+  const updatedSelectedUsers = selectedUsers.filter((user) =>
+    mentionedNames.includes(user.name)
+  );
+
+  // Update state only if changed
+  if (updatedSelectedUsers.length !== selectedUsers.length) {
+    setSelectedUsers(updatedSelectedUsers);
+    console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+  }
+}, [value]);
+
+
   return (
     <motion.div
       className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
