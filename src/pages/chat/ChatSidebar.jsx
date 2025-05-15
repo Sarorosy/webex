@@ -25,71 +25,73 @@ const ChatSidebar = ({
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [chats, setChats] = useState([]); // Will store groups and users
+  const [chatsLoaded, setChatsLoaded] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
   useEffect(() => {
-  connectSocket();
-  const socket = getSocket();
+    connectSocket();
+    const socket = getSocket();
 
-  const handleGroupLeft = ({ id, user_id, type }) => {
-    if (user_id == user?.id) {
+    const handleGroupLeft = ({ id, user_id, type }) => {
+      if (user_id == user?.id) {
+        setChats((prevChats) =>
+          prevChats.filter((chat) => !(chat.id == id && chat.type === type))
+        );
+      }
+    };
+
+    const handleGroupUpdated = (data) => {
       setChats((prevChats) =>
-        prevChats.filter((chat) => !(chat.id == id && chat.type === type))
+        prevChats.map((chat) => {
+          if (chat.id == data.id && chat.type === "group") {
+            return {
+              ...chat,
+              name: data.name,
+              group: data.group,
+            };
+          }
+          return chat;
+        })
       );
-    }
-  };
+    };
 
-  const handleGroupUpdated = (data) => {
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id == data.id && chat.type === "group") {
-          return {
-            ...chat,
-            name: data.name,
-            group: data.group,
-          };
-        }
-        return chat;
-      })
-    );
-  };
+    const handleGroupCreated = (group) => {
+      if (
+        Array.isArray(group.selected_members) &&
+        group.selected_members.includes(user?.id)
+      ) {
+        const { selected_members, ...chatData } = group;
+        setChats((prevChats) => [...prevChats, chatData]);
+      }
+    };
 
-  const handleGroupCreated = (group) => {
-    if (
-      Array.isArray(group.selected_members) &&
-      group.selected_members.includes(user?.id)
-    ) {
-      const { selected_members, ...chatData } = group;
-      setChats((prevChats) => [...prevChats, chatData]);
-    }
-  };
+    const handleGroupDeleted = (data) => {
+      setChats((prevChats) =>
+        prevChats.filter(
+          (chat) => !(chat.id == data.id && chat.type === "group")
+        )
+      );
 
-  const handleGroupDeleted = (data) => {
-    setChats((prevChats) =>
-      prevChats.filter((chat) => !(chat.id == data.id && chat.type === "group"))
-    );
+      if (selectedUser?.id == data.id && selectedUser?.type === "group") {
+        onSelect(null);
+      }
+    };
 
-    if (selectedUser?.id == data.id && selectedUser?.type === "group") {
-      onSelect(null);
-    }
-  };
+    socket.on("group_left", handleGroupLeft);
+    socket.on("group_updated", handleGroupUpdated);
+    socket.on("group_created", handleGroupCreated);
+    socket.on("group_deleted", handleGroupDeleted);
 
-  socket.on("group_left", handleGroupLeft);
-  socket.on("group_updated", handleGroupUpdated);
-  socket.on("group_created", handleGroupCreated);
-  socket.on("group_deleted", handleGroupDeleted);
-
-  return () => {
-    socket.off("group_left", handleGroupLeft);
-    socket.off("group_updated", handleGroupUpdated);
-    socket.off("group_created", handleGroupCreated);
-    socket.off("group_deleted", handleGroupDeleted);
-  };
-}, [user?.id, selectedUser]);
-
+    return () => {
+      socket.off("group_left", handleGroupLeft);
+      socket.off("group_updated", handleGroupUpdated);
+      socket.off("group_created", handleGroupCreated);
+      socket.off("group_deleted", handleGroupDeleted);
+    };
+  }, [user?.id, selectedUser]);
 
   useEffect(() => {
     if (view_user_id && user.user_type) {
@@ -102,35 +104,37 @@ const ChatSidebar = ({
 
   const [sideBarLoading, setSideBarLoading] = useState(false);
   const fetchChats = async (load = true) => {
-  try {
-    setSideBarLoading(load);
-    const res = await fetch(
-      "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
-      {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: view_user_id ? view_user_id : user.id,
-        }),
+    try {
+      setSideBarLoading(load);
+      const res = await fetch(
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: view_user_id ? view_user_id : user.id,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data.status) {
+        const filteredChats = (data.data || []).filter(
+          (item) => item.id !== undefined
+        );
+        setChats(filteredChats);
+        updateChatLoginStatus(filteredChats);
+        setChatsLoaded(true)
+      } else {
+        console.error("Error fetching chats data");
       }
-    );
-    const data = await res.json();
-    if (data.status) {
-      const filteredChats = (data.data || []).filter(item => item.id !== undefined);
-      setChats(filteredChats);
-      updateChatLoginStatus(filteredChats);
-    } else {
-      console.error("Error fetching chats data");
+    } catch (err) {
+      console.error("Error fetching chats:", err);
+    } finally {
+      setSideBarLoading(false);
     }
-  } catch (err) {
-    console.error("Error fetching chats:", err);
-  } finally {
-    setSideBarLoading(false);
-  }
-};
-
+  };
 
   const updateChatLoginStatus = async (chatList) => {
     try {
@@ -232,6 +236,7 @@ const ChatSidebar = ({
 
     const handleIncoming = (msgOrReply, isReply = false) => {
       if (!msgOrReply) return;
+      if (!chatsLoaded) return;
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
 
@@ -245,13 +250,38 @@ const ChatSidebar = ({
       const otherUserId =
         msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
 
-      const isRelevant =
-        msg.sender_id == user?.id || msg.receiver_id == user.id;
+        console.log("otherUserId", otherUserId)
 
-      if (!isRelevant) return;
+      const isRelevant =
+  msg.user_type === "group"
+    ? (() => {
+        console.log("Checking group message:", msg);
+
+        console.log("Available chats:", chats);
+
+        const matchingChat = chats.find(
+          (chat) =>
+            chat.id == msg.receiver_id && chat.type === "group"
+        );
+
+        console.log("Matched group chat:", matchingChat);
+
+        return !!matchingChat;
+      })()
+    : (msg.sender_id == user?.id || msg.receiver_id == user?.id);
+
+
+
+      console.log("isRelevant" , isRelevant)
+
+      if (!isRelevant) {
+      return
+      } 
 
       setChats((prevChats) => {
-        const index = prevChats.findIndex((chat) => chat.id == otherUserId);
+        const index = prevChats.findIndex(
+        (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
+      );
 
         if (index === -1) {
           fetchChats(false);
@@ -262,6 +292,7 @@ const ChatSidebar = ({
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
+          read_status: (msg.sender_id != user?.id && selectedUser?.id != msg.sender_id) ? 1 : 0,
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -287,7 +318,7 @@ const ChatSidebar = ({
       socket.off("new_message", handleNewMessageSidebar);
       socket.off("new_reply", handleNewMessageSidebar);
     };
-  }, [user?.id]);
+  }, [user?.id, chatsLoaded, selectedUser]);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -313,54 +344,53 @@ const ChatSidebar = ({
   }, []);
 
   useEffect(() => {
-  connectSocket();
-  const socket = getSocket();
+    connectSocket();
+    const socket = getSocket();
 
-  const handleGroupLeft = ({ id, user_id, type }) => {
-    if (user_id == user?.id) {
+    const handleGroupLeft = ({ id, user_id, type }) => {
+      if (user_id == user?.id) {
+        setChats((prevChats) =>
+          prevChats.filter((chat) => !(chat.id == id && chat.type === type))
+        );
+      }
+    };
+
+    const handleGroupUpdated = (data) => {
       setChats((prevChats) =>
-        prevChats.filter((chat) => !(chat.id == id && chat.type === type))
+        prevChats.map((chat) => {
+          if (chat.id == data.id && chat.type === "group") {
+            return {
+              ...chat,
+              name: data.name,
+              group: data.group,
+            };
+          }
+          return chat;
+        })
       );
-    }
-  };
+    };
 
-  const handleGroupUpdated = (data) => {
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id == data.id && chat.type === "group") {
-          return {
-            ...chat,
-            name: data.name,
-            group: data.group,
-          };
-        }
-        return chat;
-      })
-    );
-  };
+    const handleGroupCreated = (group) => {
+      if (
+        Array.isArray(group.selected_members) &&
+        group.selected_members.includes(user?.id)
+      ) {
+        // Remove selected_members from the group payload if you don't want it stored
+        const { selected_members, ...chatData } = group;
+        setChats((prevChats) => [...prevChats, chatData]);
+      }
+    };
 
-  const handleGroupCreated = (group) => {
-    if (
-      Array.isArray(group.selected_members) &&
-      group.selected_members.includes(user?.id)
-    ) {
-      // Remove selected_members from the group payload if you don't want it stored
-      const { selected_members, ...chatData } = group;
-      setChats((prevChats) => [...prevChats, chatData]);
-    }
-  };
+    socket.on("group_left", handleGroupLeft);
+    socket.on("group_updated", handleGroupUpdated);
+    socket.on("group_created", handleGroupCreated);
 
-  socket.on("group_left", handleGroupLeft);
-  socket.on("group_updated", handleGroupUpdated);
-  socket.on("group_created", handleGroupCreated);
-
-  return () => {
-    socket.off("group_left", handleGroupLeft);
-    socket.off("group_updated", handleGroupUpdated);
-    socket.off("group_created", handleGroupCreated);
-  };
-}, [user?.id]);
-
+    return () => {
+      socket.off("group_left", handleGroupLeft);
+      socket.off("group_updated", handleGroupUpdated);
+      socket.off("group_created", handleGroupCreated);
+    };
+  }, [user?.id]);
 
   return (
     <div
@@ -456,11 +486,25 @@ const ChatSidebar = ({
             return (
               <React.Fragment key={chat.id}>
                 <div
-                  onClick={() => onSelect(chat)}
-                  className={`flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
+                  onClick={() => {
+                    onSelect(chat);
+                    const updatedChats = chats.map((c) => {
+                      if (c.id == chat.id && c.type === chat.type) {
+                        return { ...c, read_status: 0 };
+                      }
+                      return c;
+                    });
+                    
+                    setChats(updatedChats);
+
+                  }}
+                  className={`flex items-center justify-between space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
                     selectedUser?.id === chat.id && "bg-gray-300"
+                  } ${
+                    chat.read_status && chat.read_status == 1 ? "font-bold" : ""
                   }`}
                 >
+                  <div className="flex items-center space-x-2">
                   <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                     {chat.profile_pic ? (
                       <img
@@ -491,6 +535,10 @@ const ChatSidebar = ({
                       className="ml-2 fill-yellow-500 text-yellow-500"
                     />
                   )}
+                  </div>
+                  {chat.read_status === 1 && (
+                    <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                  )}
                 </div>
 
                 {isLastFavourite && (
@@ -509,39 +557,58 @@ const ChatSidebar = ({
           return (
             <div
               key={chat.id}
-              onClick={() => onSelect(chat)}
-              className={`flex items-center space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
+              onClick={() => {
+                    onSelect(chat);
+                    const updatedChats = chats.map((c) => {
+                      if (c.id == chat.id && c.type === chat.type) {
+                        return { ...c, read_status: 0 };
+                      }
+                      return c;
+                    });
+                    
+                    setChats(updatedChats);
+
+                  }}
+              className={`flex items-center justify-between space-x-2 p-2 rounded cursor-pointer hover:bg-gray-200 ${
                 selectedUser?.id === chat.id && "bg-gray-300"
+              } ${
+                chat.read_status && chat.read_status == 1 ? "font-bold" : ""
               }`}
             >
-              <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                {chat.profile_pic ? (
-                  <img
-                    src={"http://localhost:5000" + chat.profile_pic}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full mx-auto object-cover border"
+              <div className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
+                  {chat.profile_pic ? (
+                    <img
+                      src={"http://localhost:5000" + chat.profile_pic}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full mx-auto object-cover border"
+                    />
+                  ) : (
+                    chat.name[0]
+                  )}
+                  {onlineUserIds.includes(chat.id) && (
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                  )}
+                </div>
+                <span
+                  className={`truncate ${
+                    chat.logged_in_status == true ||
+                    chat.logged_in_status == null
+                      ? ""
+                      : "text-red-500"
+                  }`}
+                >
+                  {chat.name}
+                </span>
+                {isFavourite && (
+                  <Star
+                    size={18}
+                    className="ml-2 fill-yellow-500 text-yellow-500"
                   />
-                ) : (
-                  chat.name[0]
-                )}
-                {onlineUserIds.includes(chat.id) && (
-                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
                 )}
               </div>
-              <span
-                className={`truncate ${
-                  chat.logged_in_status == true || chat.logged_in_status == null
-                    ? ""
-                    : "text-red-500"
-                }`}
-              >
-                {chat.name}
-              </span>
-              {isFavourite && (
-                <Star
-                  size={18}
-                  className="ml-2 fill-yellow-500 text-yellow-500"
-                />
+              {chat.read_status === 1 && (
+                <div className="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
               )}
             </div>
           );
