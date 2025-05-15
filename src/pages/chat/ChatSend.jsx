@@ -134,6 +134,13 @@ const ChatSend = ({
     formData.append("sender_name", user.name);
     formData.append("profile_pic", user.profile_pic);
     formData.append("is_file", selectedFile ? "1" : "0");
+    let selectedUserIds = [];
+
+    if (Array.isArray(selectedUsers)) {
+      selectedUserIds = selectedUsers.map(user => user.id);
+    }
+
+    formData.append("selected_users", JSON.stringify(selectedUserIds));
     if (selectedFile) {
       formData.append("selectedFile", selectedFile); // key should match `req.file`
     }
@@ -221,15 +228,46 @@ const ChatSend = ({
     setValue(e.target.innerHTML);
     console.log("Input changed, new value:", e.target.innerHTML);
   };
+  useEffect(() => {
+  // Create a dummy DOM to parse the HTML value
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = value;
+
+  // Get all mention names from spans
+  const mentionedNames = Array.from(
+    tempDiv.querySelectorAll('.e-mention-chip')
+  ).map((el) => el.textContent.trim());
+
+  // Filter out users no longer mentioned
+  const updatedSelectedUsers = selectedUsers.filter((user) =>
+    mentionedNames.includes(user.name)
+  );
+
+  // Update state only if changed
+  if (updatedSelectedUsers.length !== selectedUsers.length) {
+    setSelectedUsers(updatedSelectedUsers);
+    console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+  }
+}, [value]);
+
+
 
   return (
     <>
       {isReply && (
         <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center">
           <div>
-            Replying to :{" "}
-            <div dangerouslySetInnerHTML={{ __html: replyMessage }}></div>
+            Replying to:{" "}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: replyMessage
+                  .split(/\s+/) // split by spaces
+                  .slice(0, 10) // take first 10 words
+                  .join(" ") + (replyMessage.split(/\s+/).length > 10 ? "..." : ""),
+              }}
+            />
           </div>
+
           <button
             onClick={() => {
               setIsReply(false);
