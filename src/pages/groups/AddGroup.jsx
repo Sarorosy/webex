@@ -131,17 +131,18 @@ const AddGroup = ({ onClose , finalFunction}) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white max-w-4xl overflow-y-auto rounded">
-        <div className="flex justify-between items-center p-2 bg-gray-500">
-          <h2 className="text-lg font-semibold">Add Group</h2>
+      <div className="bg-white max-w-4xl  rounded">
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500">
+          <h2 className="text-lg font-semibold text-white">Add Group</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-red-500">
-            <X size={20} className='text-black' />
+            <X size={20} className='text-white' />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className=" p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className=" p-4">
+          <div className=' grid grid-cols-1 md:grid-cols-2 gap-3'>
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700  mb-1">
               Group Name
             </label>
             <input
@@ -159,14 +160,14 @@ const AddGroup = ({ onClose , finalFunction}) => {
 
           {user?.user_type != "user" && (
             <div>
-              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700 mb-2">
                 Member Limit
               </label>
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
                   onClick={() => handleMemberLimitChange('decrease')}
-                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
                 >
                   <Minus size={18} />
                 </button>
@@ -174,7 +175,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
                 <button
                   type="button"
                   onClick={() => handleMemberLimitChange('increase')}
-                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
                 >
                   <Plus size={18} />
                 </button>
@@ -183,7 +184,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
           )}
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">Select Members</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Select Members</label>
             <Select
               isMulti
               options={users.map((user) => ({
@@ -203,19 +204,20 @@ const AddGroup = ({ onClose , finalFunction}) => {
               components={{ Option: CustomOption, MultiValue: CustomMultiValue }}
             />
           </div>
+          </div>
 
           <div className="flex justify-end gap-4 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
+              className="bg-gray-300 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-400"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+              className="bg-orange-600 text-white px-2 py-1 rounded-md hover:bg-orange-700"
             >
               {creating ? "Creating..." : "Create"}
             </button>
