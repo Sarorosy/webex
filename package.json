@@ -2,12 +2,44 @@
   "name": "webex",
   "private": true,
   "version": "0.0.0",
+  "description": "Webex Clone",
+  "author": "Saravanan",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
+    "electron": "electron .",
     "build": "vite build",
+    
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "vite build && electron-forge make"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel", 
+          "platforms": ["win32"]
+        },
+        {
+          "name": "@electron-forge/maker-zip",     
+          "platforms": ["darwin"]
+        },
+        {
+          "name": "@electron-forge/maker-deb",     
+          "platforms": ["linux"]
+        },
+        {
+          "name": "@electron-forge/maker-rpm",     
+          "platforms": ["linux"]
+        }
+      ],
+      "outputDir": "C:/Users/Admin/Pictures"
+    }
   },
   "dependencies": {
     "@draft-js-plugins/editor": "^4.1.4",
@@ -19,6 +51,7 @@
     "axios": "^1.9.0",
     "buffer": "^6.0.3",
     "draft-js": "^0.11.7",
+    "electron-squirrel-startup": "^1.0.1",
     "framer-motion": "^12.10.1",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.508.0",
@@ -39,11 +72,20 @@
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-rpm": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
     "@eslint/js": "^9.25.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.21",
+    "electron": "^36.2.0",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",

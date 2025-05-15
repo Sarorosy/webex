@@ -175,7 +175,16 @@ const Requests = ({ onClose }) => {
                 <td className="px-4 py-2">{req.sender_name}</td>
                 <td className="px-4 py-2">{req.user_name}</td>
                 <td className="px-4 py-2">{req.group_name}</td>
-                <td className="px-4 py-2">{req.requested_at}</td>
+                <td className="px-4 py-2">
+  {new Date(req.requested_at).toLocaleString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })}
+</td>
                 <td className="px-4 py-2 text-center">
                   <button
                     onClick={() => handleUserApprove(req.id)}
@@ -227,7 +236,16 @@ const Requests = ({ onClose }) => {
                               <td className="px-4 py-2">{req.sender_name}</td>
                               <td className="px-4 py-2">{req.group_name}</td>
                               <td className="px-4 py-2">{req.member_limit}</td>
-                              <td className="px-4 py-2">{req.requested_at}</td>
+                              <td className="px-4 py-2">
+  {new Date(req.requested_at).toLocaleString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  })}
+</td>
                               <td className="px-4 py-2 text-center">
                                 {isActive ? (
                                   <div className="flex items-center justify-center space-x-2">

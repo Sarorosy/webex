@@ -125,6 +125,14 @@ export default function Header() {
     };
   }, []);
 
+   const sendNotification = () => {
+    if (window.electronAPI) {
+      window.electronAPI.notify("Hello from Vite + Electron!");
+    } else {
+      alert("Electron API not available");
+    }
+  };
+
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
       <div className=" mx-auto flex items-center justify-between px-4 py-2">
@@ -138,6 +146,7 @@ export default function Header() {
             <img src={logo} className="logo-n" />
           </span>{" "}
         </h1>
+        <button onClick={sendNotification}>Send Desktop Notification</button>
 
         {user ? (
           <div className="flex items-center space-x-4 text-sm">

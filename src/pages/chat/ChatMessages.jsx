@@ -288,7 +288,7 @@ const ChatMessages = ({
       const handleNewReply = (reply) => {
         if (!mounted) return;
 
-        console.log("reply" , reply)
+        console.log("reply", reply);
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
             if (msg.id == reply.msg_id) {
@@ -347,8 +347,10 @@ const ChatMessages = ({
     };
 
     const handleMessageDelete = (msgId) => {
-      setMessages(
-        (prevMessages) => prevMessages.filter((msg) => msg.id !== msgId) // Remove deleted message from the state
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id == msgId ? { ...msg, is_deleted: 1 } : msg
+        )
       );
     };
 
@@ -669,14 +671,18 @@ const ChatMessages = ({
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
                     className={`message-wrapper gap-2 rounded-lg py-2 w-full flex ${
-                            isSent ? "flex-row-reverse" : "justify-start"
-                          } ${
-                            highlightedMessageId === msg.id
-                              ? "animate-pulse-highlight bg-yellow-50"
-                              : ""
-                          } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${msg.id} ${
-                            isSent ? "pr-2" : "pl-2"
-                          } ${isReply && replyMsgId == msg.id ? "ring-2 ring-blue-400 bg-blue-50 " : ""}`}
+                      isSent ? "flex-row-reverse" : "justify-start"
+                    } ${
+                      highlightedMessageId === msg.id
+                        ? "animate-pulse-highlight bg-yellow-50"
+                        : ""
+                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
+                      msg.id
+                    } ${isSent ? "pr-2" : "pl-2"} ${
+                      isReply && replyMsgId == msg.id
+                        ? "ring-2 ring-blue-400 bg-blue-50 "
+                        : ""
+                    }`}
                   >
                     <div
                       className={`flex flex-col ${
@@ -693,7 +699,6 @@ const ChatMessages = ({
                           {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
                         </div>
                       )}
-                      
                     </div>
                     <div
                       className={`message relative max-w-[70%] ${
@@ -761,7 +766,6 @@ const ChatMessages = ({
                                     />
                                   )}
                                   <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
-                                    
                                     <a
                                       href={fileUrl}
                                       target="_blank"
@@ -788,7 +792,11 @@ const ChatMessages = ({
                                       rel="noopener noreferrer"
                                       className="text-sm text-blue-600 hover:underline flex items-center"
                                     >
-                                      open <SquareArrowOutUpRightIcon size={18} className="ml-1" />
+                                      open{" "}
+                                      <SquareArrowOutUpRightIcon
+                                        size={18}
+                                        className="ml-1"
+                                      />
                                     </a>
                                   )}
                                 </div>
@@ -946,26 +954,24 @@ const ChatMessages = ({
                     )}
                   </div>
                 );
-
-                
               })}
             </div>
           ))
         )}
         <div>
           <AnimatePresence>
-          {showScrollToBottom && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              onClick={scrollToBottom}
-              className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
-            >
-              <ArrowDown size={20} />
-            </motion.button>
-          )}
-        </AnimatePresence>
+            {showScrollToBottom && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                onClick={scrollToBottom}
+                className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
+              >
+                <ArrowDown size={20} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
         {latestMessageId && <ReadPersons messageId={latestMessageId} />}
       </div>
@@ -992,7 +998,6 @@ const ChatMessages = ({
           />
         )}
       </AnimatePresence>
-      
     </div>
   );
 };

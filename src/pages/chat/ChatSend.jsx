@@ -55,6 +55,7 @@ const ChatSend = ({
   };
 
   useEffect(() => {
+    setValue("");
     if (type === "group") {
       fetchUsers();
     }
@@ -178,6 +179,15 @@ const handleKeyDown = (e) => {
     }
   }
 };
+
+const handlePaste = (e) => {
+  e.preventDefault();
+  const text = e.clipboardData.getData("text/plain");
+
+  // Insert plain text at the cursor position
+  document.execCommand("insertText", false, text);
+};
+
 
 
   useEffect(() => {
@@ -325,8 +335,9 @@ const handleKeyDown = (e) => {
               contentEditable
               className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
-              onInput={handleInputChange} // Track changes in the input
+              onInput={handleInputChange} 
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste} 
             ></div>
 
             <MentionComponent
