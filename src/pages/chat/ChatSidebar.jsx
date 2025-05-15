@@ -7,6 +7,7 @@ import {
   Star,
   UserRound,
   UserCircle,
+  AtSign,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -288,11 +289,13 @@ const ChatSidebar = ({
         }
 
         const updatedChats = [...prevChats];
+        console.log("uncountu",updatedChats[index]?.unread_count)
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
           read_status: (msg.sender_id != user?.id && selectedUser?.id != msg.sender_id) ? 1 : 0,
-          unread_count: (updatedChats[index]?.unread_count || 0) + 1
+          unread_count: (updatedChats[index]?.unread_count || 0) + 1,
+          is_mentioned: Array.isArray(msg.mentioned_users) && msg.mentioned_users.includes(user?.id)
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -515,9 +518,14 @@ const ChatSidebar = ({
                     />
                   )}
                 </div>
-                {chat.read_status === 1 && (
+                {chat.read_status == 1 && (
+                  <div className="flex items-center space-x-1">
                   <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
                     {chat.unread_count ?? 1}
+                  </div>
+                  {chat.is_mentioned && (
+                    <AtSign className="text-orange-500" size={16} />
+                  )}
                   </div>
                 )}
               </div>
