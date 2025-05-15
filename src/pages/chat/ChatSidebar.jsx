@@ -397,11 +397,11 @@ const ChatSidebar = ({
 
   return (
   <div
-    className={`w-1/4 bg-gray-100 p-4 px-2 border-r ${
+    className={`w-1/4 bg-gray-100 p-4 px-1  rounded-md m-2 ${
       messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
     }`}
   >
-    <div className="pl-3">
+    <div className="px-2">
       {view_user_name && (
         <div className="flex items-center gap-2 mb-1 rounded">
           Chats of{" "}

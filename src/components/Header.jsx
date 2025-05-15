@@ -27,6 +27,7 @@ import { getSocket, connectSocket } from "../utils/Socket.jsx";
 import Requests from "../pages/requests/Requests.jsx";
 import ManageGroups from "../pages/groups/ManageGroups.jsx";
 import ManageUsers from '../pages/users/ManageUsers.jsx';
+import Profile from '../pages/user/Profile.jsx';
 
 
 export default function Header() {
@@ -40,7 +41,8 @@ export default function Header() {
   const [createNewSpace, setCreateNewSpace] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
-  const [usersOpen, setUsersOpen] = useState(false)
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -135,7 +137,7 @@ export default function Header() {
 
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
-      <div className=" mx-auto flex items-center justify-between px-4 py-2">
+      <div className=" mx-auto flex items-center justify-between px-4 py-2 border-b">
         <h1
           className="text-2xl font-bold flex items-center cursor-pointer"
           onClick={() => {
@@ -169,7 +171,7 @@ export default function Header() {
               {/* Dropdown Results */}
               {showResults && (
                 <div className="absolute w-[300px] n-bg-light shadow-lg border border-gray-200 rounded mt-2 topmost px-2 py-2 z-50">
-                  <div className="flex gap-3 mb-3 mx-auto">
+                  <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
                     <button
                       onClick={() => setActiveTab("spaces")}
                       className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
@@ -349,7 +351,7 @@ export default function Header() {
             )}
             <div className="flex items-center" ref={dropdownRef}>
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={user.email}
                 className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
@@ -388,6 +390,9 @@ export default function Header() {
         )}
         {usersOpen && (
           <ManageUsers onClose={()=>{setUsersOpen(false)}} />
+        )}
+        {profileOpen && (
+          <Profile onClose={()=>{setProfileOpen(false)}} />
         )}
         <ReminderPopup />
       </AnimatePresence>

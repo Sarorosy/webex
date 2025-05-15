@@ -113,7 +113,7 @@ const Requests = ({ onClose }) => {
           className="relative w-full max-w-3xl bg-white h-full shadow-xl overflow-y-auto"
         >
           {/* Close button */}
-          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-orange-300">
             <div className="">
                 <h4 className="text-lg font-semibold">Requests</h4>
             </div>

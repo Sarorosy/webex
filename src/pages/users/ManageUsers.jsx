@@ -151,15 +151,15 @@ const ManageUsers = ({onClose}) => {
       transition={{ type: 'tween', duration: 0.3 }}
       className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-3xl w-full z-50 overflow-y-auto"
     >
-    <div className="p-6 bg-white rounded-lg shadow-md">
+    <div className="bg-white rounded-lg shadow-md">
       {/* Header and Search */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200 ">
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-orange-300 ">
         <div className="">
             <h4 className="text-lg font-semibold">Users</h4>
         </div>
         <div>
           <button
-          onClick={onClose}
+            onClick={onClose}
             className="p-1 rounded hover:bg-gray-200"
           >
             <X className="w-5 h-5" />
@@ -167,6 +167,7 @@ const ManageUsers = ({onClose}) => {
         </div>
 
       </div>
+      <div className=" px-4 pt-3">
       <div className="flex justify-end gap-2 items-center mb-3">
         <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
           <Search size={13} className="text-gray-500" />
@@ -324,6 +325,7 @@ const ManageUsers = ({onClose}) => {
             )}
           </div>
         </div>
+      </div>
       </div>
       <AnimatePresence>
         {addOpen && (

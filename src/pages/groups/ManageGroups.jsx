@@ -98,7 +98,7 @@ const ManageGroups = ({onClose}) => {
         ) : (
           <>
             {/* HEADER */}
-            <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+            <div className="flex items-center justify-between mb-2 px-4 py-3 bg-orange-300">
               <h4 className="text-lg font-semibold">Manage Groups</h4>
               <button onClick={onClose} className="p-1 rounded hover:bg-gray-200">
                 <X className="w-5 h-5" />

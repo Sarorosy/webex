@@ -112,7 +112,7 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 .n-height {
-    height: 92vh;
+    height: 93vh;
 }
 
 
@@ -179,4 +179,17 @@ div#commentsMention[placeholder]:empty:before {
   position: absolute;
   bottom: 120px;
   left: 61%;
+}
+
+.profile-bg-set{
+    background-image: url(/src/assets/pexels-padrinan-19670.jpg) ;
+    object-fit: cover;
+    background-position: center;
+    background-size: cover;
+    height: 100px;
+    width: 100%;
+}
+
+.profile-content-set {
+    margin-top: -80px;
 }
