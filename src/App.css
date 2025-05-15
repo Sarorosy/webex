@@ -130,3 +130,45 @@ div#commentsMention[placeholder]:empty:before {
     max-height: 78vh;
     overflow-y: auto;
 }
+
+
+
+
+
+.overflow-y-auto::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+
+.overflow-y-auto::-webkit-scrollbar
+{
+	width: 3px;
+	background-color: #e85720;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb
+{
+	background-color: #e85720;
+	border: 2px solid #e85720;
+}
+
+
+
+.m-list-h::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	background-color: #F5F5F5;
+}
+
+.m-list-h::-webkit-scrollbar
+{
+	width: 2px;
+	background-color: #e85720;
+}
+
+.m-list-h::-webkit-scrollbar-thumb
+{
+	background-color: #e85720;
+	border: 2px solid #e85720;
+}

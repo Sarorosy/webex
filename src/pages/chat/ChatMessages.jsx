@@ -574,7 +574,7 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className="messages-container  h-[70vh] overflow-y-auto flex flex-col p-4 bg-gradient-to-b from-blue-50 to-white"
+      className="messages-container  h-[70vh] overflow-y-auto flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -589,10 +589,10 @@ const ChatMessages = ({
         </div>
       )}
 
-      <div className="message-full-box w-full flex flex-col">
+      <div className="message-full-box w-full flex flex-col space-y-4">
         {Object.keys(groupedMessages).length === 0 && !isLoading ? (
           <div className="no-messages flex flex-col items-center justify-center py-16 text-gray-500">
-            <div className="p-4 bg-white rounded-full mb-4 shadow-md">
+            <div className="p-4 bg-white rounded-full shadow-md">
               <MessageSquare size={40} className="text-blue-400" />
             </div>
             <p className="text-lg font-medium text-gray-600">No messages yet</p>
@@ -600,8 +600,8 @@ const ChatMessages = ({
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
-            <div key={date}>
-              <div className="date-separator flex items-center text-center text-xs mt-6 mb-4">
+            <div key={date} className=" space-y-4">
+              <div className="date-separator flex items-center text-center text-xs ">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
                   {formatDate(messages[0].created_at)}
@@ -674,9 +674,9 @@ const ChatMessages = ({
                       highlightedMessageId === msg.id
                         ? "animate-pulse-highlight bg-yellow-50"
                         : ""
-                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
-                      msg.id
-                    } ${isSent ? "pr-2" : "pl-2"}`}
+                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${msg.id} ${
+                      isSent ? "pr-2" : "pl-2"
+                    } ${isReply && replyMsgId == msg.id ? "ring-2 ring-blue-400 bg-blue-50 " : ""}`}
                   >
                     <div
                       className={`flex flex-col ${
@@ -693,8 +693,11 @@ const ChatMessages = ({
                           {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
                         </div>
                       )}
-                      <span
-                        className={`text-xs mt-1 font-medium ${
+                      
+                    </div>
+                    <div className="w-100">
+                    <span
+                        className={`text-xs font-medium ${
                           isSent ? "text-blue-600" : "text-gray-600"
                         }`}
                       >
@@ -702,7 +705,6 @@ const ChatMessages = ({
                           ? "You"
                           : msg.sender_name ?? "Unknown User"}
                       </span>
-                    </div>
                     <div
                       className={`message relative max-w-[70%] ${
                         isSent
@@ -712,6 +714,7 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
+                      
                       {msg.is_file == 1 &&
                         msg.filename &&
                         (() => {
@@ -890,6 +893,7 @@ const ChatMessages = ({
                         <Clock size={10} className="mr-1" />
                         {formatTime(msg.created_at)}
                       </div>
+                    </div>
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div

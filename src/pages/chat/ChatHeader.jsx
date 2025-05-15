@@ -86,9 +86,9 @@ const ChatHeader = ({
   }, [selectedUser]);
 
   return (
-    <div className="relative">
+    <div className="relative mb-1">
       {/* HEADER */}
-      <div className="flex items-center justify-between gap-3 border-b pb-3 px-4 py-6 chat-header-bg rounded-t-lg shadow-inner">
+      <div className="flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 chat-header-bg rounded-t-lg shadow-inner">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedUser?.profile_pic ? (
@@ -102,13 +102,13 @@ const ChatHeader = ({
                 className="w-10 h-10 rounded-full object-cover border"
               />
             ) : (
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-400 text-white text-xl font-bold shadow">
+              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-400 text-white text-lg font-bold shadow">
                 {selectedUser?.name?.charAt(0).toUpperCase() || "U"}
               </div>
             )}
           </div>
 
-          <h2 className="text-xl font-bold text-gray-800 tracking-wide flex flex-col ml-2">
+          <h2 className="text-lg font-bold text-gray-800 tracking-wide flex flex-col ml-2">
             <span className="flex items-center">
               {selectedUser?.name || "Unknown User"}
               <button onClick={handleFavourite}>
@@ -136,13 +136,13 @@ const ChatHeader = ({
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleGroupInfoClick(selectedUser)}
-                className="px-3 py-1 bg-blue-500 text-white text-sm rounded-xl hover:bg-blue-600 transition"
+                className="px-3 py-1 f-13 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
               >
                 Group Info
               </button>
               <button 
               onClick={() => setLeftGroupOpen(true)}
-              className="px-3 py-1 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 transition">
+              className="px-3 py-1 f-13 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition">
                 Leave Group
               </button>
             </div>
@@ -155,7 +155,7 @@ const ChatHeader = ({
                 onChange={(e) => setQuery(e.target.value)}
                 type="text"
                 placeholder="Search..."
-                className="px-3 py-1 text-sm rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="px-2 py-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 f-13"
               />
               <button
                 onClick={() => {
@@ -171,16 +171,16 @@ const ChatHeader = ({
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className="p-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 transition"
+              className="p-1 bg-blue-500 text-white f-13 rounded-full hover:bg-blue-600 transition"
             >
-              <Search size={17} />
+              <Search size={15} />
             </button>
           )}
           <button
               onClick={() => setPinMessagesOpen(true)}
-              className="p-1 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600 transition"
+              className="p-1 bg-blue-500 text-white f-13 rounded-full hover:bg-blue-600 transition"
             >
-              <Pin size={17} />
+              <Pin size={15} />
             </button>
         </div>
       </div>
