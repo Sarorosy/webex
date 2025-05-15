@@ -127,7 +127,7 @@ export default function Header() {
 
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
-      <div className=" mx-auto flex items-center justify-between px-4 py-2">
+      <div className=" mx-auto flex items-center justify-between px-4 py-2 border-b">
         <h1
           className="text-2xl font-bold flex items-center cursor-pointer"
           onClick={() => {

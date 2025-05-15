@@ -40,6 +40,12 @@ const EditProfile = ({ onClose }) => {
             formData.append("name", name);
             formData.append("pronouns", pronouns);
             formData.append("bio", bio);
+
+            formData.append("office_name", officeName);
+            formData.append("city_name", cityName);
+            formData.append("user_panel", userPanel);
+            formData.append("max_group_count", maxGroupCount);
+
             
             if (profilePic) {
                 formData.append("profile_pic", profilePic); // Send as file
@@ -72,23 +78,30 @@ const EditProfile = ({ onClose }) => {
     
 
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
-        >
-            <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-                <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit Profile</h2>
+        
+            <div className=" rounded-lg p-4 pt-2 w-full relative">
+                
+                
 
-                <div className="h-96 overflow-y-scroll">
+                <div className="">
                     <form onSubmit={handleSubmit}>
-                        <div className="flex flex-col items-center mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-4">Profile Picture</label>
+                        <div className="flex flex-col items-start mb-4">
+                            
                             {profilePic ? (
-                                <div className="relative">
-                                    <img src={profilePic instanceof File ? URL.createObjectURL(profilePic) : profilePic}  alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
-                                    <button onClick={removeProfilePic} className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">&times;</button>
+                                
+                                <div className="flex gap-3">
+                                    <div className="relative">
+                                        <img src={profilePic instanceof File ? URL.createObjectURL(profilePic) : profilePic}  alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
+                                    </div>
+                                    <div className="flex flex-col gap-2 justify-center">
+                                        <button onClick={removeProfilePic} className="bg-red-500 text-white rounded px-2 py-1 flex items-center justify-center">Delete Picture</button>
+                                        <label className="bg-gray-500 text-white rounded px-2 py-1 flex items-center justify-center">
+
+                                            Upload new photo
+                                            <input type="file" className="hidden" onChange={handleProfileChange} />
+                                        </label>
+                                    </div>
                                 </div>
                             ) : (
                                 <>
@@ -105,7 +118,7 @@ const EditProfile = ({ onClose }) => {
 
                         {/* Form Fields */}
                         <div className="space-y-3">
-                            <label className="block text-sm font-medium text-gray-700">Your full name *</label>
+                            <label className="block text-sm font-medium text-gray-700">Display name *</label>
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full border p-2 rounded-md" placeholder="Enter your name" />
 
                             <label className="block text-sm font-medium text-gray-700">Pronouns</label>
@@ -115,14 +128,20 @@ const EditProfile = ({ onClose }) => {
                             <textarea value={bio} onChange={(e) => setBio(e.target.value)} className="w-full border p-2 rounded-md" placeholder="Write something about yourself..."></textarea>
                         </div>
 
-                        {/* Save Button */}
-                        <button type="submit" className="mt-5 w-full bg-black text-white py-2 rounded-md text-lg">
-                            {loading ? "Saving..." : "Save Changes"}
-                        </button>
+
+                        <div className="flex justify-end gap-2 mt-3">
+                            <button className="bg-gray-300 text-black px-2 py-1 rounded-md f-13">
+                                Cancel
+                            </button>
+                            {/* Save Button */}
+                            <button type="submit" className="bg-black text-white px-2 py-1 rounded-md f-13">
+                                {loading ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+
                     </form>
                 </div>
             </div>
-        </motion.div>
     );
 };
 

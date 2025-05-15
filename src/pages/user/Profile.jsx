@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import EditProfile from "./EditProfile";
 import { useAuth } from "../../utils/idb";
+import { X } from "lucide-react";
 
 const Profile = () => {
     const user = useAuth();
@@ -13,39 +14,66 @@ const Profile = () => {
     const [editOpen, setEditOpen] = useState(false)
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-8">
-            <div className="bg-white shadow-lg rounded-xl p-8 flex flex-col items-center w-full max-w-lg border border-gray-200 text-center">
-                {/* Profile Picture */}
-                {profilePic ? (
-                    <img 
-                        src={"http://localhost:5000"+ profilePic} 
-                        alt="Profile" 
-                        className="w-24 h-24 rounded-full border border-gray-300 shadow-md mb-4" 
-                    />
-                ) : (
-                    <div className="w-24 h-24 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-4">
-                        {name.charAt(0).toUpperCase()}
-                    </div>
-                )}
+        <div className=" ">
+            {/* HEADER */}
+            <div className="flex items-center justify-between mb-2 px-4 py-3 bg-orange-300">
+              <h4 className="text-lg font-semibold">Edit Profile</h4>
+              <button  className="p-1 rounded hover:bg-gray-200">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+        <div className="flex items-start justify-center p-3 gap-2 h-full">
 
-                {/* Profile Info */}
-                <h2 className="text-xl font-bold text-gray-900">
-                    {name} <span className="text-gray-500 text-sm font-normal">{pronounces}</span>
-                </h2>
-                <p className="text-gray-700 mt-1">{email}</p>
-                <p className="text-gray-600 mt-1">{bio}</p>
+            
 
-                
-                    <button onClick={()=>{setEditOpen(true)}} className="mt-4 px-6 py-2 border border-gray-300 rounded-md text-gray-700 text-sm font-medium hover:bg-gray-100 transition">
-                        Edit Profile
-                    </button>
+            <div className="flex flex-col w-[400px] border h-full">
+                <div className="profile-bg-set"></div>
+                <div className="bg-white p-8 flex flex-col items-center text-center ">
+                <div className="profile-content-set flex flex-col items-center gap-1">
+                    {/* Profile Picture */}
+                    {profilePic ? (
+                        <img 
+                            src={"http://localhost:5000"+ profilePic} 
+                            alt="Profile" 
+                            className="w-24 h-24 rounded-full border border-gray-300 shadow-md mb-2" 
+                        />
+                    ) : (
+                        <div className="w-24 h-24 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-4">
+                            {name.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                    
+
+                    {/* Profile Info */}
+                    <h2 className="text-xl font-bold text-gray-900">
+                        {name} <span className="text-gray-500 text-sm font-normal">{pronounces}</span>
+                    </h2>
+                    <h2 className="text-xl font-bold text-gray-900">
+                        <span className="text-gray-400 text-sm font-normal">Active</span>
+                    </h2>
+                    <p className="text-gray-700 mt-1">{email}</p>
+                    <p className="text-gray-600 mt-1">{bio}</p>
+                    {user?.office_name && (
+
+                    <p className="text-gray-600 mt-1">{bio}</p>
+                    )}
+                    {user?.city_name && (
+
+                    <p className="text-gray-600 mt-1">{bio}</p>
+                    )}
+
+                    
+                </div>
+                </div>
+            </div>
+            <div className="w-full">
+                    <EditProfile  onClose={()=>{setEditOpen(false)}} />
                 
             </div>
             <AnimatePresence>
-                {editOpen && (
-                    <EditProfile  onClose={()=>{setEditOpen(false)}} />
-                )}
+                
             </AnimatePresence>
+        </div>
         </div>
     );
 };
