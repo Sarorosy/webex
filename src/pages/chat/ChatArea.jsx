@@ -91,7 +91,7 @@ const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessa
       <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults} setPinMessagesOpen={setPinMessagesOpen} setLeftGroupOpen={setLeftGroupOpen} />
 
       {/* Messages */}
-      <div className=" overflow-y-hidden  space-y-2 pb-8 chat-messages-container-div">
+      <div className=" overflow-y-hidden  space-y-2 pb-0 chat-messages-container-div">
         <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
       </div>
 
@@ -118,6 +118,7 @@ const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessa
         query={query}
         searchResults={searchResults}
         setSelectedMessage={setSelectedMessage}
+        onClose={()=>{setSearchOpen(false)}}
       />
 
       {pinMessagesOpen && (

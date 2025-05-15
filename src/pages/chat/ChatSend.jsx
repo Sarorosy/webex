@@ -7,7 +7,7 @@ import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, Send, X } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
 
 const ChatSend = ({
@@ -55,6 +55,7 @@ const ChatSend = ({
   };
 
   useEffect(() => {
+    setValue("");
     if (type === "group") {
       fetchUsers();
     }
@@ -178,6 +179,15 @@ const handleKeyDown = (e) => {
     }
   }
 };
+
+const handlePaste = (e) => {
+  e.preventDefault();
+  const text = e.clipboardData.getData("text/plain");
+
+  // Insert plain text at the cursor position
+  document.execCommand("insertText", false, text);
+};
+
 
 
   useEffect(() => {
@@ -312,7 +322,7 @@ const handleKeyDown = (e) => {
         )}
       </div>
 
-      <div className="chat-send-container space-x-2 flex items-end justify-between mx-auto">
+      <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto">
         {type === "group" ? (
           <div className="relative w-full">
             {value.trim() === "" && (
@@ -323,10 +333,11 @@ const handleKeyDown = (e) => {
             <div
               id="chatInput"
               contentEditable
-              className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
+              className="w-full min-h-[70px] p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
-              onInput={handleInputChange} // Track changes in the input
+              onInput={handleInputChange} 
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste} 
             ></div>
 
             <MentionComponent
@@ -353,10 +364,10 @@ const handleKeyDown = (e) => {
           />
         )}
 
-        <div className=" ">
+        <div className="flex flex-col items-center gap-2">
           {!isReply && (
-            <label className="cursor-pointer text-gray-600 hover:text-gray-900">
-              <Paperclip size={20} />
+            <label className="cursor-pointer border border-orange-500 text-gray px-2 py-2 rounded hover:bg-orange-600 transition ">
+              <Paperclip size={16} />
               <input
                 type="file"
                 className="hidden"
@@ -368,9 +379,19 @@ const handleKeyDown = (e) => {
           <button
             onClick={handleSend}
             disabled={submitBtnDisabled}
-            className="mt-2 w-24 bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition "
+            className="bg-orange-500 text-white px-2 py-2 rounded hover:bg-orange-600 transition "
           >
-            {submitBtnDisabled ? "Sending..." : "Send"}
+            
+            {submitBtnDisabled ? 
+              <div className="mx-auto flex justify-center w-full">
+                <ScaleLoader
+                  className="mx-auto"
+                  color="#fff"
+                  height={14}
+                  width={3}
+                  radius={2}
+                /> 
+              </div> : <Send size={16}/>}
             
           </button>
         </div>

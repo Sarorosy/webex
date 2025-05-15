@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import moment from 'moment';
 import toast from 'react-hot-toast';
+import { X } from 'lucide-react';
 
 const ReminderModal = ({ msgId, userId, onClose }) => {
   const [selectedTime, setSelectedTime] = useState('30 minutes');
@@ -53,12 +54,22 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-white p-6 rounded-lg shadow-lg w-80"
+        className="bg-white p-6 rounded-lg shadow-lg w-[400px]"
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
       >
-        <h2 className="text-lg font-semibold mb-4 text-gray-700">Set Reminder for Message</h2>
+        <div className='flex justify-between'>
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">Set Reminder for Message</h2>
+          <div>
+            <button
+            className="bg-red-500 text-white py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
+          >
+            <X size={15}  />
+          </button>
+          </div>
+        </div>
         
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Select Reminder Time</label>
@@ -78,12 +89,7 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <div className="flex justify-between mt-6">
-          <button
-            className="bg-gray-500 text-white py-1 px-3 rounded"
-            onClick={onClose} // Close modal without doing anything
-          >
-            Cancel
-          </button>
+          
           <button
             className="bg-blue-500 text-white py-1 px-3 rounded"
             onClick={handleSubmit} // Submit the reminder

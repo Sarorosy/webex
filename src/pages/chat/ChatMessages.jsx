@@ -288,7 +288,7 @@ const ChatMessages = ({
       const handleNewReply = (reply) => {
         if (!mounted) return;
 
-        console.log("reply" , reply)
+        console.log("reply", reply);
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
             if (msg.id == reply.msg_id) {
@@ -347,8 +347,10 @@ const ChatMessages = ({
     };
 
     const handleMessageDelete = (msgId) => {
-      setMessages(
-        (prevMessages) => prevMessages.filter((msg) => msg.id !== msgId) // Remove deleted message from the state
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id == msgId ? { ...msg, is_deleted: 1 } : msg
+        )
       );
     };
 
@@ -574,7 +576,7 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className="messages-container  h-[70vh] overflow-y-auto flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white"
+      className="messages-container  h-[74vh] overflow-y-auto flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -589,7 +591,7 @@ const ChatMessages = ({
         </div>
       )}
 
-      <div className="message-full-box w-full flex flex-col">
+      <div className="message-full-box w-full flex flex-col space-y-4">
         {Object.keys(groupedMessages).length === 0 && !isLoading ? (
           <div className="no-messages flex flex-col items-center justify-center py-16 text-gray-500">
             <div className="p-4 bg-white rounded-full mb-4 shadow-md">
@@ -600,8 +602,8 @@ const ChatMessages = ({
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
-            <div key={date}>
-              <div className="date-separator flex items-center text-center text-xs mt-6 mb-4">
+            <div key={date} className="space-y-4">
+              <div className="date-separator flex items-center text-center text-xs">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
                   {formatDate(messages[0].created_at)}
@@ -668,20 +670,24 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper gap-2 rounded-lg py-2 w-full flex ${
-                            isSent ? "flex-row-reverse" : "justify-start"
-                          } ${
-                            highlightedMessageId === msg.id
-                              ? "animate-pulse-highlight bg-yellow-50"
-                              : ""
-                          } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${msg.id} ${
-                            isSent ? "pr-2" : "pl-2"
-                          } ${isReply && replyMsgId == msg.id ? "ring-2 ring-blue-400 bg-blue-50 " : ""}`}
+                    className={`message-wrapper gap-2 rounded-lg py-3 w-full flex ${
+                      isSent ? "flex-row-reverse" : "justify-start"
+                    } ${
+                      highlightedMessageId === msg.id
+                        ? "animate-pulse-highlight bg-yellow-50"
+                        : ""
+                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
+                      msg.id
+                    } ${isSent ? "pr-2" : "pl-2"} ${
+                      isReply && replyMsgId == msg.id
+                        ? "ring-2 ring-blue-400 bg-blue-50 "
+                        : ""
+                    }`}
                   >
                     <div
                       className={`flex flex-col ${
-                        isSent ? "items-end mr-2" : "items-start ml-2"
-                      } mt-1`}
+                        isSent ? "items-end " : "items-start "
+                      } `}
                     >
                       {msg.profile_pic ? (
                         <img
@@ -693,12 +699,11 @@ const ChatMessages = ({
                           {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
                         </div>
                       )}
-                      
                     </div>
                     <div
                       className={`message relative max-w-[70%] ${
                         isSent
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                          ? "bg-gray-100 text-gray-900"
                           : "bg-white text-gray-800 border border-gray-200"
                       } rounded-2xl px-4 py-3 shadow-sm ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
@@ -761,7 +766,6 @@ const ChatMessages = ({
                                     />
                                   )}
                                   <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
-                                    
                                     <a
                                       href={fileUrl}
                                       target="_blank"
@@ -788,7 +792,11 @@ const ChatMessages = ({
                                       rel="noopener noreferrer"
                                       className="text-sm text-blue-600 hover:underline flex items-center"
                                     >
-                                      open <SquareArrowOutUpRightIcon size={18} className="ml-1" />
+                                      open{" "}
+                                      <SquareArrowOutUpRightIcon
+                                        size={18}
+                                        className="ml-1"
+                                      />
                                     </a>
                                   )}
                                 </div>
@@ -881,7 +889,7 @@ const ChatMessages = ({
                       <div
                         className={`message-time flex items-center text-xs ${
                           isSent ? "justify-end" : "justify-start"
-                        } mt-1.5 ${isSent ? "text-blue-100" : "text-gray-400"}`}
+                        } mt-1.5 ${isSent ? "text-gray-600" : "text-gray-400"}`}
                       >
                         {msg.is_edited == 1 && (
                           <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
@@ -894,7 +902,7 @@ const ChatMessages = ({
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div
-                        className="message-actions absolute -top-8 bg-white rounded-full shadow-lg flex p-1 z-10 border border-gray-200 transition-all duration-200"
+                        className="chat-funt-set message-actions absolute -top-5 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
                         style={{
                           [isSent ? "left" : "right"]: "2%",
                         }}
@@ -902,7 +910,7 @@ const ChatMessages = ({
                         {isSent && (
                           <button
                             onClick={() => handleEdit(msg.id, msg.message)}
-                            className="action-button p-1.5 text-blue-600 hover:bg-blue-50 rounded-full mx-1 transition-colors"
+                            className="action-button p-2 px-3 text-gray-600 hover:bg-blue-50  transition-colors"
                             title="Edit message"
                           >
                             <Pen size={15} />
@@ -911,7 +919,7 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handleReply(msg.id, msg.message)}
-                          className="action-button p-1.5 text-green-600 hover:bg-green-50 rounded-full mx-1 transition-colors"
+                          className="action-button p-2 px-3 text-gray-600 hover:bg-green-50  transition-colors"
                           title="Reply"
                         >
                           <Reply size={15} />
@@ -919,7 +927,7 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handleReminder(msg.id)}
-                          className="action-button p-1.5 text-purple-600 hover:bg-purple-50 rounded-full mx-1 transition-colors"
+                          className="action-button p-2 px-3 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Set reminder"
                         >
                           <BellDot size={15} />
@@ -927,7 +935,7 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handlePinMsg(msg.id)}
-                          className="action-button p-1.5 text-orange-600 hover:bg-orange-50 rounded-full mx-1 rotate-45 transition-colors"
+                          className="action-button p-2 px-3 text-gray-600 hover:bg-orange-50  transition-colors"
                           title="Pin message"
                         >
                           <Pin size={15} />
@@ -936,7 +944,7 @@ const ChatMessages = ({
                         {isSent && (
                           <button
                             onClick={() => handleDeleteMsg(msg.id)}
-                            className="action-button p-1.5 text-red-500 hover:bg-red-50 rounded-full mx-1 transition-colors"
+                            className="action-button p-2 px-3 text-gray-600 hover:bg-red-50  transition-colors"
                             title="Delete message"
                           >
                             <Trash2 size={15} />
@@ -946,26 +954,24 @@ const ChatMessages = ({
                     )}
                   </div>
                 );
-
-                
               })}
             </div>
           ))
         )}
         <div>
           <AnimatePresence>
-          {showScrollToBottom && (
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              onClick={scrollToBottom}
-              className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
-            >
-              <ArrowDown size={20} />
-            </motion.button>
-          )}
-        </AnimatePresence>
+            {showScrollToBottom && (
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                onClick={scrollToBottom}
+                className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
+              >
+                <ArrowDown size={20} />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
         {latestMessageId && <ReadPersons messageId={latestMessageId} />}
       </div>
@@ -992,7 +998,6 @@ const ChatMessages = ({
           />
         )}
       </AnimatePresence>
-      
     </div>
   );
 };

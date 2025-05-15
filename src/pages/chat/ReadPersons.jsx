@@ -54,15 +54,15 @@ const ReadPersons = ({ messageId }) => {
   if (otherUsers.length === 0) return null;
 
   return (
-    <div className="flex flex-col items-center mt-2 mb-4">
-      <p className="text-gray-500 text-sm mb-1">Seen by</p>
+    <div className="flex justify-center items-center mt-2 gap-1">
+      <p className="text-gray-500 text-sm">Seen by</p>
       <div className="flex justify-center items-center gap-3">
         {readUsers
           .filter((u) => u.id != user?.id)
           .map((user) => (
             <div
               key={user.id}
-              className="w-6 h-6 rounded-full overflow-hidden"
+              className="w-7 h-7 rounded-full overflow-hidden"
               data-tooltip-id="my-tooltip"
               data-tooltip-content={user.name}
             >

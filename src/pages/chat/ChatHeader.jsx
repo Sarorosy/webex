@@ -1,4 +1,4 @@
-import { Pin, Search, Star, X } from "lucide-react";
+import { DoorOpen, InfoIcon, Pin, Search, Star, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
@@ -131,19 +131,19 @@ const ChatHeader = ({
         </div>
 
         {/* Right Section */}
-        <div className="flex justify-between items-center gap-3 px-4">
+        <div className="flex justify-between items-center gap-3">
           {selectedUser?.type == "group" && (
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handleGroupInfoClick(selectedUser)}
-                className="px-3 py-1 f-13 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
+                className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
               >
-                Group Info
+                <InfoIcon size={15} />
               </button>
               <button 
               onClick={() => setLeftGroupOpen(true)}
-              className="px-3 py-1 f-13 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition">
-                Leave Group
+              className="p-2 bg-red-300 text-black hover:text-white f-13 rounded-full hover:bg-red-600 transition">
+                <DoorOpen size={15} />
               </button>
             </div>
           )}
@@ -155,7 +155,7 @@ const ChatHeader = ({
                 onChange={(e) => setQuery(e.target.value)}
                 type="text"
                 placeholder="Search..."
-                className="px-2 py-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 f-13"
+                className="px-2 py-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13"
               />
               <button
                 onClick={() => {
@@ -163,7 +163,7 @@ const ChatHeader = ({
                   setQuery("");
                   setSearchResults([]);
                 }}
-                className="text-red-600 hover:text-red-800 font-bold text-lg"
+                className="text-red-100 hover:text-red-800 font-bold text-lg"
               >
                 <X size={15} />
               </button>
@@ -171,14 +171,14 @@ const ChatHeader = ({
           ) : (
             <button
               onClick={() => setSearchOpen(true)}
-              className="p-1 bg-blue-500 text-white f-13 rounded-full hover:bg-blue-600 transition"
+              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
               <Search size={15} />
             </button>
           )}
           <button
               onClick={() => setPinMessagesOpen(true)}
-              className="p-1 bg-blue-500 text-white f-13 rounded-full hover:bg-blue-600 transition"
+              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
               <Pin size={15} />
             </button>

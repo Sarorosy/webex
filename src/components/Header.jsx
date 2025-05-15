@@ -27,6 +27,7 @@ import { getSocket, connectSocket } from "../utils/Socket.jsx";
 import Requests from "../pages/requests/Requests.jsx";
 import ManageGroups from "../pages/groups/ManageGroups.jsx";
 import ManageUsers from '../pages/users/ManageUsers.jsx';
+import Profile from '../pages/user/Profile.jsx';
 
 
 export default function Header() {
@@ -40,7 +41,8 @@ export default function Header() {
   const [createNewSpace, setCreateNewSpace] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
-  const [usersOpen, setUsersOpen] = useState(false)
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
@@ -125,6 +127,14 @@ export default function Header() {
     };
   }, []);
 
+   const sendNotification = () => {
+    if (window.electronAPI) {
+      window.electronAPI.notify("Hello from Vite + Electron!");
+    } else {
+      alert("Electron API not available");
+    }
+  };
+
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
       <div className=" mx-auto flex items-center justify-between px-4 py-2 border-b">
@@ -138,6 +148,7 @@ export default function Header() {
             <img src={logo} className="logo-n" />
           </span>{" "}
         </h1>
+        <button onClick={sendNotification}>Send Desktop Notification</button>
 
         {user ? (
           <div className="flex items-center space-x-4 text-sm">
@@ -182,15 +193,15 @@ export default function Header() {
                   </div>
 
                   {resultsLoading ? (
-                    <div className="mx-auto flex justify-center w-full py-4">
-                      <ScaleLoader
-                        className="mx-auto"
-                        color="#ea580c"
-                        height={14}
-                        width={3}
-                        radius={2}
-                        margin={2}
-                      />
+                  <div className="mx-auto flex justify-center w-full py-4">
+                    <ScaleLoader
+                      className="mx-auto"
+                      color="#ea580c"
+                      height={14}
+                      width={3}
+                      radius={2}
+                      margin={2}
+                    />
                     </div>
                   ) : activeTab === "spaces" ? (
                     <div className="max-h-[300px] overflow-y-auto">
@@ -340,7 +351,7 @@ export default function Header() {
             )}
             <div className="flex items-center" ref={dropdownRef}>
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={user.email}
                 className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
@@ -379,6 +390,9 @@ export default function Header() {
         )}
         {usersOpen && (
           <ManageUsers onClose={()=>{setUsersOpen(false)}} />
+        )}
+        {profileOpen && (
+          <Profile onClose={()=>{setProfileOpen(false)}} />
         )}
         <ReminderPopup />
       </AnimatePresence>

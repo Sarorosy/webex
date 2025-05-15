@@ -153,7 +153,7 @@ const ManageUsers = ({onClose}) => {
     >
     <div className="bg-white rounded-lg shadow-md">
       {/* Header and Search */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-orange-300 ">
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 ">
         <div className="">
             <h4 className="text-lg font-semibold">Users</h4>
         </div>

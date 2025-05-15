@@ -193,3 +193,19 @@ div#commentsMention[placeholder]:empty:before {
 .profile-content-set {
     margin-top: -80px;
 }
+
+
+
+.chat-funt-set button:last-child {
+    border-right: 0px solid #ccc;
+    
+}
+.chat-funt-set button:hover:last-child {
+    border-radius:0px 100% 100% 0px  ;
+}
+.chat-funt-set button:hover:first-child {
+    border-radius:100% 0px 0px 100%  ;
+}
+.chat-funt-set button {
+    border-right: 1px solid #ccc;
+}
