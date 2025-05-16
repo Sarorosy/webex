@@ -6,7 +6,7 @@ export default function UserLayout() {
   const navigate = useNavigate();
 
   return (
-    <div className=" flex flex-col bg-gray-50 w-full overflow-hidden f-13">
+    <div className=" flex  bg-gray-50 w-full overflow-hidden f-13">
       <Header />
       
       {/* Main content should scroll, others stay fixed */}

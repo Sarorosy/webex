@@ -124,16 +124,25 @@ const AddMembers = ({ groupId, onClose, members }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg relative">
-        <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
-          onClick={onClose}
-        >
-          <X size={22} />
-        </button>
-        <h2 className="text-lg font-semibold mb-4">Select Members</h2>
+      <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative">
+        
 
-        {loading ? (
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+          <h2 className="text-lg font-semibold text-white">Select Members</h2>
+          <div>
+            <button
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
+          >
+            <X size={15}  />
+          </button>
+          </div>
+        </div>
+
+
+
+        <div className='p-6'>
+          {loading ? (
           <p className="text-sm text-gray-500">Loading...</p>
         ) : (
           <Select
@@ -157,7 +166,7 @@ const AddMembers = ({ groupId, onClose, members }) => {
 
         <div className="flex justify-end mt-4">
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 f-13"
             onClick={handleDone}
             disabled={submitting}
           >
@@ -165,6 +174,7 @@ const AddMembers = ({ groupId, onClose, members }) => {
           </button>
         </div>
       </div>
+        </div>
     </motion.div>
   );
 };

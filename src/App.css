@@ -112,7 +112,7 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 .n-height {
-    height: 93vh;
+    height: 100vh;
 }
 
 
@@ -127,7 +127,7 @@ div#commentsMention[placeholder]:empty:before {
 
 
 .m-list-h {
-    max-height: 78vh;
+    max-height: 86vh;
     overflow-y: auto;
 }
 
@@ -209,3 +209,5 @@ div#commentsMention[placeholder]:empty:before {
 .chat-funt-set button {
     border-right: 1px solid #ccc;
 }
+
+

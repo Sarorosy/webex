@@ -8,6 +8,7 @@ import {
   UserRound,
   UserCircle,
   AtSign,
+  SearchIcon,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -15,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
+import logo from "../../assets/rc.png";
 
 const ChatSidebar = ({
   view_user_id,
@@ -126,7 +128,7 @@ const ChatSidebar = ({
         );
         setChats(filteredChats);
         updateChatLoginStatus(filteredChats);
-        setChatsLoaded(true)
+        setChatsLoaded(true);
       } else {
         console.error("Error fetching chats data");
       }
@@ -231,11 +233,11 @@ const ChatSidebar = ({
     }
   }, [chats, activeTab, searchQuery]);
 
-   const sendNotification = (title, message) => {
+  const sendNotification = (title, message) => {
     if (window.electronAPI) {
       window.electronAPI.notify(title, message);
     } else {
-      console.warn("electron api not found")
+      console.warn("electron api not found");
     }
   };
 
@@ -244,13 +246,10 @@ const ChatSidebar = ({
     const socket = getSocket();
 
     const handleIncoming = (msgOrReply, isReply = false) => {
-
-      
       if (!msgOrReply) return;
       if (!chatsLoaded) return;
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
-
 
       if (!msg || !msg.sender_id || !msg.receiver_id) {
         console.warn("Malformed message or reply:", msgOrReply);
@@ -260,40 +259,37 @@ const ChatSidebar = ({
       const otherUserId =
         msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
 
-        console.log("otherUserId", otherUserId)
+      console.log("otherUserId", otherUserId);
 
       const isRelevant =
-  msg.user_type === "group"
-    ? (() => {
-        console.log("Checking group message:", msg);
+        msg.user_type === "group"
+          ? (() => {
+              console.log("Checking group message:", msg);
 
-        console.log("Available chats:", chats);
+              console.log("Available chats:", chats);
 
-        const matchingChat = chats.find(
-          (chat) =>
-            chat.id == msg.receiver_id && chat.type === "group"
-        );
+              const matchingChat = chats.find(
+                (chat) => chat.id == msg.receiver_id && chat.type === "group"
+              );
 
-        console.log("Matched group chat:", matchingChat);
+              console.log("Matched group chat:", matchingChat);
 
-        return !!matchingChat;
-      })()
-    : (msg.sender_id == user?.id || msg.receiver_id == user?.id);
+              return !!matchingChat;
+            })()
+          : msg.sender_id == user?.id || msg.receiver_id == user?.id;
 
-
-
-      console.log("isRelevant" , isRelevant)
+      console.log("isRelevant", isRelevant);
 
       if (!isRelevant) {
-      return
-      } 
+        return;
+      }
 
-      sendNotification(msg.sender_name ?? "User" , msg.message ?? "New Message");
+      sendNotification(msg.sender_name ?? "User", msg.message ?? "New Message");
 
       setChats((prevChats) => {
         const index = prevChats.findIndex(
-        (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
-      );
+          (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
+        );
 
         if (index === -1) {
           fetchChats(false);
@@ -304,9 +300,14 @@ const ChatSidebar = ({
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
-          read_status: (msg.sender_id != user?.id && selectedUser?.id != msg.sender_id) ? 1 : 0,
+          read_status:
+            msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
+              ? 1
+              : 0,
           unread_count: (updatedChats[index]?.unread_count || 0) + 1,
-          is_mentioned: Array.isArray(msg.mentioned_users) && msg.mentioned_users.includes(user?.id)
+          is_mentioned:
+            Array.isArray(msg.mentioned_users) &&
+            msg.mentioned_users.includes(user?.id),
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -407,156 +408,169 @@ const ChatSidebar = ({
   }, [user?.id]);
 
   return (
-  <div
-    className={`w-1/4 bg-gray-100 p-4 px-1  rounded-md m-2 ${
-      messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
-    }`}
-  >
-    <div className="px-2">
-      {view_user_name && (
-        <div className="flex items-center gap-2 mb-1 rounded">
-          Chats of{" "}
-          <span className="flex items-center bg-orange-300 px-1 py-0.5 rounded">
-            <UserCircle className="mr-1" size={18} />
-            {view_user_name}
-          </span>
-        </div>
-      )}
+    <div
+      className={`w-1/4 bg-gray-100 p-4 px-1  rounded-md m-2 ${
+        messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
+      }`}
+    >
+      <div className="px-2  border-b mb-2">
+        {view_user_name && (
+          <div className="flex items-center gap-2 mb-1 rounded">
+            Chats of{" "}
+            <span className="flex items-center bg-orange-300 px-1 py-0.5 rounded">
+              <UserCircle className="mr-1" size={18} />
+              {view_user_name}
+            </span>
+          </div>
+        )}
 
-      <div className="flex items-center gap-2 mb-3">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Search Groups, Persons"
-          className="p-2 py-1 border rounded-md w-full"
-        />
-      </div>
-
-      <div className="flex justify-start gap-2 mb-4">
-        {["all", "direct", "group"].map((tab) => {
-          const label = tab.charAt(0).toUpperCase() + tab.slice(1);
-          const Icon = tab === "direct" ? User : tab === "group" ? Users2 : Users;
-          return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1 px-2 py-1 rounded ${
-                activeTab === tab
-                  ? "bg-orange-500 text-white font-semibold border border-orange-500"
-                  : "text-gray-600 border border-orange-500"
-              }`}
-            >
-              <Icon size={12} />
-              {label}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-
-    <div className="px-2 m-list-h">
-      {sideBarLoading ? (
-        <div className="mx-auto flex justify-center w-full">
-          <ScaleLoader
-            className="mx-auto"
-            color="#ea580c"
-            height={14}
-            width={3}
-            radius={2}
-            margin={2}
+        <h1
+          className="text-2xl font-bold flex items-center cursor-pointer"
+          onClick={() => {
+            navigate("/chat");
+          }}
+        >
+          <span role="img" aria-label="plate">
+            <img src={logo} className="logo-n" />
+          </span>{" "}
+        </h1>
+        <div className="flex items-center gap-2 mb-3">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            placeholder="Filter Groups, Persons"
+            className="p-2 py-1 border rounded-md w-full"
           />
         </div>
-      ) : (
-        <>
-          {activeTab === "all" &&
-            filteredData.some((chat) =>
-              JSON.parse(chat.favourites || "[]").includes(user.id)
-            ) && <div className="text-gray-600 mt-2 mb-1 px-2">Favourites</div>}
 
-          {filteredData.map((chat, idx) => {
-            const isFavourite = JSON.parse(chat.favourites || "[]").includes(user.id);
-            const nextChat = filteredData[idx + 1];
-            const isLastFavourite =
-              isFavourite &&
-              (!nextChat ||
-                !JSON.parse(nextChat.favourites || "[]").includes(user.id));
-
-            const ChatContent = (
-              <div
-                onClick={() => {
-                  onSelect(chat);
-                  const updatedChats = chats.map((c) => {
-                    if (c.id === chat.id && c.type === chat.type) {
-                      return { ...c, read_status: 0 };
-                    }
-                    return c;
-                  });
-                  setChats(updatedChats);
-                }}
-                className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
-                  selectedUser?.id === chat.id ? "bg-gray-300" : ""
-                } ${chat.read_status === 1 ? "font-bold" : ""}`}
-              >
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                    {chat.profile_pic ? (
-                      <img
-                        src={"http://localhost:5000" + chat.profile_pic}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full mx-auto object-cover border"
-                      />
-                    ) : (
-                      chat.name[0]
-                    )}
-                    {onlineUserIds.includes(chat.id) && (
-                      <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
-                    )}
-                  </div>
-                  <span
-                    className={`truncate text-clip text-ellipsis w-100 ${
-                      chat.logged_in_status === true || chat.logged_in_status === null
-                        ? ""
-                        : "text-red-500"
-                    }`}
-                  >
-                    {chat.name}
-                  </span>
-                  {isFavourite && (
-                    <Star
-                      size={18}
-                      className="ml-2 fill-yellow-500 text-yellow-500"
-                    />
-                  )}
-                </div>
-                {chat.read_status == 1 && (
-                  <div className="flex items-center space-x-1">
-                  <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
-                    {chat.unread_count ?? 1}
-                  </div>
-                  {chat.is_mentioned && (
-                    <AtSign className="text-orange-500" size={16} />
-                  )}
-                  </div>
-                )}
-              </div>
-            );
-
+        <div className="flex items-center justify-start gap-2 mb-3 px-2">
+          {["all", "direct", "group"].map((tab) => {
+            const label = tab.charAt(0).toUpperCase() + tab.slice(1);
+            const Icon =
+              tab === "direct" ? User : tab === "group" ? Users2 : Users;
             return (
-              <React.Fragment key={chat.id}>
-                {ChatContent}
-                {activeTab === "all" && isLastFavourite && (
-                  <div className="border-b border-gray-300 mb-1 mx-1"></div>
-                )}
-              </React.Fragment>
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-1 px-2 py-1 rounded ${
+                  activeTab === tab
+                    ? "bg-orange-500 text-white font-semibold border border-orange-500"
+                    : "text-gray-600 border border-orange-500"
+                }`}
+              >
+                <Icon size={12} />
+                {label}
+              </button>
             );
           })}
-        </>
-      )}
-    </div>
-  </div>
-);
+        </div>
+      </div>
 
+      <div className="px-2 m-list-h">
+        {sideBarLoading ? (
+          <div className="mx-auto flex justify-center w-full">
+            <ScaleLoader
+              className="mx-auto"
+              color="#ea580c"
+              height={14}
+              width={3}
+              radius={2}
+              margin={2}
+            />
+          </div>
+        ) : (
+          <>
+            {activeTab === "all" &&
+              filteredData.some((chat) =>
+                JSON.parse(chat.favourites || "[]").includes(user.id)
+              ) && <div className="text-gray-600 mb-2 px-2">Favourites</div>}
+
+            {filteredData.map((chat, idx) => {
+              const isFavourite = JSON.parse(chat.favourites || "[]").includes(
+                user.id
+              );
+              const nextChat = filteredData[idx + 1];
+              const isLastFavourite =
+                isFavourite &&
+                (!nextChat ||
+                  !JSON.parse(nextChat.favourites || "[]").includes(user.id));
+
+              const ChatContent = (
+                <div
+                  onClick={() => {
+                    onSelect(chat);
+                    const updatedChats = chats.map((c) => {
+                      if (c.id === chat.id && c.type === chat.type) {
+                        return { ...c, read_status: 0 };
+                      }
+                      return c;
+                    });
+                    setChats(updatedChats);
+                  }}
+                  className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
+                    selectedUser?.id === chat.id ? "bg-gray-300" : ""
+                  } ${chat.read_status === 1 ? "font-bold" : ""}`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
+                      {chat.profile_pic ? (
+                        <img
+                          src={"http://localhost:5000" + chat.profile_pic}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full mx-auto object-cover border"
+                        />
+                      ) : (
+                        chat.name[0]
+                      )}
+                      {onlineUserIds.includes(chat.id) && (
+                        <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                      )}
+                    </div>
+                    <span
+                      className={`truncate text-clip text-ellipsis w-100 ${
+                        chat.logged_in_status === true ||
+                        chat.logged_in_status === null
+                          ? ""
+                          : "text-red-500"
+                      }`}
+                    >
+                      {chat.name}
+                    </span>
+                    {isFavourite && (
+                      <Star
+                        size={18}
+                        className="ml-2 fill-yellow-500 text-yellow-500"
+                      />
+                    )}
+                  </div>
+                  {chat.read_status == 1 && (
+                    <div className="flex items-center space-x-1">
+                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
+                        {chat.unread_count ?? 1}
+                      </div>
+                      {chat.is_mentioned && (
+                        <AtSign className="text-orange-500" size={16} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+
+              return (
+                <React.Fragment key={chat.id}>
+                  {ChatContent}
+                  {activeTab === "all" && isLastFavourite && (
+                    <div className="border-b border-gray-300 mb-1 mx-1"></div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ChatSidebar;

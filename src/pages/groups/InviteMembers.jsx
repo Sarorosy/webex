@@ -143,17 +143,25 @@ const InviteMembers = ({ groupId, onClose, members }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-md p-6 rounded-lg shadow-lg relative">
-        <button
-          className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
-          onClick={onClose}
-          disabled={inviting}
-        >
-          <X size={22} />
-        </button>
-        <h2 className="text-lg font-semibold mb-4">Invite Members</h2>
+      <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative">
+       
 
-        {loading ? (
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+          <h2 className="text-lg font-semibold text-white">Invite Members</h2>
+          <div>
+            <button
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
+          >
+            <X size={15}  />
+          </button>
+          </div>
+        </div>
+
+
+
+        <div className="p-6">
+          {loading ? (
           <p className="text-sm text-gray-500">Loading...</p>
         ) : (
           <Select
@@ -173,12 +181,13 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
         <div className="flex justify-end mt-4">
           <button
-            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
             onClick={handleInvite}
             disabled={inviting || loading}
           >
             Invite
           </button>
+        </div>
         </div>
       </div>
     </motion.div>

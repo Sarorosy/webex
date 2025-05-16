@@ -303,7 +303,7 @@ const ChatSend = ({
           </button>
         </div>
       )}
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-center gap-2">
         {/* Paperclip icon (file input trigger) */}
 
         {/* Show selected file with X */}
@@ -360,14 +360,14 @@ const ChatSend = ({
             onKeyDown={handleKeyDown}
             placeholder="Type your message..."
             rows={5}
-            className="w-full h-[80px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
+            className="w-full h-[70px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
           />
         )}
 
         <div className="flex flex-col items-center gap-2">
           {!isReply && (
-            <label className="cursor-pointer border border-orange-500 text-gray px-2 py-2 rounded hover:bg-orange-600 transition ">
-              <Paperclip size={16} />
+            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
+              <Paperclip size={13} />
               <input
                 type="file"
                 className="hidden"
@@ -392,7 +392,7 @@ const ChatSend = ({
                 />
               </div>
             ) : (
-              <Send size={16} />
+              <Send size={13} />
             )}
           </button>
         </div>

@@ -35,6 +35,7 @@ import { onMessage } from "firebase/messaging";
 import toast from "react-hot-toast";
 
 import "./toast.css";
+import TotalSearch from "../pages/chat/TotalSearch.jsx";
 export default function Header() {
   const { user, login, logout } = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
@@ -48,6 +49,8 @@ export default function Header() {
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const { searchOpen, setSearchOpen } = useSelectedUser();
 
   const [permissionGranted, setPermissionGranted] = useState(false);
   const toastRef = useRef(null);
@@ -144,9 +147,10 @@ export default function Header() {
 
       const currentSelectedUser = selectedUserRef.current;
 
-     if (payload.data.user_type == "group" && payload.data.receiver_id != currentSelectedUser?.id) {
-
-
+      if (
+        payload.data.user_type == "group" &&
+        payload.data.receiver_id != currentSelectedUser?.id
+      ) {
         console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
@@ -158,10 +162,15 @@ export default function Header() {
 
         toast.custom((t) => (
           <div
-          onClick={()=>{
-            toast.dismiss(t.id),
-            setSelectedUser({id:data.receiver_id,name: data.sender_name, profile_pic:null, type:data.user_type})
-          }}
+            onClick={() => {
+              toast.dismiss(t.id),
+                setSelectedUser({
+                  id: data.receiver_id,
+                  name: data.sender_name,
+                  profile_pic: null,
+                  type: "group",
+                });
+            }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
             } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
@@ -199,8 +208,7 @@ export default function Header() {
             </div>
           </div>
         ));
-      }
-      else if (payload.data.sender_id != currentSelectedUser?.id){
+      } else if (payload.data.sender_id != currentSelectedUser?.id) {
         console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
@@ -212,10 +220,15 @@ export default function Header() {
 
         toast.custom((t) => (
           <div
-          onClick={()=>{
-            toast.dismiss(t.id),
-            setSelectedUser({id:data.sender_id,name: data.sender_name, profile_pic:data.profile_pic ?? null, type:"user"})
-          }}
+            onClick={() => {
+              toast.dismiss(t.id),
+                setSelectedUser({
+                  id: data.sender_id,
+                  name: data.sender_name,
+                  profile_pic: data.profile_pic ?? null,
+                  type: "user",
+                });
+            }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
             } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
@@ -257,56 +270,6 @@ export default function Header() {
     });
   }, []);
 
-  const [query, setQuery] = useState("");
-  const [showResults, setShowResults] = useState(false);
-  const searchRef = useRef(null);
-
-  const [results, setResults] = useState([]);
-  const [activeTab, setActiveTab] = useState("spaces"); //spaces, messages
-  const [resultsLoading, setResultsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    const fetchResults = async () => {
-      try {
-        setResultsLoading(true);
-        const res = await fetch(
-          "http://localhost:5000/api/messages/totalfind",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ sender_id: user?.id, query }),
-            signal: controller.signal,
-          }
-        );
-
-        if (!res.ok) throw new Error("Search failed");
-        const data = await res.json();
-        setResults(data);
-      } catch (err) {
-        if (err.name !== "AbortError") console.error("Search error:", err);
-      } finally {
-        setResultsLoading(false);
-      }
-    };
-
-    const delayDebounce = setTimeout(() => {
-      fetchResults();
-    }, 300); // debounce
-
-    return () => {
-      clearTimeout(delayDebounce);
-      controller.abort();
-    };
-  }, [query, user]);
-
   useEffect(() => {
     connectSocket();
     const socket = getSocket();
@@ -326,256 +289,111 @@ export default function Header() {
     };
   }, [user?.id]);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowResults(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
     <header
       className={`bg-white text-[#092e46] shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div className=" mx-auto flex items-center justify-between px-4 py-2 border-b">
-        <h1
-          className="text-2xl font-bold flex items-center cursor-pointer"
-          onClick={() => {
-            navigate("/chat");
-          }}
-        >
-          <span role="img" aria-label="plate">
-            <img src={logo} className="logo-n" />
-          </span>{" "}
-        </h1>
-
+      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full">
         {user ? (
-          <div className="flex items-center space-x-4 text-sm">
-            <div className="relative py-0.5" ref={searchRef}>
-              {/* Search Input */}
-              <div className="relative flex items-center border border-gray-300 rounded shadow-sm bg-white px-2 py-1">
-                <Search size={15} className="text-gray-500" />
-                <input
-                  type="text"
-                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0 f-13"
-                  placeholder="Search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => setShowResults(true)}
-                />
-              </div>
-
-              {/* Filters */}
-
-              {/* Dropdown Results */}
-              {showResults && (
-                <div className="absolute w-[300px] n-bg-light shadow-lg border border-gray-200 rounded mt-2 topmost px-2 py-2 z-50">
-                  <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
-                    <button
-                      onClick={() => setActiveTab("spaces")}
-                      className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
-                        activeTab === "spaces" ? "bg-orange-200" : "bg-gray-100"
-                      }`}
-                    >
-                      Spaces
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("messages")}
-                      className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
-                        activeTab === "messages"
-                          ? "bg-orange-200"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      Messages
-                    </button>
-                  </div>
-
-                  {resultsLoading ? (
-                    <div className="mx-auto flex justify-center w-full py-4">
-                      <ScaleLoader
-                        className="mx-auto"
-                        color="#ea580c"
-                        height={14}
-                        width={3}
-                        radius={2}
-                        margin={2}
-                      />
-                    </div>
-                  ) : activeTab === "spaces" ? (
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {results?.results?.length > 0 ? (
-                        results.results.map((user) => (
-                          <div
-                            key={user.id}
-                            className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
-                            onClick={() => {
-                              console.log("Clicked user:", user);
-                              navigate("/chat", {
-                                state: { type: "user", data: user },
-                              });
-                              setSelectedUser(user);
-                              setQuery("");
-                              setShowResults(false);
-                            }}
-                          >
-                            {user.profile_pic ? (
-                              <img
-                                src={`http://localhost:5000${user.profile_pic}`}
-                                alt={user.name}
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold uppercase">
-                                {user.name.charAt(0)}
-                              </div>
-                            )}
-                            <span>{user.name}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-sm p-2">
-                          {!query
-                            ? "Search Users and groups"
-                            : " No users found."}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {results?.messages?.length > 0 ? (
-                        results.messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className="p-2 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer rounded"
-                            onClick={() => {
-                              console.log("Clicked message:", msg);
-                              navigate("/chat", {
-                                state: { type: "message", data: msg },
-                              });
-                              setSelectedMessage(msg);
-                              setQuery("");
-                              setShowResults(false);
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              {msg.profile_pic ? (
-                                <img
-                                  src={`http://localhost:5000${msg.profile_pic}`}
-                                  alt={msg.sender_name}
-                                  className="w-6 h-6 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold text-xs uppercase">
-                                  {msg.sender_name.charAt(0)}
-                                </div>
-                              )}
-                              <div className="text-sm font-semibold flex items-center">
-                                {msg.sender_id == user?.id
-                                  ? "You"
-                                  : msg.sender_name}{" "}
-                                {msg.type == "group" && (
-                                  <p className="font-bold">-{msg.user.name}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div
-                              className="text-sm text-gray-700 mt-1"
-                              dangerouslySetInnerHTML={{ __html: msg.message }}
-                            />
-                            <div className="text-xs text-gray-400 mt-1">
-                              {new Date(msg.created_at).toLocaleString()}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-sm p-2">
-                          {!query ? "Search Messages" : " No messages found."}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => navigate("/chat")}
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Chat Board"
-              className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-            >
-              <MessagesSquare size={12} className="mr-1" />
-              Chat
-            </button>
-
-            {(user.user_type == "admin" || user.user_type == "subadmin") && (
-              <button
-                onClick={() => setRequestsOpen(true)}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Admin Requests"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-              >
-                <LayoutDashboard size={12} className="mr-1" />
-                Requests
-              </button>
-            )}
-            {user.user_type == "admin" ? (
-              <button
-                onClick={() => setGroupsOpen(true)}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Manage groups"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-              >
-                <Group size={12} className="mr-1" />
-                Groups
-              </button>
-            ) : (
-              <button
-                onClick={() => setCreateNewSpace(true)}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Create New Space"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-              >
-                <Group size={12} className="mr-1" />
-                New Space
-              </button>
-            )}
-            {user.user_type == "admin" && (
-              <button
-                onClick={() => setUsersOpen(true)}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Manage Users"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-              >
-                <Users size={12} className="mr-1" />
-                Manage Users
-              </button>
-            )}
-            <div className="flex items-center" ref={dropdownRef}>
+          <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
+            <div className="flex flex-col items-center gap-5 text-sm">
               <button
                 onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
-                data-tooltip-content={user.email}
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+                data-tooltip-content="Profile"
+                className="flex items-center p-1 f-13 rounded-full hover:bg-orange-200 text-black transition"
               >
-                <CircleUserRound size={12} className="mr-1" />
-                Welcome, <span className="font-semibold ml-1">{user.name}</span>
+                
+                  {user?.profile_pic ? (
+                    <img
+                      src={"http://localhost:5000" + user.profile_pic}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full mx-auto object-cover border"
+                    />
+                  ) : (
+                    user.name[0]
+                  )}
               </button>
+
+              <button
+                onClick={() => {
+                      setSearchOpen(true);
+                    }}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Search Globally"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+              >
+                <Search
+                    
+                    size={18}
+                    className="text-gray-500"
+                  />
+                {/* Chat */}
+              </button>
+              <button
+                onClick={() => navigate("/chat")}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Chat Board"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+              >
+                <MessagesSquare size={18} className="text-gray-500" />
+                {/* Chat */}
+              </button>
+
+              {(user.user_type == "admin" || user.user_type == "subadmin") && (
+                <button
+                  onClick={() => setRequestsOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Admin Requests"
+                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                >
+                  <LayoutDashboard size={18} className="text-gray-500" />
+                  {/* Requests */}
+                </button>
+              )}
+              {user.user_type == "admin" ? (
+                <button
+                  onClick={() => setGroupsOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Manage groups"
+                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                >
+                  <Group size={18} className="text-gray-500" />
+                  {/* Groups */}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setCreateNewSpace(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Create New Space"
+                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                >
+                  <Group size={18} className="text-gray-500" />
+                  {/* New Space */}
+                </button>
+              )}
+              {user.user_type == "admin" && (
+                <button
+                  onClick={() => setUsersOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Manage Users"
+                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                >
+                  <Users size={18} className="text-gray-500" />
+                  {/* Manage Users */}
+                </button>
+              )}
+            </div>
+            <div className="flex items-center flex-col" ref={dropdownRef}>
               <button
                 onClick={logout}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Logout"
-                className="flex hover:bg-red-500 hover:text-white items-center px-2 py-2 rounded-md bg-gray-100 text-black  transition"
+                className="flex hover:bg-red-500 hover:text-white items-center p-3 rounded-full text-gray-500  transition"
               >
-                <LogOut size={15} className="" />
+                <LogOut size={18} className="" />
               </button>
             </div>
           </div>
@@ -618,6 +436,14 @@ export default function Header() {
             onClose={() => {
               setProfileOpen(false);
             }}
+          />
+        )}
+        {searchOpen && (
+          <TotalSearch
+            onClose={() => {
+              setSearchOpen(false);
+            }}
+            searchResults={[]}
           />
         )}
         <ReminderPopup />

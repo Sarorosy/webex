@@ -39,9 +39,9 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
             <span>Pinned Messages</span>
             <button
               onClick={onClose}
-              className="text-sm text-white bg-orange-600 px-2 py-1 rounded"
+              className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
             >
-              <X size={18}/>
+              <X size={13}/>
             </button>
           </div>
 

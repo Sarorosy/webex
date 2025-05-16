@@ -8,6 +8,7 @@ export const SelectedUserProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [searchOpen,setSearchOpen] = useState(false);
 
   return (
     <SelectedUserContext.Provider value={{
@@ -16,7 +17,9 @@ export const SelectedUserProvider = ({ children }) => {
       selectedMessage,
       setSelectedMessage,
       messageLoading,
-      setMessageLoading
+      setMessageLoading,
+      searchOpen,
+      setSearchOpen
     }}>
       {children}
     </SelectedUserContext.Provider>
