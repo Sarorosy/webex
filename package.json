@@ -10,7 +10,6 @@
     "dev": "vite",
     "electron": "electron .",
     "build": "vite build",
-    
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron-forge start",
@@ -22,20 +21,28 @@
       "packagerConfig": {},
       "makers": [
         {
-          "name": "@electron-forge/maker-squirrel", 
-          "platforms": ["win32"]
+          "name": "@electron-forge/maker-squirrel",
+          "platforms": [
+            "win32"
+          ]
         },
         {
-          "name": "@electron-forge/maker-zip",     
-          "platforms": ["darwin"]
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
         },
         {
-          "name": "@electron-forge/maker-deb",     
-          "platforms": ["linux"]
+          "name": "@electron-forge/maker-deb",
+          "platforms": [
+            "linux"
+          ]
         },
         {
-          "name": "@electron-forge/maker-rpm",     
-          "platforms": ["linux"]
+          "name": "@electron-forge/maker-rpm",
+          "platforms": [
+            "linux"
+          ]
         }
       ],
       "outputDir": "C:/Users/Admin/Pictures"
@@ -52,6 +59,7 @@
     "buffer": "^6.0.3",
     "draft-js": "^0.11.7",
     "electron-squirrel-startup": "^1.0.1",
+    "firebase": "^11.7.3",
     "framer-motion": "^12.10.1",
     "idb-keyval": "^6.2.1",
     "lucide-react": "^0.508.0",

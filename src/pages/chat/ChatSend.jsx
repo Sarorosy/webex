@@ -35,17 +35,17 @@ const ChatSend = ({
 
       if (data.status) {
         const transformedUsers = data.members
-        .filter((member) => member.id != user?.id) // Exclude self
-        .map((member) => ({
-          id: member.id,
-          userName: member.name,
-          userColor: "#6A0572",
-          profilePic: member.profile_pic
-            ? `http://localhost:5000${member.profile_pic}`
-            : null,
-        }));
+          .filter((member) => member.id != user?.id) // Exclude self
+          .map((member) => ({
+            id: member.id,
+            userName: member.name,
+            userColor: "#6A0572",
+            profilePic: member.profile_pic
+              ? `http://localhost:5000${member.profile_pic}`
+              : null,
+          }));
 
-      setGroupUsers(transformedUsers);
+        setGroupUsers(transformedUsers);
       } else {
         console.error(data.message || "Failed to fetch group members");
       }
@@ -110,85 +110,86 @@ const ChatSend = ({
   };
 
   const handleSend = async () => {
-  if (!value.trim() && !selectedFile) return;
+    if (!value.trim() && !selectedFile) return;
 
-  const urlRegex =
-    /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
+    const urlRegex =
+      /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
 
-  const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
-    let href = url;
-    if (!url.startsWith("http://") && !url.startsWith("https://")) {
-      href = "https://" + url;
-    }
-    return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
-  });
-
-  try {
-    setSubmitBtnDisabled(true);
-    setMessageLoading(true);
-
-    const formData = new FormData();
-    formData.append("isReply", isReply);
-    if (isReply && replyMsgId) formData.append("replyMsgId", replyMsgId);
-    formData.append("user_type", type);
-    formData.append("sender_id", user.id);
-    formData.append("receiver_id", userId);
-    formData.append("message", linkifiedMessage);
-    formData.append("sender_name", user.name);
-    formData.append("profile_pic", user.profile_pic);
-    formData.append("is_file", selectedFile ? "1" : "0");
-    let selectedUserIds = [];
-
-    if (Array.isArray(selectedUsers)) {
-      selectedUserIds = selectedUsers.map(user => user.id);
-    }
-
-    formData.append("selected_users", JSON.stringify(selectedUserIds));
-    if (selectedFile) {
-      formData.append("selectedFile", selectedFile); // key should match `req.file`
-    }
-
-    const res = await fetch("http://localhost:5000/api/chats/send", {
-      method: "POST",
-      body: formData, // No need for headers, browser sets Content-Type with boundary
+    const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
+      let href = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        href = "https://" + url;
+      }
+      return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
     });
 
-    if (!res.ok) throw new Error("Message send failed");
+    try {
+      setSubmitBtnDisabled(true);
+      setMessageLoading(true);
 
-    setValue(""); // Clear textarea
-    setSelectedFile(null); // Clear file
-    setIsReply(false);
-    setReplyMsgId(null);
-    setReplyMessage(null);
-  } catch (error) {
-    console.error("Send error:", error);
-  } finally {
-    setSubmitBtnDisabled(false);
-    setMessageLoading(false);
-    setValue("");
-    document.getElementById("chatInput").innerHTML = "";
-  }
-};
+      const formData = new FormData();
+      formData.append("isReply", isReply);
+      if (isReply && replyMsgId) formData.append("replyMsgId", replyMsgId);
+      formData.append("user_type", type);
+      formData.append("sender_id", user.id);
+      formData.append("receiver_id", userId);
+      formData.append("message", linkifiedMessage);
+      formData.append("sender_name", user.name);
+      formData.append("profile_pic", user.profile_pic);
+      formData.append("is_file", selectedFile ? "1" : "0");
+      let selectedUserIds = [];
 
-const handleKeyDown = (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    const mentionOpen = mentionRef.current?.isPopupOpen || false;
-    if (!mentionOpen) {
-      e.preventDefault();
-      handleSend();
+      if (Array.isArray(selectedUsers)) {
+        selectedUserIds = selectedUsers.map((user) => user.id);
+      }
+
+      formData.append("selected_users", JSON.stringify(selectedUserIds));
+      if (selectedFile) {
+        formData.append("selectedFile", selectedFile); // key should match `req.file`
+      }
+
+      const res = await fetch("http://localhost:5000/api/chats/send", {
+        method: "POST",
+        body: formData, // No need for headers, browser sets Content-Type with boundary
+      });
+
+      if (!res.ok) throw new Error("Message send failed");
+
+      setValue(""); // Clear textarea
+      setSelectedFile(null); // Clear file
+      setIsReply(false);
+      setReplyMsgId(null);
+      setReplyMessage(null);
+    } catch (error) {
+      console.error("Send error:", error);
+    } finally {
+      setSubmitBtnDisabled(false);
+      setMessageLoading(false);
+      setValue("");
+      const chatInput = document.getElementById("chatInput");
+      if (chatInput) {
+        chatInput.innerHTML = "";
+      }
     }
-  }
-};
+  };
 
-const handlePaste = (e) => {
-  e.preventDefault();
-  const text = e.clipboardData.getData("text/plain");
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      const mentionOpen = mentionRef.current?.isPopupOpen || false;
+      if (!mentionOpen) {
+        e.preventDefault();
+        handleSend();
+      }
+    }
+  };
 
-  // Insert plain text at the cursor position
-  document.execCommand("insertText", false, text);
-};
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
 
-
+    // Insert plain text at the cursor position
+    document.execCommand("insertText", false, text);
+  };
 
   useEffect(() => {
     // Logging the selected users when the state changes
@@ -251,28 +252,26 @@ const handlePaste = (e) => {
     console.log("Input changed, new value:", e.target.innerHTML);
   };
   useEffect(() => {
-  // Create a dummy DOM to parse the HTML value
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = value;
+    // Create a dummy DOM to parse the HTML value
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = value;
 
-  // Get all mention names from spans
-  const mentionedNames = Array.from(
-    tempDiv.querySelectorAll('.e-mention-chip')
-  ).map((el) => el.textContent.trim());
+    // Get all mention names from spans
+    const mentionedNames = Array.from(
+      tempDiv.querySelectorAll(".e-mention-chip")
+    ).map((el) => el.textContent.trim());
 
-  // Filter out users no longer mentioned
-  const updatedSelectedUsers = selectedUsers.filter((user) =>
-    mentionedNames.includes(user.name)
-  );
+    // Filter out users no longer mentioned
+    const updatedSelectedUsers = selectedUsers.filter((user) =>
+      mentionedNames.includes(user.name)
+    );
 
-  // Update state only if changed
-  if (updatedSelectedUsers.length !== selectedUsers.length) {
-    setSelectedUsers(updatedSelectedUsers);
-    console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
-  }
-}, [value]);
-
-
+    // Update state only if changed
+    if (updatedSelectedUsers.length !== selectedUsers.length) {
+      setSelectedUsers(updatedSelectedUsers);
+      console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+    }
+  }, [value]);
 
   return (
     <>
@@ -282,10 +281,12 @@ const handlePaste = (e) => {
             Replying to:{" "}
             <div
               dangerouslySetInnerHTML={{
-                __html: replyMessage
-                  .split(/\s+/) // split by spaces
-                  .slice(0, 10) // take first 10 words
-                  .join(" ") + (replyMessage.split(/\s+/).length > 10 ? "..." : ""),
+                __html:
+                  replyMessage
+                    .split(/\s+/) // split by spaces
+                    .slice(0, 10) // take first 10 words
+                    .join(" ") +
+                  (replyMessage.split(/\s+/).length > 10 ? "..." : ""),
               }}
             />
           </div>
@@ -303,7 +304,6 @@ const handlePaste = (e) => {
         </div>
       )}
       <div className="flex items-center gap-2 mt-2">
-        
         {/* Paperclip icon (file input trigger) */}
 
         {/* Show selected file with X */}
@@ -335,9 +335,9 @@ const handlePaste = (e) => {
               contentEditable
               className="w-full min-h-[70px] p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
-              onInput={handleInputChange} 
+              onInput={handleInputChange}
               onKeyDown={handleKeyDown}
-              onPaste={handlePaste} 
+              onPaste={handlePaste}
             ></div>
 
             <MentionComponent
@@ -381,8 +381,7 @@ const handlePaste = (e) => {
             disabled={submitBtnDisabled}
             className="bg-orange-500 text-white px-2 py-2 rounded hover:bg-orange-600 transition "
           >
-            
-            {submitBtnDisabled ? 
+            {submitBtnDisabled ? (
               <div className="mx-auto flex justify-center w-full">
                 <ScaleLoader
                   className="mx-auto"
@@ -390,9 +389,11 @@ const handlePaste = (e) => {
                   height={14}
                   width={3}
                   radius={2}
-                /> 
-              </div> : <Send size={16}/>}
-            
+                />
+              </div>
+            ) : (
+              <Send size={16} />
+            )}
           </button>
         </div>
       </div>
