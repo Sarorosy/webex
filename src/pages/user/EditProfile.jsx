@@ -6,6 +6,7 @@ import { useAuth } from "../../utils/idb";
 const EditProfile = ({ onClose }) => {
   const { user, login } = useAuth();
   const [name, setName] = useState(user?.name || "");
+  const [password, setPassword] = useState(user?.password || "")
   const [pronouns, setPronouns] = useState(user?.pronouns || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [profilePic, setProfilePic] = useState(
@@ -41,12 +42,8 @@ const EditProfile = ({ onClose }) => {
       formData.append("email", user.email);
       formData.append("name", name);
       formData.append("pronouns", pronouns);
+      formData.append("password", password);
       formData.append("bio", bio);
-
-      formData.append("office_name", officeName);
-      formData.append("city_name", cityName);
-      formData.append("user_panel", userPanel);
-      formData.append("max_group_count", maxGroupCount);
 
       if (profilePic) {
         formData.append("profile_pic", profilePic); // Send as file
@@ -67,6 +64,7 @@ const EditProfile = ({ onClose }) => {
         login({
           ...user,
           name: updatedUser.name,
+          password : updatedUser.password,
           pronouns: updatedUser.pronouns,
           bio: updatedUser.bio,
           profile_pic: updatedUser.profile_pic, // Will be file path
@@ -141,6 +139,17 @@ const EditProfile = ({ onClose }) => {
             />
 
             <label className="block text-sm font-medium text-gray-700">
+              Password *
+            </label>
+            <input
+              type="text"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border p-2 rounded-md"
+              placeholder="Enter password"
+            />
+
+            <label className="block text-sm font-medium text-gray-700">
               Pronouns
             </label>
             <input
@@ -168,7 +177,7 @@ const EditProfile = ({ onClose }) => {
             </button>
             {/* Save Button */}
             <button
-              type="submit"
+              onClick={handleSubmit}
               className="bg-black text-white px-2 py-1 rounded-md f-13"
             >
               {loading ? "Saving..." : "Save Changes"}

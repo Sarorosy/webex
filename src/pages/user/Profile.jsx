@@ -23,10 +23,10 @@ const Profile = ({ onClose }) => {
     className="relative w-full max-w-3xl max-h-[90vh] bg-white rounded shadow-xl overflow-y-auto "
   >
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0">
+      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 z-50">
         <h4 className="text-lg font-semibold">Edit Profile</h4>
-        <button onClick={onClose} className="p-1 rounded hover:bg-gray-200">
-          <X className="w-5 h-5" />
+        <button onClick={onClose} className="text-sm text-white bg-orange-600 px-1 py-1 rounded">
+          <X  size={13} />
         </button>
       </div>
       <div className="flex items-start justify-center p-3 gap-2 h-full">
@@ -68,9 +68,7 @@ const Profile = ({ onClose }) => {
         </div>
         <div className="w-full">
           <EditProfile
-            onClose={() => {
-              setEditOpen(false);
-            }}
+            onClose={onClose}
           />
         </div>
         <AnimatePresence></AnimatePresence>
