@@ -425,7 +425,7 @@ const ChatSidebar = ({
         )}
 
         <h1
-          className="text-2xl font-bold flex items-center cursor-pointer"
+          className="text-2xl font-bold flex items-center cursor-pointer mb-2"
           onClick={() => {
             navigate("/chat");
           }}
@@ -512,13 +512,13 @@ const ChatSidebar = ({
                     selectedUser?.id === chat.id ? "bg-gray-300" : ""
                   } ${chat.read_status === 1 ? "font-bold" : ""}`}
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                       {chat.profile_pic ? (
                         <img
                           src={"http://localhost:5000" + chat.profile_pic}
                           alt="Profile"
-                          className="w-10 h-10 rounded-full mx-auto object-cover border"
+                          className="w-8 h-8 rounded-full mx-auto object-cover border"
                         />
                       ) : (
                         chat.name[0]
@@ -539,8 +539,8 @@ const ChatSidebar = ({
                     </span>
                     {isFavourite && (
                       <Star
-                        size={18}
-                        className="ml-2 fill-yellow-500 text-yellow-500"
+                        size={13}
+                        className="fill-yellow-500 text-yellow-500"
                       />
                     )}
                   </div>

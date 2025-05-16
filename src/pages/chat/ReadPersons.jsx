@@ -48,21 +48,21 @@ const ReadPersons = ({ messageId }) => {
     };
   }, [messageId]);
 
-  if (loading) return <p className="text-gray-500 text-sm">...</p>;
+  if (loading) return <p className="text-gray-500 text-sm text-center">...</p>;
   const otherUsers = readUsers.filter((u) => u.id !== user?.id);
 
   if (otherUsers.length === 0) return null;
 
   return (
     <div className="flex justify-center items-center mt-2 gap-1">
-      <p className="text-gray-500 text-sm">Seen by</p>
+      <p className="text-gray-500 f-11">Seen by</p>
       <div className="flex justify-center items-center gap-2">
         {readUsers
           .filter((u) => u.id != user?.id)
           .map((user) => (
             <div
               key={user.id}
-              className="w-7 h-7 rounded-full overflow-hidden"
+              className="w-6 h-6 rounded-full overflow-hidden"
               data-tooltip-id="my-tooltip"
               data-tooltip-content={user.name}
             >

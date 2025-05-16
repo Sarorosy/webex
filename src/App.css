@@ -127,7 +127,7 @@ div#commentsMention[placeholder]:empty:before {
 
 
 .m-list-h {
-    max-height: 86vh;
+    max-height: 77vh;
     overflow-y: auto;
 }
 
@@ -225,3 +225,13 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 
+
+
+.chat-headAmsg{
+  height: calc(100vh - 95px);
+}
+.chat-text-n{
+    height: 95px;
+    /* position: fixed; */
+    
+}
