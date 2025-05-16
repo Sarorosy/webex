@@ -120,9 +120,9 @@ const Requests = ({ onClose }) => {
             <div>
               <button
                 onClick={onClose}
-                className="p-1 rounded hover:bg-gray-200"
+                className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
               >
-                <X className="w-5 h-5" />
+                <X size={13} />
               </button>
             </div>
 
