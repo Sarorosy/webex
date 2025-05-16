@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("electronAPI", {
-  notify: (message) => ipcRenderer.send("notify", message),
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  notify: (title, message) => ipcRenderer.send('notify', { title, message })
 });

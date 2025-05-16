@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Notification } = require("electron"); // ✅ This line must be at the top
+const { app, BrowserWindow, ipcMain,screen , Notification } = require("electron"); // ✅ This line must be at the top
 const path = require("path");
 
 function createWindow() {
@@ -18,10 +18,34 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  // ✅ This will now work because ipcMain is defined at the top
-  ipcMain.on("notify", (event, message) => {
-    new Notification({ title: "Notification", body: message }).show();
+  ipcMain.on('notify', (_, { title, message }) => {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  const win = new BrowserWindow({
+    width: 300,
+    height: 100,
+    x: width - 320,
+    y: height - 120,
+    frame: false,
+    alwaysOnTop: true,
+    resizable: false,
+    transparent: true,
+    skipTaskbar: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    }
   });
+
+  win.loadFile(path.join(__dirname, 'public', 'notification.html'));
+  win.once('ready-to-show', () => {
+    win.webContents.send('notify-data', { title, message });
+  });
+
+  setTimeout(() => {
+    if (!win.isDestroyed()) win.close();
+  }, 5000); // auto-close after 5 seconds
+});
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

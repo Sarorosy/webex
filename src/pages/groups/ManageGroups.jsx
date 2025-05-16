@@ -89,7 +89,7 @@ const ManageGroups = ({onClose}) => {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="relative w-full max-w-3xl h-screen bg-white shadow-xl overflow-y-auto"
+        className="relative w-full max-w-[400px] h-screen bg-white shadow-xl overflow-y-auto"
       >
         {loading ? (
           <div className="h-full flex items-center justify-center text-lg font-semibold">

@@ -6,6 +6,7 @@ import "@syncfusion/ej2-base/styles/material.css";
 import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { connectSocket, getSocket } from "../../utils/Socket";
+import { X } from "lucide-react";
 
 const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
   const [value, setValue] = useState(message);
@@ -209,9 +210,20 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="bg-white p-6 rounded-md shadow-lg w-full max-w-md"
+        className="bg-white rounded-md shadow-lg w-full max-w-md"
       >
-        <h2 className="text-lg font-semibold mb-4">Edit Message</h2>
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+          <h2 className="text-lg font-semibold text-white">Edit Message</h2>
+          <div>
+            <button
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
+          >
+            <X size={15}  />
+          </button>
+          </div>
+        </div>
+        <div className=" p-4">
         {type === "group" ? (
           <div className="relative w-full">
             {value.trim() === "" && (
@@ -223,7 +235,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
               id="chatInput"
               ref={chatInputRef}
               contentEditable
-              className="w-full min-h-[100px] p-3 rounded border border-gray-300 focus:outline-none"
+              className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
               onInput={handleInputChange} // Track changes in the input
             ></div>
@@ -244,26 +256,22 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
           <textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            rows={4}
+            rows={1}
             placeholder="Edit your message..."
             className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
           />
         )}
 
         <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-1 rounded bg-gray-300 hover:bg-gray-400 text-sm"
-          >
-            Cancel
-          </button>
+          
           <button
             onClick={handleEdit}
             disabled={submitBtnDisabled}
-            className="px-4 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 text-sm"
+            className="px-4 py-1 rounded border border-orange-500 hover:text-white hover:bg-orange-500 f-13"
           >
             {submitBtnDisabled ? "Updating..." : "Update"}
           </button>
+        </div>
         </div>
       </motion.div>
     </motion.div>

@@ -54,7 +54,7 @@ const ReadPersons = ({ messageId }) => {
   if (otherUsers.length === 0) return null;
 
   return (
-    <div className="flex justify-center items-center mt-2 gap-1">
+    <div className="flex justify-center items-center mt-2 gap-1  pb-5">
       <p className="text-gray-500 text-sm">Seen by</p>
       <div className="flex justify-center items-center gap-3">
         {readUsers

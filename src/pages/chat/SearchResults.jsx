@@ -18,11 +18,11 @@ const SearchResults = ({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -300, opacity: 0 }}
           transition={{ type: "tween", duration: 0.3 }}
-          className="fixed top-0 left-0 w-[370px] h-full bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto"
+          className="fixed top-12 left-[-8px] w-[370px] h-[91vh] bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto m-3"
         >
           
 
-          <div className="p-4 border-b font-semibold text-lg bg-orange-300 flex justify-between items-center">
+          <div className="p-4 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
             <span>Search Results</span>
             <button
               onClick={onClose}

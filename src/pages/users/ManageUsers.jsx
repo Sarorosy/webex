@@ -149,7 +149,7 @@ const ManageUsers = ({onClose}) => {
       animate={{ x: 0 }}
       exit={{ x: '-100%' }}
       transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-3xl w-full z-50 overflow-y-auto"
+      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50 overflow-y-auto"
     >
     <div className="bg-white rounded-lg shadow-md">
       {/* Header and Search */}
@@ -181,7 +181,7 @@ const ManageUsers = ({onClose}) => {
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="bg-blue-600 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-blue-700 transition"
+          className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
         >
           <PlusIcon size={12} />
           Add User
@@ -280,37 +280,43 @@ const ManageUsers = ({onClose}) => {
                         <span>Deleted User</span>
                       </div>
                     ) : (
-                      <div className="flex justify-start gap-2">
-                        <button
-                          onClick={() => goToChat(user)}
-                          className="text-orange-500 hover:text-orange-700 flex items-center mr-2 border p-1 rounded"
-                        >
-                          <MessagesSquare size={16} /> View Chats
-                        </button>
-                        
+                      
+                      <div className="flex flex-col items-end justify-start gap-2">
+                        <div className="flex justify-start gap-2">
+                          <button
+                            onClick={() => handleEditClick(user.id)}
+                            className="text-blue-500 hover:text-blue-700 p-1 border rounded"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-500 hover:text-red-700 p-1 border rounded"
+                          >
+                            <Trash size={13} />
+                          </button>
+                        </div>
+                        <div className="flex justify-start gap-2">
+                          <button
+                            onClick={() => goToChat(user)}
+                            className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded"
+                          >
+                            <MessagesSquare size={13} /> View Chats
+                          </button>
+                          
 
-                        <button
-                          onClick={() => handleEditClick(user.id)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash size={16} />
-                        </button>
-                        <button
-                          onClick={() =>
-                            toggleUserType(user.id, user.user_type)
-                          }
-                          className="text-purple-500 hover:text-purple-700 border p-1 rounded text-xs"
-                        >
-                          {user.user_type === "user"
-                            ? "Mark as Subadmin"
-                            : "Mark as User"}
-                        </button>
+                          
+                          <button
+                            onClick={() =>
+                              toggleUserType(user.id, user.user_type)
+                            }
+                            className="text-purple-500 hover:text-purple-700 border p-1 rounded text-xs"
+                          >
+                            {user.user_type === "user"
+                              ? "Mark as Subadmin"
+                              : "Mark as User"}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
