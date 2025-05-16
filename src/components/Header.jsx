@@ -26,16 +26,17 @@ import ReminderPopup from "../pages/chat/ReminderPopup.jsx";
 import { getSocket, connectSocket } from "../utils/Socket.jsx";
 import Requests from "../pages/requests/Requests.jsx";
 import ManageGroups from "../pages/groups/ManageGroups.jsx";
-import ManageUsers from '../pages/users/ManageUsers.jsx';
-import Profile from '../pages/user/Profile.jsx';
+import ManageUsers from "../pages/users/ManageUsers.jsx";
+import Profile from "../pages/user/Profile.jsx";
 
-import { getToken } from 'firebase/messaging';
-import { messaging } from '../../firebase-config.js';
-import { onMessage } from 'firebase/messaging';
+import { getToken } from "firebase/messaging";
+import { messaging } from "../../firebase-config.js";
+import { onMessage } from "firebase/messaging";
 import toast from "react-hot-toast";
 
+import "./toast.css";
 export default function Header() {
-  const { user,login, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
@@ -49,83 +50,211 @@ export default function Header() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   const [permissionGranted, setPermissionGranted] = useState(false);
+  const toastRef = useRef(null);
   const requestPermission = async () => {
     try {
       // Check if notification permission is already granted
       const permission = Notification.permission;
 
-      if (permission === 'granted') {
-        console.log('Notification permission already granted.');
+      if (permission === "granted") {
+        console.log("Notification permission already granted.");
 
         // Register the service worker with the correct scope
-        if ('serviceWorker' in navigator) {
+        if ("serviceWorker" in navigator) {
           // Register the service worker manually with the correct path
-          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-          console.log('Service Worker registered with scope:', registration.scope);
+          const registration = await navigator.serviceWorker.register(
+            "/firebase-messaging-sw.js"
+          );
+          console.log(
+            "Service Worker registered with scope:",
+            registration.scope
+          );
 
           // Now, get the token with the custom service worker registration
           const currentToken = await getToken(messaging, {
-            vapidKey: 'BFEh52B2gdCHFyKNo71vgG3Vg5crEdg2H4b2FLLjiAizybXHlwy73MQTUI0FVA9h1PH3Oy9dtc1wSJ6FVmj7MUE',  // Your VAPID key here
+            vapidKey:
+              "BFEh52B2gdCHFyKNo71vgG3Vg5crEdg2H4b2FLLjiAizybXHlwy73MQTUI0FVA9h1PH3Oy9dtc1wSJ6FVmj7MUE", // Your VAPID key here
             serviceWorkerRegistration: registration, // Pass the custom service worker registration
           });
 
           if (currentToken && user && user.id) {
-            console.log('FCM Token:', currentToken);
+            console.log("FCM Token:", currentToken);
             const requestData = {
-              user_id:user.id,
+              user_id: user.id,
               token: currentToken,
             };
 
-            const response = await fetch("http://localhost:5000/api/saveFcmToken", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(requestData),
-            });
+            const response = await fetch(
+              "http://localhost:5000/api/saveFcmToken",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestData),
+              }
+            );
 
             if (response.ok) {
               const result = await response.json();
               console.log("FCM token successfully saved:", result);
             } else {
-              console.error("Failed to save FCM token:", response.status, response.statusText);
+              console.error(
+                "Failed to save FCM token:",
+                response.status,
+                response.statusText
+              );
             }
-
           } else {
-            console.log('No registration token available.');
+            console.log("No registration token available.");
           }
         } else {
-          console.error('Service Workers are not supported in this browser.');
+          console.error("Service Workers are not supported in this browser.");
         }
-      } else if (permission === 'default') {
+      } else if (permission === "default") {
         // Request permission if not already granted
         const permissionRequest = await Notification.requestPermission();
-        if (permissionRequest === 'granted') {
-          console.log('Notification permission granted.');
+        if (permissionRequest === "granted") {
+          console.log("Notification permission granted.");
           setPermissionGranted(true);
-          requestPermission();  // Re-run the permission request logic after granting
+          requestPermission(); // Re-run the permission request logic after granting
         } else {
-          console.log('Notification permission denied.');
+          console.log("Notification permission denied.");
         }
       } else {
-        console.log('Notification permission denied.');
+        console.log("Notification permission denied.");
       }
-
     } catch (error) {
-      console.error('Error getting notification permission or token:', error);
+      console.error("Error getting notification permission or token:", error);
     }
   };
 
-  useEffect(() => {
+  const selectedUserRef = useRef(selectedUser);
 
+  // Keep ref updated on selectedUser changes
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
+
+  useEffect(() => {
     requestPermission();
 
-    // onMessage(messaging, (payload) => {
-    //   console.log('Message received. ', payload.notification.body);  // Check this log to see the incoming message
-    //   if (payload && payload.notification) {
-    //     toast.success(payload.notification.body);
-    //   }
-    // });
+    onMessage(messaging, (payload) => {
+      console.log("Message received: ", payload.data);
+
+      const currentSelectedUser = selectedUserRef.current;
+
+     if (payload.data.user_type == "group" && payload.data.receiver_id != currentSelectedUser?.id) {
+
+
+        console.log(selectedUser, "testt");
+        const data = payload.data || {};
+        const senderName = data.sender_name || "Unknown";
+        const profilePic = data.profile_pic || null;
+        const rawMessage = data.message || "";
+
+        const trimmedMessage = rawMessage.split(" ").slice(0, 7).join(" ");
+        const initial = senderName.charAt(0).toUpperCase();
+
+        toast.custom((t) => (
+          <div
+          onClick={()=>{
+            toast.dismiss(t.id),
+            setSelectedUser({id:data.receiver_id,name: data.sender_name, profile_pic:null})
+          }}
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  {profilePic ? (
+                    <img
+                      className="h-10 w-10 rounded-full"
+                      src={profilePic}
+                      alt="Profile"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
+                      {initial}
+                    </div>
+                  )}
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {senderName}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">{trimmedMessage}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-gray-200">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ));
+      }
+      else if (payload.data.sender_id != currentSelectedUser?.id){
+        console.log(selectedUser, "testt");
+        const data = payload.data || {};
+        const senderName = data.sender_name || "Unknown";
+        const profilePic = data.profile_pic || null;
+        const rawMessage = data.message || "";
+
+        const trimmedMessage = rawMessage.split(" ").slice(0, 7).join(" ");
+        const initial = senderName.charAt(0).toUpperCase();
+
+        toast.custom((t) => (
+          <div
+          onClick={()=>{
+            toast.dismiss(t.id),
+            setSelectedUser({id:data.sender_id,name: data.sender_name, profile_pic:data.profile_pic ?? null})
+          }}
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0 pt-0.5">
+                  {profilePic ? (
+                    <img
+                      className="h-10 w-10 rounded-full"
+                      src={profilePic}
+                      alt="Profile"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
+                      {initial}
+                    </div>
+                  )}
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {senderName}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">{trimmedMessage}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-gray-200">
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        ));
+      }
+    });
   }, []);
 
   const [query, setQuery] = useState("");
@@ -179,24 +308,23 @@ export default function Header() {
   }, [query, user]);
 
   useEffect(() => {
-  connectSocket();
-  const socket = getSocket();
+    connectSocket();
+    const socket = getSocket();
 
-  const handleUserUpdated = (updatedUser) => {
-    console.log("one")
-    if (updatedUser?.id == user?.id) {
-      console.log("two")
-      login(updatedUser);
-    }
-  };
+    const handleUserUpdated = (updatedUser) => {
+      console.log("one");
+      if (updatedUser?.id == user?.id) {
+        console.log("two");
+        login(updatedUser);
+      }
+    };
 
-  socket.on("user_updated", handleUserUpdated);
+    socket.on("user_updated", handleUserUpdated);
 
-  return () => {
-    socket.off("user_updated", handleUserUpdated);
-  };
-}, [user?.id]);
-
+    return () => {
+      socket.off("user_updated", handleUserUpdated);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -210,7 +338,6 @@ export default function Header() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
 
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
@@ -262,15 +389,15 @@ export default function Header() {
                   </div>
 
                   {resultsLoading ? (
-                  <div className="mx-auto flex justify-center w-full py-4">
-                    <ScaleLoader
-                      className="mx-auto"
-                      color="#ea580c"
-                      height={14}
-                      width={3}
-                      radius={2}
-                      margin={2}
-                    />
+                    <div className="mx-auto flex justify-center w-full py-4">
+                      <ScaleLoader
+                        className="mx-auto"
+                        color="#ea580c"
+                        height={14}
+                        width={3}
+                        radius={2}
+                        margin={2}
+                      />
                     </div>
                   ) : activeTab === "spaces" ? (
                     <div className="max-h-[300px] overflow-y-auto">
@@ -341,7 +468,10 @@ export default function Header() {
                                 </div>
                               )}
                               <div className="text-sm font-semibold flex items-center">
-                                {(msg.sender_id == user?.id) ?  "You" : msg.sender_name} {msg.type == "group" && (
+                                {msg.sender_id == user?.id
+                                  ? "You"
+                                  : msg.sender_name}{" "}
+                                {msg.type == "group" && (
                                   <p className="font-bold">-{msg.user.name}</p>
                                 )}
                               </div>
@@ -446,16 +576,32 @@ export default function Header() {
           />
         )}
         {requestsOpen && (
-          <Requests onClose={()=>{setRequestsOpen(false)}} />
+          <Requests
+            onClose={() => {
+              setRequestsOpen(false);
+            }}
+          />
         )}
         {groupsOpen && (
-          <ManageGroups onClose={()=>{setGroupsOpen(false)}} />
+          <ManageGroups
+            onClose={() => {
+              setGroupsOpen(false);
+            }}
+          />
         )}
         {usersOpen && (
-          <ManageUsers onClose={()=>{setUsersOpen(false)}} />
+          <ManageUsers
+            onClose={() => {
+              setUsersOpen(false);
+            }}
+          />
         )}
         {profileOpen && (
-          <Profile onClose={()=>{setProfileOpen(false)}} />
+          <Profile
+            onClose={() => {
+              setProfileOpen(false);
+            }}
+          />
         )}
         <ReminderPopup />
       </AnimatePresence>
