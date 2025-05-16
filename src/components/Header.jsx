@@ -160,7 +160,7 @@ export default function Header() {
           <div
           onClick={()=>{
             toast.dismiss(t.id),
-            setSelectedUser({id:data.receiver_id,name: data.sender_name, profile_pic:null})
+            setSelectedUser({id:data.receiver_id,name: data.sender_name, profile_pic:null, type:data.user_type})
           }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
@@ -214,7 +214,7 @@ export default function Header() {
           <div
           onClick={()=>{
             toast.dismiss(t.id),
-            setSelectedUser({id:data.sender_id,name: data.sender_name, profile_pic:data.profile_pic ?? null})
+            setSelectedUser({id:data.sender_id,name: data.sender_name, profile_pic:data.profile_pic ?? null, type:"user"})
           }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
