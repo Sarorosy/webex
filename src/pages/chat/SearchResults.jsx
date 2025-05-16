@@ -18,7 +18,7 @@ const SearchResults = ({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -300, opacity: 0 }}
           transition={{ type: "tween", duration: 0.3 }}
-          className="fixed top-12 left-[-8px] w-[370px] h-[91vh] bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto m-3"
+          className="fixed top-0 left-0 w-[410px] h-[100vh] bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto"
         >
           
 
@@ -26,9 +26,9 @@ const SearchResults = ({
             <span>Search Results</span>
             <button
               onClick={onClose}
-              className="text-sm text-white bg-orange-600 px-2 py-1 rounded"
+              className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
             >
-              <X size={18}/>
+              <X size={13}/>
             </button>
           </div>
 

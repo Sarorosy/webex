@@ -60,7 +60,7 @@ export default function Header() {
         // Register the service worker with the correct scope
         if ('serviceWorker' in navigator) {
           // Register the service worker manually with the correct path
-          const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+          const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
           console.log('Service Worker registered with scope:', registration.scope);
 
           // Now, get the token with the custom service worker registration
@@ -214,27 +214,20 @@ export default function Header() {
 
   return (
     <header className={`bg-white text-[#092e46] shadow-md ${messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""}`}>
-      <div className=" mx-auto flex items-center justify-between px-4 py-2 border-b">
-        <h1
-          className="text-2xl font-bold flex items-center cursor-pointer"
-          onClick={() => {
-            navigate("/chat");
-          }}
-        >
-          <span role="img" aria-label="plate">
-            <img src={logo} className="logo-n" />
-          </span>{" "}
-        </h1>
+      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full">
+        
 
         {user ? (
-          <div className="flex items-center space-x-4 text-sm">
+          <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
+          <div className="flex flex-col items-center gap-5 text-sm">
+
             <div className="relative py-0.5" ref={searchRef}>
               {/* Search Input */}
-              <div className="relative flex items-center border border-gray-300 rounded shadow-sm bg-white px-2 py-1">
-                <Search size={15} className="text-gray-500" />
+              <div className="relative flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition cursor-pointer">
+                <Search size={18} className="text-gray-500" />
                 <input
                   type="text"
-                  className="w-full px-3 text-md text-gray-500 outline-none focus:border-none focus:ring-0 f-13"
+                  className="w-[0px] text-md text-gray-500 outline-none focus:border-none focus:ring-0 f-13"
                   placeholder="Search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -376,10 +369,10 @@ export default function Header() {
               onClick={() => navigate("/chat")}
               data-tooltip-id="my-tooltip"
               data-tooltip-content="Chat Board"
-              className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+              className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
             >
-              <MessagesSquare size={12} className="mr-1" />
-              Chat
+              <MessagesSquare size={18} className="text-gray-500" />
+              {/* Chat */}
             </button>
 
             {(user.user_type == "admin" || user.user_type == "subadmin") && (
@@ -387,10 +380,10 @@ export default function Header() {
                 onClick={() => setRequestsOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Admin Requests"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
               >
-                <LayoutDashboard size={12} className="mr-1" />
-                Requests
+                <LayoutDashboard size={18} className="text-gray-500" />
+                {/* Requests */}
               </button>
             )}
             {user.user_type == "admin" ? (
@@ -398,20 +391,20 @@ export default function Header() {
                 onClick={() => setGroupsOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Manage groups"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
               >
-                <Group size={12} className="mr-1" />
-                Groups
+                <Group size={18} className="text-gray-500" />
+                {/* Groups */}
               </button>
             ) : (
               <button
                 onClick={() => setCreateNewSpace(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Create New Space"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
               >
-                <Group size={12} className="mr-1" />
-                New Space
+                <Group size={18} className="text-gray-500" />
+                {/* New Space */}
               </button>
             )}
             {user.user_type == "admin" && (
@@ -419,29 +412,23 @@ export default function Header() {
                 onClick={() => setUsersOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Manage Users"
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
+                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
               >
-                <Users size={12} className="mr-1" />
-                Manage Users
+                <Users size={18} className="text-gray-500" />
+                {/* Manage Users */}
               </button>
             )}
-            <div className="flex items-center" ref={dropdownRef}>
-              <button
-                onClick={() => setProfileOpen(true)}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content={user.email}
-                className="flex items-center px-2 py-1 f-13 rounded bg-gray-100 text-black  transition mr-3"
-              >
-                <CircleUserRound size={12} className="mr-1" />
-                Welcome, <span className="font-semibold ml-1">{user.name}</span>
-              </button>
+
+          </div>
+            <div className="flex items-center flex-col" ref={dropdownRef}>
+              
               <button
                 onClick={logout}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Logout"
-                className="flex hover:bg-red-500 hover:text-white items-center px-2 py-2 rounded-md bg-gray-100 text-black  transition"
+                className="flex hover:bg-red-500 hover:text-white items-center p-3 rounded-full text-gray-500  transition"
               >
-                <LogOut size={15} className="" />
+                <LogOut size={18} className="" />
               </button>
             </div>
           </div>

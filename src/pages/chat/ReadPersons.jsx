@@ -56,7 +56,7 @@ const ReadPersons = ({ messageId }) => {
   return (
     <div className="flex justify-center items-center mt-2 gap-1">
       <p className="text-gray-500 text-sm">Seen by</p>
-      <div className="flex justify-center items-center gap-3">
+      <div className="flex justify-center items-center gap-2">
         {readUsers
           .filter((u) => u.id != user?.id)
           .map((user) => (

@@ -84,7 +84,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         animate={{ y: "5%" }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="bg-white rounded-t-3xl w-full max-w-2xl h-[90%] overflow-y-auto shadow-xl relative"
+        className="bg-white rounded-t-3xl w-full max-w-2xl h-[90%] shadow-xl relative"
       >
         {/* Close Button */}
         <button
@@ -95,12 +95,12 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         </button>
 
         {/* Banner */}
-        <div className="w-full h-32 bg-orange-300 rounded-t-3xl" />
+        <div className="w-full h-[100px] bg-orange-300 rounded-t-3xl" />
 
         {/* Group Info Card */}
         <div className="px-6 -mt-12">
           <div className="bg-white rounded-xl shadow-md p-5">
-            <h2 className="text-2xl font-bold text-gray-800">{selectedGroup?.name}</h2>
+            <h2 className="text-lg font-bold text-gray-800">{selectedGroup?.name}</h2>
             {loadingGroup ? (
               <>
                 <Skeleton height={28} width={160} className="mb-2" />
@@ -109,7 +109,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
             ) : (
               <>
                 <p className="text-gray-600 mt-1 mb-3">{group.description}</p>
-                <div className="flex flex-wrap gap-6 text-sm text-gray-500">
+                <div className="flex flex-wrap gap-6 text-sm text-gray-500 items-center">
                   <div>
                     <span className="font-medium text-gray-700">Created by:</span>{" "}
                     {group.created_by_username}
@@ -133,11 +133,11 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
                       <button 
                       onClick={()=>{handleAddMemberClick(selectedGroup?.id)}}
-                      className="bg-orange-500 text-white px-2 py-1 rounded">Add Member(s)</button>
+                      className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded">Add Member(s)</button>
 
                       <button 
                       onClick={()=>{handleInviteMemberClick(selectedGroup?.id)}}
-                      className="bg-orange-500 text-white px-2 py-1 rounded">Invite Member(s)</button>
+                      className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded">Invite Member(s)</button>
                       </div>
                     )
                   )}
@@ -148,7 +148,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         </div>
 
         {/* Members Section */}
-        <div className="px-6 mt-6 pb-6">
+        <div className="px-6 mt-6 overflow-y-auto h-[470px]">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">Members</h3>
 
           {loadingMembers ? (
@@ -168,9 +168,9 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               {members.map((member) => (
                 <li
                   key={member.id}
-                  className="flex items-center gap-4 p-4 bg-white rounded-xl shadow hover:shadow-md transition"
+                  className="flex items-start gap-4 p-3 bg-white rounded shadow hover:shadow-md transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
+                  <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
                     {member.profile_pic ? (
                       <img
                         src={`http://localhost:5000${member.profile_pic}`}
@@ -183,7 +183,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{member.name}</p>
-                    <p className="text-sm text-gray-500">{member.email}</p>
+                    <p className="f-11 text-gray-500">{member.email}</p>
                   </div>
                 </li>
               ))}

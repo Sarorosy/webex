@@ -99,7 +99,7 @@ const ChatHeader = ({
                     : "http://localhost:5000" + selectedUser.profile_pic
                 }
                 alt="Profile"
-                className="w-10 h-10 rounded-full object-cover border"
+                className="w-8 h-8 rounded-full object-cover border"
               />
             ) : (
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-400 text-white text-lg font-bold shadow">
@@ -132,6 +132,34 @@ const ChatHeader = ({
 
         {/* Right Section */}
         <div className="flex justify-between items-center gap-3">
+          {searchOpen ? (
+            <div className="flex items-center">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                type="text"
+                placeholder="Search..."
+                className="px-2 py-1 pr-9 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13"
+              />
+              <button
+                onClick={() => {
+                  setSearchOpen(false);
+                  setQuery("");
+                  setSearchResults([]);
+                }}
+                className="bg-red-500 text-white rounded hover:bg-red-800 p-1 font-bold text-md ml-[-26px]"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
+            >
+              <Search size={15} />
+            </button>
+          )}
           {selectedUser?.type == "group" && (
             <div className="flex items-center gap-3">
               <button
@@ -148,34 +176,7 @@ const ChatHeader = ({
             </div>
           )}
 
-          {searchOpen ? (
-            <div className="flex items-center gap-2">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                type="text"
-                placeholder="Search..."
-                className="px-2 py-1 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13"
-              />
-              <button
-                onClick={() => {
-                  setSearchOpen(false);
-                  setQuery("");
-                  setSearchResults([]);
-                }}
-                className="text-red-100 hover:text-red-800 font-bold text-lg"
-              >
-                <X size={15} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
-            >
-              <Search size={15} />
-            </button>
-          )}
+          
           <button
               onClick={() => setPinMessagesOpen(true)}
               className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"

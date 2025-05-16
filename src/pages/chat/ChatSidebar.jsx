@@ -8,6 +8,7 @@ import {
   UserRound,
   UserCircle,
   AtSign,
+  SearchIcon,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -413,7 +414,10 @@ const ChatSidebar = ({
       messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
     }`}
   >
-    <div className="px-2">
+
+
+    
+    <div className="px-2  border-b mb-2">
       {view_user_name && (
         <div className="flex items-center gap-2 mb-1 rounded">
           Chats of{" "}
@@ -434,7 +438,12 @@ const ChatSidebar = ({
         />
       </div>
 
-      <div className="flex justify-start gap-2 mb-4">
+      <div className="flex items-center justify-start gap-2 mb-3 px-2">
+        <div>
+          <button className="bg-black text-white p-1 rounded">
+          <SearchIcon size={20} />
+        </button>
+        </div>
         {["all", "direct", "group"].map((tab) => {
           const label = tab.charAt(0).toUpperCase() + tab.slice(1);
           const Icon = tab === "direct" ? User : tab === "group" ? Users2 : Users;
@@ -473,7 +482,7 @@ const ChatSidebar = ({
           {activeTab === "all" &&
             filteredData.some((chat) =>
               JSON.parse(chat.favourites || "[]").includes(user.id)
-            ) && <div className="text-gray-600 mt-2 mb-1 px-2">Favourites</div>}
+            ) && <div className="text-gray-600 mb-2 px-2">Favourites</div>}
 
           {filteredData.map((chat, idx) => {
             const isFavourite = JSON.parse(chat.favourites || "[]").includes(user.id);
