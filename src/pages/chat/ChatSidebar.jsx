@@ -67,7 +67,7 @@ const ChatSidebar = ({
         group.selected_members.includes(user?.id)
       ) {
         const { selected_members, ...chatData } = group;
-        setChats((prevChats) => [...prevChats, chatData]);
+        fetchChats(false)
       }
     };
 
@@ -193,6 +193,30 @@ const ChatSidebar = ({
   useEffect(() => {
     fetchChats(true);
   }, [view_user_id]);
+
+  useEffect(() => {
+    if (!selectedUser) return;
+
+    const foundChat = chats.find(
+        chat =>
+            chat.id == selectedUser.id &&
+            chat.type === selectedUser.type
+    );
+
+    if (foundChat) {
+
+        // Optional: update read_status if needed
+        if (foundChat.read_status != 0) {
+            setChats(prevChats =>
+                prevChats.map(chat =>
+                    chat.id == foundChat.id && chat.type === foundChat.type
+                        ? { ...chat, read_status: 0 }
+                        : chat
+                )
+            );
+        }
+    }
+}, [selectedUser, chats]);
 
   useEffect(() => {
     onSelect(null);
