@@ -301,7 +301,6 @@ const ChatSidebar = ({
         }
 
         const updatedChats = [...prevChats];
-        console.log("uncountu",updatedChats[index]?.unread_count)
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),

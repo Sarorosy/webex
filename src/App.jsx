@@ -14,7 +14,7 @@ function App() {
         <AppRouter />
       </AuthProvider>
       <Tooltip id="my-tooltip" />
-      <Toaster position="bottom-left" reverseOrder={false} toastOptions={{
+      <Toaster position="top-center" reverseOrder={false} toastOptions={{
         // Define default options
         className: 'border',
         duration: 3000,
