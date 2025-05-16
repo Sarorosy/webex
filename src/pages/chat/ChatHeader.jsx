@@ -86,7 +86,7 @@ const ChatHeader = ({
   }, [selectedUser]);
 
   return (
-    <div className="relative mb-1">
+    <div className="relative h-[9.5%]">
       {/* HEADER */}
       <div className="flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 chat-header-bg rounded-t-lg shadow-inner">
         <div className="flex items-center justify-between">
@@ -157,7 +157,7 @@ const ChatHeader = ({
               onClick={() => setSearchOpen(true)}
               className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
-              <Search size={15} />
+              <Search size={13} />
             </button>
           )}
           {selectedUser?.type == "group" && (
@@ -166,12 +166,12 @@ const ChatHeader = ({
                 onClick={() => handleGroupInfoClick(selectedUser)}
                 className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
               >
-                <InfoIcon size={15} />
+                <InfoIcon size={13} />
               </button>
               <button 
               onClick={() => setLeftGroupOpen(true)}
               className="p-2 bg-red-300 text-black hover:text-white f-13 rounded-full hover:bg-red-600 transition">
-                <DoorOpen size={15} />
+                <DoorOpen size={13} />
               </button>
             </div>
           )}
@@ -181,7 +181,7 @@ const ChatHeader = ({
               onClick={() => setPinMessagesOpen(true)}
               className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
-              <Pin size={15} />
+              <Pin size={13} />
             </button>
         </div>
       </div>

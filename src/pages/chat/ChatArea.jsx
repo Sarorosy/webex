@@ -87,27 +87,31 @@ const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessa
   
 
   return (
-    <div className="flex flex-col flex-1 p-1 bg-white rounded my-1 mr-1 justify-between">
+    <div className="flex flex-col flex-1 bg-white rounded m-2 ml-0 justify-between">
       <div>
-      <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults} setPinMessagesOpen={setPinMessagesOpen} setLeftGroupOpen={setLeftGroupOpen} />
+        <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults} setPinMessagesOpen={setPinMessagesOpen} setLeftGroupOpen={setLeftGroupOpen} />
 
-      {/* Messages */}
-      <div className=" overflow-y-hidden  space-y-2 pb-0 chat-messages-container-div">
-        <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
-      </div>
-      </div>
-      {/* Message Input */}
-      <ChatSend
-        userId={selectedUser?.id}
-        type={selectedUser?.type}
-        isReply={isReply}
-        setIsReply={setIsReply}
-        replyMsgId={replyMsgId}
-        setReplyMsgId={setReplyMsgId}
-        replyMessage={replyMessage}
-        setReplyMessage={setReplyMessage}
+        {/* Messages */}
+       
+          <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
         
-      />
+
+        <div className="h-[8vh] mt-2">
+          {/* Message Input */}
+          <ChatSend
+            userId={selectedUser?.id}
+            type={selectedUser?.type}
+            isReply={isReply}
+            setIsReply={setIsReply}
+            replyMsgId={replyMsgId}
+            setReplyMsgId={setReplyMsgId}
+            replyMessage={replyMessage}
+            setReplyMessage={setReplyMessage}
+            
+          />
+        </div>
+      </div>
+      
       <AnimatePresence>
         {groupInfoOpen && (
           <GroupInfo selectedGroup={selectedGroup} onClose={()=>{setGroupInfoOpen(false)}} />

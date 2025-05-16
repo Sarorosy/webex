@@ -303,11 +303,14 @@ const ChatSend = ({
           </button>
         </div>
       )}
-      <div className="flex items-center gap-2">
+
+
+      <div>
         {/* Paperclip icon (file input trigger) */}
 
         {/* Show selected file with X */}
         {selectedFile && (
+      <div className="flex items-center gap-2">
           <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile">
             <span className="mr-2 truncate max-w-[150px]">
               {selectedFile.name}
@@ -319,8 +322,8 @@ const ChatSend = ({
               <X size={14} />
             </button>
           </div>
-        )}
       </div>
+        )}
 
       <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto">
         {type === "group" ? (
@@ -333,7 +336,7 @@ const ChatSend = ({
             <div
               id="chatInput"
               contentEditable
-              className="w-full min-h-[70px] p-3 rounded border border-gray-300 focus:outline-none"
+              className="w-full min-h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
               onInput={handleInputChange}
               onKeyDown={handleKeyDown}
@@ -396,6 +399,7 @@ const ChatSend = ({
             )}
           </button>
         </div>
+      </div>
       </div>
     </>
   );
