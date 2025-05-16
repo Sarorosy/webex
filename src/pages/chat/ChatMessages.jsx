@@ -576,7 +576,7 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className="messages-container  h-[81vh] overflow-y-auto flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white"
+      className="messages-container flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white chat-messages-container-div overflow-y-auto h-[78.5vh]"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -913,7 +913,7 @@ const ChatMessages = ({
                             className="action-button p-2 px-3 text-gray-600 hover:bg-blue-50  transition-colors"
                             title="Edit message"
                           >
-                            <Pen size={15} />
+                            <Pen size={13} />
                           </button>
                         )}
 
@@ -922,7 +922,7 @@ const ChatMessages = ({
                           className="action-button p-2 px-3 text-gray-600 hover:bg-green-50  transition-colors"
                           title="Reply"
                         >
-                          <Reply size={15} />
+                          <Reply size={13} />
                         </button>
 
                         <button
@@ -930,7 +930,7 @@ const ChatMessages = ({
                           className="action-button p-2 px-3 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Set reminder"
                         >
-                          <BellDot size={15} />
+                          <BellDot size={13} />
                         </button>
 
                         <button
@@ -938,7 +938,7 @@ const ChatMessages = ({
                           className="action-button p-2 px-3 text-gray-600 hover:bg-orange-50  transition-colors"
                           title="Pin message"
                         >
-                          <Pin size={15} />
+                          <Pin size={13} />
                         </button>
 
                         {isSent && (
@@ -947,7 +947,7 @@ const ChatMessages = ({
                             className="action-button p-2 px-3 text-gray-600 hover:bg-red-50  transition-colors"
                             title="Delete message"
                           >
-                            <Trash2 size={15} />
+                            <Trash2 size={13} />
                           </button>
                         )}
                       </div>

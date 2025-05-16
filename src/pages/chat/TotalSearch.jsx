@@ -79,7 +79,7 @@ const TotalSearch = ({ onClose }) => {
         transition={{ type: "tween", duration: 0.3 }}
         className="fixed top-0 left-0 w-[28.6%] h-[100vh] bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto"
       >
-        <div className="p-4 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
+        <div className="p-4 py-2 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
           <span>Search Globally</span>
           <button
             onClick={onClose}
@@ -88,10 +88,10 @@ const TotalSearch = ({ onClose }) => {
             <X size={13} />
           </button>
         </div>
-
-        <div className="relative py-0.5" ref={searchRef}>
+        <div className="p-4">
+        <div className="relative" ref={searchRef}>
           {/* Search Input */}
-          <div className="relative mx-3 mt-1 flex items-center gap-2 px-4 py-2 rounded-full bg-white  shadow-sm transition duration-200  border border-orange-100 cursor-pointer focus-within:ring-2 focus-within:ring-orange-300">
+          <div className="relative mb-3 flex items-center gap-2 px-4 py-2 rounded-full bg-white  shadow-sm transition duration-200  border border-orange-100 cursor-pointer focus-within:ring-2 focus-within:ring-orange-300">
             <Search
               onClick={() => setSearchOpen(true)}
               size={20}
@@ -234,6 +234,7 @@ const TotalSearch = ({ onClose }) => {
               )}
             </div>
           )}
+        </div>
         </div>
       </motion.div>
     </AnimatePresence>

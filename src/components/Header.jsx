@@ -298,7 +298,7 @@ export default function Header() {
       <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full">
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
-            <div className="flex flex-col items-center gap-5 text-sm">
+            <div className="flex flex-col items-center gap-4 text-sm">
               <button
                 onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
@@ -310,7 +310,7 @@ export default function Header() {
                     <img
                       src={"http://localhost:5000" + user.profile_pic}
                       alt="Profile"
-                      className="w-10 h-10 rounded-full mx-auto object-cover border"
+                      className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />
                   ) : (
                     user.name[0]
@@ -323,11 +323,11 @@ export default function Header() {
                     }}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Search Globally"
-                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
               >
                 <Search
                     
-                    size={18}
+                    size={17}
                     className="text-gray-500"
                   />
                 {/* Chat */}
@@ -336,9 +336,9 @@ export default function Header() {
                 onClick={() => navigate("/chat")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Chat Board"
-                className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
               >
-                <MessagesSquare size={18} className="text-gray-500" />
+                <MessagesSquare size={17} className="text-gray-500" />
                 {/* Chat */}
               </button>
 
@@ -347,9 +347,9 @@ export default function Header() {
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Admin Requests"
-                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
                 >
-                  <LayoutDashboard size={18} className="text-gray-500" />
+                  <LayoutDashboard size={17} className="text-gray-500" />
                   {/* Requests */}
                 </button>
               )}
@@ -358,9 +358,9 @@ export default function Header() {
                   onClick={() => setGroupsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage groups"
-                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
                 >
-                  <Group size={18} className="text-gray-500" />
+                  <Group size={17} className="text-gray-500" />
                   {/* Groups */}
                 </button>
               ) : (
@@ -368,9 +368,9 @@ export default function Header() {
                   onClick={() => setCreateNewSpace(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Create New Space"
-                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
                 >
-                  <Group size={18} className="text-gray-500" />
+                  <Group size={17} className="text-gray-500" />
                   {/* New Space */}
                 </button>
               )}
@@ -379,9 +379,9 @@ export default function Header() {
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage Users"
-                  className="flex items-center p-3 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
                 >
-                  <Users size={18} className="text-gray-500" />
+                  <Users size={17} className="text-gray-500" />
                   {/* Manage Users */}
                 </button>
               )}
@@ -393,7 +393,7 @@ export default function Header() {
                 data-tooltip-content="Logout"
                 className="flex hover:bg-red-500 hover:text-white items-center p-3 rounded-full text-gray-500  transition"
               >
-                <LogOut size={18} className="" />
+                <LogOut size={17} className="" />
               </button>
             </div>
           </div>

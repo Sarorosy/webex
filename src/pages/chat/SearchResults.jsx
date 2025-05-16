@@ -24,7 +24,7 @@ const SearchResults = ({
         >
           
 
-          <div className="p-4 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
+          <div className="p-4 py-2 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
             <span>Search Results</span>
             <button
               onClick={onClose}
