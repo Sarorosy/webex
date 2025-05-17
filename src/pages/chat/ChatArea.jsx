@@ -11,10 +11,11 @@ import SearchResults from "./SearchResults";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import PinnedMessages from "./PinnedMessages";
 
-const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessage, setLeftGroupOpen }) => {
+const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
   
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const {selectedMessage , setSelectedMessage} = useSelectedUser();
   const typingTimeoutRef = useRef(null);
   const { user } = useAuth();
   const socket = getSocket();

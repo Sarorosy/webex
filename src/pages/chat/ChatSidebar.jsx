@@ -9,6 +9,7 @@ import {
   UserCircle,
   AtSign,
   SearchIcon,
+  ArrowLeft,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -438,26 +439,39 @@ const ChatSidebar = ({
       }`}
     >
       <div className="px-2  border-b mb-2">
-        {view_user_name && (
-          <div className="flex items-center gap-2 mb-1 rounded">
-            Chats of{" "}
-            <span className="flex items-center bg-orange-300 px-1 py-0.5 rounded">
-              <UserCircle className="mr-1" size={18} />
-              {view_user_name}
-            </span>
-          </div>
-        )}
+        
 
         <h1
-          className="text-2xl font-bold flex items-center cursor-pointer mb-2"
+          className="text-2xl font-bold flex items-center justify-between cursor-pointer mb-2"
+          
+        >
+          <span 
           onClick={() => {
             navigate("/chat");
           }}
-        >
-          <span role="img" aria-label="plate">
+          role="img" aria-label="plate">
             <img src={logo} className="logo-n" />
           </span>{" "}
+
+          {view_user_name && (
+          <div className="flex items-center gap-2  rounded f-11">
+            Chats of{" "}
+            <div
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content={view_user_name}
+            >
+              <span className="flex items-center bg-orange-300 px-1 h-5  rounded">
+              <UserCircle className="mr-1" size={13} />
+              {view_user_name?.length > 8 
+                ? `${view_user_name.slice(0, 8)}...` 
+                : view_user_name}
+
+            </span>
+            </div>
+          </div>
+        )}
         </h1>
+        
         <div className="flex items-center gap-2 mb-3">
           <input
             type="text"
@@ -466,6 +480,16 @@ const ChatSidebar = ({
             placeholder="Filter Groups, Persons"
             className="p-2 py-1 border rounded-md w-full"
           />
+          
+          {view_user_name && (
+            <button 
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="back"
+            onClick={()=>{navigate('/chat')}}
+            className="flex items-center bg-red-400 text-white p-1 rounded hover:bg-red-500">
+            <ArrowLeft size={13} />
+          </button>
+          )}
         </div>
 
         <div className="flex items-center justify-start gap-2 mb-3 px-2">

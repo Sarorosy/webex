@@ -32,8 +32,9 @@ const ChatMessages = ({
   setIsReply,
   setReplyMsgId,
   setReplyMessage,
-  selectedMessage,
 }) => {
+
+  const {selectedMessage, setSelectedMessage} = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [messages, setMessages] = useState([]);
@@ -477,31 +478,37 @@ const ChatMessages = ({
 
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
-  const scrollToMessage = async (selectedMessage) => {
-    if (selectedMessage) {
+  const scrollToMessage = async (selmsg) => {
+    if (selmsg) {
+      console.log("coming");
       // Check if the message is already in the current messages array
       let existingMessage = messages.find(
-        (msg) => msg.id == selectedMessage.id
+        (msg) => msg.id == selmsg.id
       );
 
       // If message is not found, we'll implement a multi-step fetch strategy
       if (!existingMessage) {
         try {
+          
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
             "http://localhost:5000/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
-            selectedMessage.sender_id
+            selmsg.sender_id
+          );
+          fetchAroundMessageUrl.searchParams.append(
+            "user_type",
+            selmsg.group_id ? "group" : selmsg.receiver_id
           );
           fetchAroundMessageUrl.searchParams.append(
             "receiver_id",
-            selectedMessage.receiver_id
+            selmsg.group_id ?? selmsg.receiver_id
           );
           fetchAroundMessageUrl.searchParams.append(
             "created_at",
-            selectedMessage.created_at
+            selmsg.created_at
           );
           fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
 
@@ -531,7 +538,7 @@ const ChatMessages = ({
 
           // Find the specific message
           existingMessage = mergedMessages.find(
-            (msg) => msg.id == selectedMessage.id
+            (msg) => msg.id == selmsg.id
           );
         } catch (error) {
           console.error("Error fetching messages:", error);
@@ -542,7 +549,7 @@ const ChatMessages = ({
       // If message is still not found after fetching
       if (!existingMessage) {
         //toast.error("Message not found");
-        return;
+        //return;
       }
 
       // Scroll to the message and highlight
@@ -566,6 +573,7 @@ const ChatMessages = ({
 
   useEffect(() => {
     if (selectedMessage != null) {
+      console.log("selectedMessage", selectedMessage)
       scrollToMessage(selectedMessage);
     }
   }, [selectedMessage]);

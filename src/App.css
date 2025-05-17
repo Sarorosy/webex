@@ -232,6 +232,8 @@ div#commentsMention[placeholder]:empty:before {
 }
 .chat-text-n{
     height: 95px;
-    /* position: fixed; */
+    position: relative;
+    z-index: 9999999999;
+    background: white;
     
 }
