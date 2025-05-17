@@ -256,6 +256,8 @@ const ManageUsers = ({ onClose }) => {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
+              {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.add_users == 1)) && (
+
               <button
                 onClick={() => setAddOpen(true)}
                 className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
@@ -263,6 +265,7 @@ const ManageUsers = ({ onClose }) => {
                 <PlusIcon size={12} />
                 Add User
               </button>
+              )}
             </div>
 
             {/* Users List */}
