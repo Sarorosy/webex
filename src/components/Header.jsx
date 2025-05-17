@@ -275,7 +275,7 @@ export default function Header() {
     const socket = getSocket();
 
     const handleUserUpdated = (updatedUser) => {
-      console.log("one");
+      console.log("user" , updatedUser);
       if (updatedUser?.id == user?.id) {
         console.log("two");
         login(updatedUser);
