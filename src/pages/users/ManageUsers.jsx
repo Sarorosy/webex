@@ -298,7 +298,10 @@ const ManageUsers = ({onClose}) => {
                         </div>
                         <div className="flex justify-start gap-2">
                           <button
-                            onClick={() => goToChat(user)}
+                            onClick={() => {
+                              onClose();
+                              goToChat(user)
+                            }}
                             className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded f-11"
                           >
                             <MessagesSquare size={11} /> View Chats
