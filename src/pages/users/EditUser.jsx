@@ -131,7 +131,9 @@ const EditUser = ({ userId, onClose, after }) => {
 
                
                 {fetching ? (
-                    <div className="animate-spin border-4 border-gray-300 border-t-blue-500 rounded-full w-8 h-8"></div>
+                    <div className="flex justify-center">
+                        <div className="animate-spin border-4 border-gray-300 border-t-blue-500 rounded-full w-10 h-10 m-4 flex justify-center text-center"></div>
+                    </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="scrollbar-none p-4">
                         <div className="flex justify-start gap-2 items-center mb-4">
@@ -159,7 +161,7 @@ const EditUser = ({ userId, onClose, after }) => {
 
                             <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 py-1 rounded-md" placeholder="Bio"></textarea>
                             <div className="flex flex-col">
-                                <label className="font-medium">Panel:</label>
+                                <label className="f-13 mb-1">Panel:</label>
                                 <select
                                     name="user_panel"
                                     value={userData.user_panel}

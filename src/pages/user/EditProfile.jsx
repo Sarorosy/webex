@@ -79,7 +79,7 @@ const EditProfile = ({ onClose }) => {
   };
 
   return (
-    <div className=" rounded-lg p-4 pt-2 w-full relative">
+    <div className=" rounded-lg p-2 pb-0 pt-2 w-full relative">
       <div className="">
         <form onSubmit={handleSubmit}>
           <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -127,48 +127,102 @@ const EditProfile = ({ onClose }) => {
 
           {/* Form Fields */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
-              Display name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border p-2 rounded-md"
-              placeholder="Enter your name"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Display name *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full border p-2 rounded-md"
+                placeholder="Enter your name"
+              />
+            </div>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Password *
-            </label>
-            <input
-              type="text"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border p-2 rounded-md"
-              placeholder="Enter password"
-            />
+            <div className="flex gap-3">
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password *
+                  </label>
+                  <input
+                    type="text"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full border p-2 rounded-md"
+                    placeholder="Enter password"
+                  />
+                </div>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Pronouns
-            </label>
-            <input
-              type="text"
-              value={pronouns}
-              onChange={(e) => setPronouns(e.target.value)}
-              className="w-full border p-2 rounded-md"
-              placeholder="e.g., He/Him"
-            />
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pronouns
+                  </label>
+                  <input
+                    type="text"
+                    value={pronouns}
+                    onChange={(e) => setPronouns(e.target.value)}
+                    className="w-full border p-2 rounded-md"
+                    placeholder="e.g., He/Him"
+                  />
+                </div>
+            </div>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Bio
-            </label>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className="w-full border p-2 rounded-md"
-              placeholder="Write something about yourself..."
-            ></textarea>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="w-full border p-2 rounded-md"
+                placeholder="Write something about yourself..."
+              ></textarea>
+            </div>
+
+            <div className="">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Choose a cover image
+                </label>
+                <div className="flex flex-wrap gap-1 h-[110px] overflow-y-auto border border-gray-100 p-2">
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                  <button className="border border-gray-200 p-1">
+                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
+                  </button>
+                </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 mt-3">

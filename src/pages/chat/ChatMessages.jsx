@@ -500,7 +500,7 @@ const ChatMessages = ({
           );
           fetchAroundMessageUrl.searchParams.append(
             "user_type",
-            selmsg.group_id ? "group" : selmsg.receiver_id
+            selmsg.group_id ? "group" : "user"
           );
           fetchAroundMessageUrl.searchParams.append(
             "receiver_id",
@@ -591,9 +591,9 @@ const ChatMessages = ({
       {isLoading && (
         <div className="loading-indicator flex justify-center py-4">
           <div className="animate-pulse flex space-x-2 items-center bg-white rounded-lg px-4 py-2 shadow-sm">
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></div>
-            <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200"></div>
+            <div className="w-1 h-1 bg-blue-400 rounded-full animate-bounce"></div>
+            <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce delay-100"></div>
+            <div className="w-1 h-1 bg-blue-600 rounded-full animate-bounce delay-200"></div>
             <span className="text-blue-700 font-medium ml-2">Loading...</span>
           </div>
         </div>
@@ -709,7 +709,7 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative max-w-[70%] ${
+                      className={`message relative max-w-[70%] min-w-[20%] ${
                         isSent
                           ? "bg-gray-100 text-gray-900"
                           : "bg-white text-gray-800 border border-gray-200"
@@ -753,32 +753,32 @@ const ChatMessages = ({
                                   {isImage ? (
                                     <ImageIcon
                                       className="text-pink-500"
-                                      size={22}
+                                      size={15}
                                     />
                                   ) : ext === "mp4" || ext === "mov" ? (
                                     <VideoIcon
                                       className="text-purple-600"
-                                      size={22}
+                                      size={15}
                                     />
                                   ) : ["doc", "docx", "xls", "xlsx"].includes(
                                       ext
                                     ) ? (
                                     <FileSpreadsheet
                                       className="text-green-600"
-                                      size={22}
+                                      size={15}
                                     />
                                   ) : (
                                     <FileText
                                       className="text-blue-600"
-                                      size={22}
+                                      size={15}
                                     />
                                   )}
-                                  <span className="text-sm font-medium text-blue-700 truncate max-w-[200px]">
+                                  <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
                                     <a
                                       href={fileUrl}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-blue-600 hover:underline"
+                                      className="f-11 text-blue-600 hover:underline  flex items-center"
                                     >
                                       {msg.filename}
                                     </a>
@@ -802,7 +802,7 @@ const ChatMessages = ({
                                     >
                                       open{" "}
                                       <SquareArrowOutUpRightIcon
-                                        size={18}
+                                        size={15}
                                         className="ml-1"
                                       />
                                     </a>

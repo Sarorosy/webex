@@ -85,17 +85,23 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-4xl h-auto p-8 overflow-y-auto rounded-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold">Edit Group</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-red-500">
-            <X size={24} />
-          </button>
+      <div className="bg-white w-full max-w-md h-auto overflow-y-auto rounded-lg">
+        
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+            <h2 className="text-lg font-semibold text-white">Edit Group</h2>
+            <div>
+            <button
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
+            >
+            <X size={15}  />
+            </button>
+            </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Group Name
             </label>
             <input
@@ -104,7 +110,7 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder='Group name'
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 py-1 border rounded-md"
               required
             />
           </div>
@@ -113,24 +119,24 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
 
           {user?.user_type != "user" && (
             <div>
-              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700 mb-1">
                 Member Limit
               </label>
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
                   onClick={() => handleMemberLimitChange('decrease')}
-                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                 >
-                  <Minus size={18} />
+                  <Minus size={15} />
                 </button>
-                <span className="text-lg font-medium">{memberLimit}</span>
+                <span className="text-md font-medium">{memberLimit}</span>
                 <button
                   type="button"
                   onClick={() => handleMemberLimitChange('increase')}
-                  className="p-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                 >
-                  <Plus size={18} />
+                  <Plus size={15} />
                 </button>
               </div>
             </div>
@@ -138,18 +144,18 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
 
           
 
-          <div className="flex justify-end gap-4 mt-6">
-            <button
+          <div className="flex justify-end gap-2">
+            {/* <button
               type="button"
               onClick={onClose}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
+              className="bg-gray-300 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-400"
             >
               Cancel
-            </button>
+            </button> */}
             <button
               type="submit"
               disabled={creating}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+              className="bg-orange-600 text-white px-2 py-1 rounded-md hover:bg-orange-700"
             >
               {creating ? "Updating..." : "Update"}
             </button>

@@ -181,7 +181,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
         <div className="flex justify-end mt-4">
           <button
-            className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+            className="bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700"
             onClick={handleInvite}
             disabled={inviting || loading}
           >

@@ -191,8 +191,6 @@ const TotalSearch = ({ onClose }) => {
                             state: { type: "message", data: msg },
                           });
                           setSelectedMessage(msg);
-                          setQuery("");
-                          setShowResults(false);
                         }}
                       >
                         <div className="flex items-center gap-2">

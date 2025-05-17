@@ -57,6 +57,7 @@ const ChatSend = ({
   useEffect(() => {
     setValue("");
     setSelectedFile(null);
+    setIsReply(false);
     if (type === "group") {
       fetchUsers();
     }

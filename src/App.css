@@ -15,7 +15,7 @@
 .e-mention-chip {
   color: #e33e16;
   background: #ececec;
-  padding: 1px 2px;
+  padding: 1px 5px;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -191,7 +191,7 @@ div#commentsMention[placeholder]:empty:before {
 
 .down-btn-set{
   position: absolute;
-  bottom: 120px;
+  bottom: 115px;
   left: 62%;
 }
 
@@ -233,11 +233,7 @@ div#commentsMention[placeholder]:empty:before {
 .chat-text-n{
     height: 95px;
     position: relative;
-<<<<<<< HEAD
     z-index: 9;
-=======
-    z-index: 9999999999;
->>>>>>> c8cd8372290e6b17109751cf8405c07453314047
     background: white;
     
 }

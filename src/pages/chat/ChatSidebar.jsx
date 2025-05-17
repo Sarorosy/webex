@@ -434,7 +434,7 @@ const ChatSidebar = ({
 
   return (
     <div
-      className={`w-1/4 bg-gray-100 p-4 px-1  rounded-md m-2 ${
+      className={`w-1/4 bg-gray-100 p-2 px-1  rounded-md m-2 ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
@@ -501,7 +501,7 @@ const ChatSidebar = ({
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1 px-2 py-1 rounded ${
+                className={`flex items-center gap-1 px-2 py-1 rounded f-13 ${
                   activeTab === tab
                     ? "bg-orange-500 text-white font-semibold border border-orange-500"
                     : "text-gray-600 border border-orange-500"

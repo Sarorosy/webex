@@ -1,24 +1,39 @@
+import { X } from "lucide-react";
 import React from "react";
 
 const ConfirmationModal = ({ title, message, onYes, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 px-6 py-4">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
-        <p className="text-gray-600 mb-6">{message}</p>
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={onClose}
-            className="px-3 py-1 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+          <h2 className="text-lg font-semibold text-white">{title}</h2>
+          <div>
+            <button
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            onClick={onClose} // Close modal without doing anything
           >
-            Cancel
+            <X size={15}  />
           </button>
-          <button
-            onClick={onYes}
-            className="px-3 py-1 rounded-xl bg-red-600 text-white hover:bg-red-700 transition"
-          >
-            Confirm
-          </button>
+          </div>
+        </div>
+
+        <div className="p-4">
+          
+          <p className="text-gray-600 mb-6">{message}</p>
+          <div className="flex justify-end gap-2">
+            {/* <button
+              onClick={onClose}
+              className="px-3 py-1 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button> */}
+            <button
+              onClick={onYes}
+              className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition f-11"
+            >
+              Confirm
+            </button>
+          </div>
         </div>
       </div>
     </div>
