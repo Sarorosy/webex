@@ -89,14 +89,15 @@ const ChatArea = ({view_user_id, selectedUser, selectedMessage, setSelectedMessa
   return (
     <div className="flex flex-col flex-1 bg-white rounded m-2 ml-0 justify-between">
       <div>
+        <div className="chat-headAmsg">
         <ChatHeader selectedUser={selectedUser} isTyping={isTyping} handleGroupInfoClick={handleGroupInfoClick} searchOpen={searchOpen} setSearchOpen={setSearchOpen} setSelectedMessage={setSelectedMessage} query={query} setQuery={setQuery} setSearchResults={setSearchResults} setPinMessagesOpen={setPinMessagesOpen} setLeftGroupOpen={setLeftGroupOpen} />
 
         {/* Messages */}
        
           <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
         
-
-        <div className="h-[8vh] mt-2">
+        </div>
+        <div className="chat-text-n mt-2 bg-white">
           {/* Message Input */}
           <ChatSend
             userId={selectedUser?.id}

@@ -336,7 +336,7 @@ const ChatSend = ({
             <div
               id="chatInput"
               contentEditable
-              className="w-full min-h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
+              className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
               placeholder="Type @ to mention someone..."
               onInput={handleInputChange}
               onKeyDown={handleKeyDown}

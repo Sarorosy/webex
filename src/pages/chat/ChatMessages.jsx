@@ -576,7 +576,7 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className="messages-container flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white chat-messages-container-div overflow-y-auto h-[78.5vh]"
+      className="messages-container flex flex-col p-3 bg-gradient-to-b from-blue-50 to-white chat-messages-container-div overflow-y-auto h-[78vh]"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>

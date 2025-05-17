@@ -26,7 +26,7 @@ const Profile = ({ onClose }) => {
       <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 z-50">
         <h4 className="text-lg font-semibold">Edit Profile</h4>
         <button onClick={onClose} className="text-sm text-white bg-orange-600 px-1 py-1 rounded">
-          <X  size={13} />
+        <X  size={13} />
         </button>
       </div>
       <div className="flex items-start justify-center p-3 gap-2 h-full">

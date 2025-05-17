@@ -86,7 +86,7 @@ const ChatHeader = ({
   }, [selectedUser]);
 
   return (
-    <div className="relative h-[9.5%]">
+    <div className="relative">
       {/* HEADER */}
       <div className="flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 chat-header-bg rounded-t-lg shadow-inner">
         <div className="flex items-center justify-between">
