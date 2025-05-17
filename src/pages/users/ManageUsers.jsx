@@ -149,9 +149,9 @@ const ManageUsers = ({onClose}) => {
       animate={{ x: 0 }}
       exit={{ x: '-100%' }}
       transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50 overflow-y-auto"
+      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50 "
     >
-    <div className="bg-white rounded-lg shadow-md">
+    <div className="">
       {/* Header and Search */}
       <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 ">
         <div className="">
@@ -189,7 +189,7 @@ const ManageUsers = ({onClose}) => {
       </div>
 
       {/* Users List */}
-      <div className="overflow-x-auto">
+      <div className="overflow-y-auto h-[84vh] pr-3">
         <div className="">
           
           <div>
@@ -210,11 +210,11 @@ const ManageUsers = ({onClose}) => {
                       <img
                         src={"http://localhost:5000" + user.profile_pic}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border"
+                        className="w-8 h-8 rounded-full object-cover border"
                       />
                     ) : (
                       <div
-                        className={`w-10 h-10 ${getRandomColor(
+                        className={`w-8 h-8 ${getRandomColor(
                           user.id
                         )} text-white flex items-center justify-center rounded-full text-xs font-bold`}
                       >
@@ -299,9 +299,9 @@ const ManageUsers = ({onClose}) => {
                         <div className="flex justify-start gap-2">
                           <button
                             onClick={() => goToChat(user)}
-                            className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded"
+                            className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded f-11"
                           >
-                            <MessagesSquare size={13} /> View Chats
+                            <MessagesSquare size={11} /> View Chats
                           </button>
                           
 
@@ -310,7 +310,7 @@ const ManageUsers = ({onClose}) => {
                             onClick={() =>
                               toggleUserType(user.id, user.user_type)
                             }
-                            className="text-purple-500 hover:text-purple-700 border p-1 rounded text-xs"
+                            className="text-purple-500 hover:text-purple-700 border p-1 rounded f-11"
                           >
                             {user.user_type === "user"
                               ? "Mark as Subadmin"

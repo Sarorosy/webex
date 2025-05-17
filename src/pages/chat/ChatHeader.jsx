@@ -154,6 +154,8 @@ const ChatHeader = ({
             </div>
           ) : (
             <button
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Search Messages"
               onClick={() => setSearchOpen(true)}
               className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
@@ -163,12 +165,16 @@ const ChatHeader = ({
           {selectedUser?.type == "group" && (
             <div className="flex items-center gap-3">
               <button
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Group Info"
                 onClick={() => handleGroupInfoClick(selectedUser)}
                 className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
               >
                 <InfoIcon size={13} />
               </button>
               <button 
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Leave group"
               onClick={() => setLeftGroupOpen(true)}
               className="p-2 bg-red-300 text-black hover:text-white f-13 rounded-full hover:bg-red-600 transition">
                 <DoorOpen size={13} />
@@ -178,11 +184,13 @@ const ChatHeader = ({
 
           
           <button
-              onClick={() => setPinMessagesOpen(true)}
-              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
-            >
-              <Pin size={13} />
-            </button>
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Pined Messages"
+            onClick={() => setPinMessagesOpen(true)}
+            className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
+          >
+            <Pin size={13} />
+          </button>
         </div>
       </div>
 

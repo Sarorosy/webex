@@ -176,19 +176,19 @@ const Requests = ({ onClose }) => {
                 <td className="px-4 py-2">{req.user_name}</td>
                 <td className="px-4 py-2">{req.group_name}</td>
                 <td className="px-4 py-2">
-  {new Date(req.requested_at).toLocaleString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })}
-</td>
+                  {new Date(req.requested_at).toLocaleString("en-US", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </td>
                 <td className="px-4 py-2 text-center">
                   <button
                     onClick={() => handleUserApprove(req.id)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
+                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded f-11"
                   >
                     Approve
                   </button>
@@ -237,15 +237,15 @@ const Requests = ({ onClose }) => {
                               <td className="px-4 py-2">{req.group_name}</td>
                               <td className="px-4 py-2">{req.member_limit}</td>
                               <td className="px-4 py-2">
-  {new Date(req.requested_at).toLocaleString("en-US", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })}
-</td>
+                                {new Date(req.requested_at).toLocaleString("en-US", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })}
+                              </td>
                               <td className="px-4 py-2 text-center">
                                 {isActive ? (
                                   <div className="flex items-center justify-center space-x-2">
@@ -268,7 +268,7 @@ const Requests = ({ onClose }) => {
                                     </button>
                                     <button
                                       onClick={() => handleGroupApprove(req.id)}
-                                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 f-13 rounded"
+                                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded f-11"
                                     >
                                       Approve
                                     </button>
@@ -282,7 +282,7 @@ const Requests = ({ onClose }) => {
                                         [req.id]: 1,
                                       }));
                                     }}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 f-13 rounded"
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded f-11"
                                   >
                                     Increase
                                   </button>

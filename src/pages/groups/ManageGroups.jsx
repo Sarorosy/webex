@@ -89,7 +89,7 @@ const ManageGroups = ({onClose}) => {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="relative w-full max-w-[400px] h-screen bg-white shadow-xl overflow-y-auto"
+        className="relative w-full max-w-[400px] h-screen bg-white shadow-xl "
       >
         {loading ? (
           <div className="h-full flex items-center justify-center text-lg font-semibold">
@@ -124,9 +124,9 @@ const ManageGroups = ({onClose}) => {
             </div>
 
             {/* GROUP LIST */}
-            <div className="space-y-3 px-4 pb-4">
+            <div className="space-y-3 px-4 pb-4 overflow-y-auto h-[86vh]">
               {groups.map((group) => (
-                <div key={group.group_id} className="border px-2 py-2 rounded shadow">
+                <div key={group.group_id} className="border px-2 py-2 rounded">
                   <div className="flex justify-between items-end gap-2">
                     <div>
                       <p className="font-medium text-md">{group.group_name}</p>
@@ -155,13 +155,13 @@ const ManageGroups = ({onClose}) => {
                         onClick={() => handleViewGroup(group)}
                         className="p-2 border rounded hover:bg-blue-200 text-blue-800"
                       >
-                        <Info size={13} />
+                        <Info size={11} />
                       </button>
                       <button
                         onClick={() => handleEditGroup(group)}
                         className="p-2 border rounded hover:bg-orange-200 text-orange-800"
                       >
-                        <Pencil size={13} />
+                        <Pencil size={11} />
                       </button>
                       <button
                         onClick={() => {
@@ -170,7 +170,7 @@ const ManageGroups = ({onClose}) => {
                         }}
                         className="p-2 border rounded hover:bg-red-200 text-red-800"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={11} />
                       </button>
                     </div>
                   </div>
@@ -186,7 +186,7 @@ const ManageGroups = ({onClose}) => {
                       >
                         <div className="border-t pt-2 space-y-2">
                           {group.members.map((member) => (
-                            <div key={member.user_id} className="flex items-center gap-3">
+                            <div key={member.user_id} className="flex items-center gap-3 border-b border-gray-200 pb-2">
                               <img
                                 src={
                                   member.profile_pic

@@ -65,20 +65,26 @@ const AddUser = ({ onClose, after }) => {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                className="bg-white p-6 rounded-lg shadow-lg w-[600px]"
+                className="bg-white rounded-lg shadow-lg w-[600px]"
             >
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold">Add User</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                        <X size={20} />
+                
+                <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+                    <h2 className="text-lg font-semibold text-white">Add User</h2>
+                    <div>
+                    <button
+                    className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+                    onClick={onClose} // Close modal without doing anything
+                    >
+                    <X size={15}  />
                     </button>
+                    </div>
                 </div>
-                <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 p-4">
                     <input
                         type="text"
                         name="name"
                         placeholder="Name"
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                         value={formData.name}
                         onChange={handleChange}
                     />
@@ -86,7 +92,7 @@ const AddUser = ({ onClose, after }) => {
                         type="email"
                         name="email"
                         placeholder="Email"
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                         value={formData.email}
                         onChange={handleChange}
                     />
@@ -94,7 +100,7 @@ const AddUser = ({ onClose, after }) => {
                         type="password"
                         name="password"
                         placeholder="Password"
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                         value={formData.password}
                         onChange={handleChange}
                     />
@@ -102,7 +108,7 @@ const AddUser = ({ onClose, after }) => {
                         name="user_panel"
                         value={formData.user_panel}
                         onChange={handleChange}
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                     >
                         <option value="SP">Service Panel</option>
                         <option value="AP">Attendance Panel</option>
@@ -112,7 +118,7 @@ const AddUser = ({ onClose, after }) => {
                         type="text"
                         name="office_name"
                         placeholder="Office Name"
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                         value={formData.office_name}
                         onChange={handleChange}
                     />
@@ -120,40 +126,42 @@ const AddUser = ({ onClose, after }) => {
                         type="text"
                         name="city_name"
                         placeholder="City Name"
-                        className="p-2 border rounded"
+                        className="p-2 border rounded py-1"
                         value={formData.city_name}
                         onChange={handleChange}
                     />
 
                     {/* Max Group Count full width row */}
-                    <div className="col-span-2 flex items-center justify-between border rounded p-2">
-                        <span className="font-medium">Max Group Count</span>
+                    <div className=" flex items-center justify-between border rounded p-2 py-1">
+                        <span className="text-gray-700">Max Group Count</span>
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"
                                 onClick={decrementGroupCount}
-                                className="p-1 rounded border hover:bg-gray-100"
+                                className="p-1  rounded border hover:bg-gray-100"
                             >
-                                <Minus size={16} />
+                                <Minus size={13} />
                             </button>
                             <span className="w-6 text-center">{formData.max_group_count}</span>
                             <button
                                 type="button"
                                 onClick={incrementGroupCount}
-                                className="p-1 rounded border hover:bg-gray-100"
+                                className="p-1  rounded border hover:bg-gray-100"
                             >
-                                <Plus size={16} />
+                                <Plus size={13} />
                             </button>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        disabled={adding}
-                        className="col-span-2 w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-                    >
-                        Add User
-                    </button>
+                    <div className="flex justify-end items-end">
+                        <button
+                            type="submit"
+                            disabled={adding}
+                            className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 f-11"
+                        >
+                            Add User
+                        </button>
+                    </div>
                 </form>
             </motion.div>
         </div>

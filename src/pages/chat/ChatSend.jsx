@@ -276,7 +276,7 @@ const ChatSend = ({
   return (
     <>
       {isReply && (
-        <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center">
+        <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
           <div>
             Replying to:{" "}
             <div
@@ -311,7 +311,7 @@ const ChatSend = ({
         {/* Show selected file with X */}
         {selectedFile && (
       <div className="flex items-center gap-2">
-          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile">
+          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile absolute top-[-30px]">
             <span className="mr-2 truncate max-w-[150px]">
               {selectedFile.name}
             </span>

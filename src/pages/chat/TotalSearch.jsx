@@ -91,10 +91,10 @@ const TotalSearch = ({ onClose }) => {
         <div className="p-4">
         <div className="relative" ref={searchRef}>
           {/* Search Input */}
-          <div className="relative mb-3 flex items-center gap-2 px-4 py-2 rounded-full bg-white  shadow-sm transition duration-200  border border-orange-100 cursor-pointer focus-within:ring-2 focus-within:ring-orange-300">
+          <div className="relative mb-3 flex items-center gap-2 px-2 py-1 rounded-full bg-white  shadow-sm transition duration-200  border border-orange-100 cursor-pointer focus-within:ring-2 focus-within:ring-orange-300">
             <Search
               onClick={() => setSearchOpen(true)}
-              size={20}
+              size={17}
               className="text-gray-400 hover:text-orange-500 transition"
             />
             <input
@@ -109,7 +109,7 @@ const TotalSearch = ({ onClose }) => {
           </div>
 
           {showResults && (
-            <div className="absolute w-full n-bg-light shadow-lg border border-gray-200 rounded mt-2 topmost px-2 py-2 z-50">
+            <div className="w-full mt-2 topmost z-50">
               <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
                 <button
                   onClick={() => setActiveTab("spaces")}
@@ -141,7 +141,7 @@ const TotalSearch = ({ onClose }) => {
                   />
                 </div>
               ) : activeTab === "spaces" ? (
-                <div className="max-h-[300px] overflow-y-auto">
+                <div className="max-h-[75vh] overflow-y-auto">
                   {results?.results?.length > 0 ? (
                     results.results.map((user) => (
                       <div
@@ -179,7 +179,7 @@ const TotalSearch = ({ onClose }) => {
                   )}
                 </div>
               ) : (
-                <div className="max-h-[300px] overflow-y-auto">
+                <div className="max-h-[75vh] overflow-y-auto">
                   {results?.messages?.length > 0 ? (
                     results.messages.map((msg) => (
                       <div

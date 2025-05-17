@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../../utils/idb";
+import { X } from "lucide-react";
 
 const EditUser = ({ userId, onClose, after }) => {
     const { login } = useAuth();
@@ -115,84 +116,99 @@ const EditUser = ({ userId, onClose, after }) => {
     return (
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg relative">
-                <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit User</h2>
+            <div className="bg-white rounded-lg w-full max-w-lg shadow-lg relative">
+                <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+                    <h2 className="text-lg font-semibold text-white">Edit User</h2>
+                    <div>
+                    <button
+                    className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+                    onClick={onClose} // Close modal without doing anything
+                    >
+                    <X size={15}  />
+                    </button>
+                    </div>
+                </div>
+
+               
                 {fetching ? (
                     <div className="animate-spin border-4 border-gray-300 border-t-blue-500 rounded-full w-8 h-8"></div>
                 ) : (
-                    <form onSubmit={handleSubmit} className="h-96 overflow-y-scroll scrollbar-none">
-                        <div className="flex flex-col items-center mb-4">
+                    <form onSubmit={handleSubmit} className="scrollbar-none p-4">
+                        <div className="flex justify-start gap-2 items-center mb-4">
                             {userData.profilePic ? (
                                 <img src={userData.profilePic instanceof File ? URL.createObjectURL(userData.profilePic) : userData.profilePic} alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
                             ) : (
-                                <div className="w-24 h-24 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-2">
+                                <div className="w-20 h-20 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-2">
                                     {userData.name.charAt(0).toUpperCase()}
                                 </div>
                             )}
-                            <label className="cursor-pointer text-blue-600 hover:underline">
+                            <label className="cursor-pointer text-white rounded p-2 py-1 bg-orange-500 hover:bg-orange-600">
                                 Upload new photo
                                 <input type="file" className="hidden" onChange={handleProfileChange} />
                             </label>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <input type="text" name="name" value={userData.name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your name" />
-    <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter your email" />
-    
-    <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Enter password" />
-    <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Pronouns" />
+                            <input type="text" name="name" value={userData.name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter your name" />
+                            <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter your email" />
+                            
+                            <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter password" />
+                            <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Pronouns" />
 
-    <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="Office Name" />
-    <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} className="w-full border p-2 rounded-md" placeholder="City Name" />
+                            <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Office Name" />
+                            <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="City Name" />
 
-    <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 rounded-md" placeholder="Bio"></textarea>
-</div>
-
-                        <div className="flex gap-2 mt-3 items-center">
-                            <label className="font-medium">Panel:</label>
-                            <select
-                                name="user_panel"
-                                value={userData.user_panel}
-                                onChange={handleChange}
-                                className="border p-2 rounded-md flex-1"
-                            >
-                                <option value="AP">Attendance Panel</option>
-                                <option value="SP">Service Panel</option>
-                            </select>
+                            <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 py-1 rounded-md" placeholder="Bio"></textarea>
+                            <div className="flex flex-col">
+                                <label className="font-medium">Panel:</label>
+                                <select
+                                    name="user_panel"
+                                    value={userData.user_panel}
+                                    onChange={handleChange}
+                                    className="border p-2 py-1 rounded-md w-full"
+                                >
+                                    <option value="AP">Attendance Panel</option>
+                                    <option value="SP">Service Panel</option>
+                                </select>
+                            </div>
+                            <div className="flex gap-2 mt-3 items-center ">
+                                <label className="font-medium">Max Group Count:</label>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setUserData((prev) => ({
+                                            ...prev,
+                                            max_group_count: Math.max(1, prev.max_group_count - 1)
+                                        }))
+                                    }
+                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                >
+                                    -
+                                </button>
+                                <span className="w-8 text-center">{userData.max_group_count}</span>
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setUserData((prev) => ({
+                                            ...prev,
+                                            max_group_count: prev.max_group_count + 1
+                                        }))
+                                    }
+                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                                >
+                                    +
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="flex gap-2 mt-3 items-center">
-                            <label className="font-medium">Max Group Count:</label>
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setUserData((prev) => ({
-                                        ...prev,
-                                        max_group_count: Math.max(1, prev.max_group_count - 1)
-                                    }))
-                                }
-                                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                            >
-                                -
-                            </button>
-                            <span className="w-8 text-center">{userData.max_group_count}</span>
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setUserData((prev) => ({
-                                        ...prev,
-                                        max_group_count: prev.max_group_count + 1
-                                    }))
-                                }
-                                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                            >
-                                +
+                        
+
+                        
+
+                        <div className="flex justify-end">
+                            <button type="submit" className="mt-5 bg-black text-white py-1 px-2 rounded f-13">
+                                {loading ? "Saving..." : "Save Changes"}
                             </button>
                         </div>
-
-                        <button type="submit" className="mt-5 w-full bg-black text-white py-2 rounded-md text-lg">
-                            {loading ? "Saving..." : "Save Changes"}
-                        </button>
                     </form>
                 )}
 
