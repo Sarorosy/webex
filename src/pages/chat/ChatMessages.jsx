@@ -500,7 +500,7 @@ const ChatMessages = ({
           );
           fetchAroundMessageUrl.searchParams.append(
             "user_type",
-            selmsg.group_id ? "group" : selmsg.receiver_id
+            selmsg.group_id ? "group" : "user"
           );
           fetchAroundMessageUrl.searchParams.append(
             "receiver_id",

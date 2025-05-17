@@ -1,6 +1,8 @@
 // Give the service worker access to Firebase Messaging.
 // Note that you can only use Firebase Messaging here. Other Firebase libraries
 // are not available in the service worker.
+
+
 // Replace 10.13.2 with latest version of the Firebase JS SDK.
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
@@ -28,8 +30,33 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.data.sender_name;
   const options = {
     body: payload.data.message,
-    icon: payload.data.profile_pic
+    icon: payload.data.profile_pic,
+    data: payload.data
   };
 
   self.registration.showNotification(title, options);
+});
+
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+
+  const data = event.notification.data;
+  console.log("Notification clickeddd:", event.notification);
+
+  const targetUrl = 'http://localhost:5173/chat';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        // If there's already a tab open with the target URL, focus it
+        if (client.url == targetUrl && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If not open, open a new tab
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
 });

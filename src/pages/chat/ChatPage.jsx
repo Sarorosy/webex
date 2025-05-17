@@ -83,7 +83,7 @@ const ChatPage = () => {
           selectedUser={selectedUser}
           onSelect={setSelectedUser}
         />
-        {selectedUser && (
+        {selectedUser ? (
           <ChatArea
             selectedUser={selectedUser}
             view_user_id={view_user_id}
@@ -91,6 +91,9 @@ const ChatPage = () => {
             setSelectedMessage={setSelectedMessage}
             setLeftGroupOpen={setLeftGroupOpen}
           />
+        ) : (
+          <div className="flex flex-col flex-1 bg-blue-300 rounded m-2 ml-0 justify-between">
+            </div>
         )}
       </div>
 

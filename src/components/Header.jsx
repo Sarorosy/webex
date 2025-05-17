@@ -342,7 +342,7 @@ export default function Header() {
                 {/* Chat */}
               </button>
 
-              {(user.user_type == "admin" || user.user_type == "subadmin") && (
+              {(user.user_type == "admin" || (user.user_type == "subadmin" && user.access_requests == 1)) && (
                 <button
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
@@ -374,7 +374,7 @@ export default function Header() {
                   {/* New Space */}
                 </button>
               )}
-              {user.user_type == "admin" && (
+              {(user.user_type == "admin" || user.user_type == "subadmin" && user.view_users == 1) && (
                 <button
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"
