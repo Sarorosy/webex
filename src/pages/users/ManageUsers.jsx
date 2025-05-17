@@ -13,14 +13,17 @@ import {
   Mail,
   Key,
   KeyRound,
+  Check,
+  Shield,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { AnimatePresence,motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import AddUser from "./AddUser";
 import EditUser from "./EditUser";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
 import { encode } from "../../utils/encoder";
+import { useAuth } from "../../utils/idb";
 
 const getRandomColor = (id) => {
   const colors = [
@@ -37,7 +40,7 @@ const getRandomColor = (id) => {
   return colors[id % colors.length];
 };
 
-const ManageUsers = ({onClose}) => {
+const ManageUsers = ({ onClose }) => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -45,6 +48,19 @@ const ManageUsers = ({onClose}) => {
   const [editOpen, setEditOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  // Subadmin permissions state
+  const [markingSubadmin, setMarkingSubadmin] = useState(false);
+  const [markingUserId, setMarkingUserId] = useState(null);
+  const [permissions, setPermissions] = useState({
+    view_users: false,
+    add_users: false,
+    edit_users: false,
+    delete_users: false,
+    access_requests: false,
+  });
 
   const goToChat = (user) => {
     const encodedId = encode(user.id.toString());
@@ -59,8 +75,10 @@ const ManageUsers = ({onClose}) => {
       );
       const data = await response.json();
       if (data.status) {
-        const filteredUsers = data.data.filter(user => user.user_type !== "admin");
-      setUsers(filteredUsers);
+        const filteredUsers = data.data.filter(
+          (user) => user.user_type !== "admin"
+        );
+        setUsers(filteredUsers);
       } else {
         toast.error("Failed to fetch users");
       }
@@ -79,14 +97,17 @@ const ManageUsers = ({onClose}) => {
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
   );
+
   const handleEditClick = (id) => {
     setSelectedUser(id);
     setEditOpen(true);
   };
+
   const handleDelete = async (id) => {
     setSelectedUser(id);
     setIsModalOpen(true);
   };
+
   const confirmDelete = async () => {
     if (!selectedUser) return;
     try {
@@ -114,8 +135,35 @@ const ManageUsers = ({onClose}) => {
   };
 
   const toggleUserType = async (userId, currentType) => {
+    if (currentType === "user") {
+      // If marking as subadmin, show permissions dialog
+      setMarkingUserId(userId);
+      setMarkingSubadmin(true);
+      // Reset permissions
+      setPermissions({
+        view_users: false,
+        add_users: false,
+        edit_users: false,
+        delete_users: false,
+        access_requests: false,
+      });
+    } else {
+      // If marking back to user, just make the API call
+      await updateUserType(userId, "user");
+    }
+  };
+
+  const updateUserType = async (userId, newType, permissionsData = null) => {
     try {
-      const newType = currentType === "user" ? "subadmin" : "user";
+      const requestBody = {
+        user_id: userId,
+        user_type: newType,
+      };
+
+      // Add permissions if provided (for subadmin)
+      if (permissionsData) {
+        requestBody.permissions = permissionsData;
+      }
 
       const response = await fetch(
         `http://localhost:5000/api/users/changeUserType`,
@@ -124,14 +172,14 @@ const ManageUsers = ({onClose}) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ user_id: userId, user_type: newType }),
+          body: JSON.stringify(requestBody),
         }
       );
 
       const data = await response.json();
 
       if (data.status) {
-        toast.success(`User marked as ${newType}`);
+        toast.success(`Done`);
         fetchUsers(); // Refresh list
       } else {
         toast.error("Failed to update user type");
@@ -142,230 +190,414 @@ const ManageUsers = ({onClose}) => {
     }
   };
 
+  const handlePermissionChange = (permission) => {
+    setPermissions({
+      ...permissions,
+      [permission]: !permissions[permission],
+    });
+  };
+
+  const confirmSubadminChange = async () => {
+    await updateUserType(markingUserId, "subadmin", permissions);
+    setMarkingSubadmin(false);
+    setMarkingUserId(null);
+  };
+
+  const cancelSubadminChange = () => {
+    setMarkingSubadmin(false);
+    setMarkingUserId(null);
+  };
+
+  const handleEditPermissionsClick = (user) => {
+    setMarkingUserId(user.id);
+    setMarkingSubadmin(true);
+    setPermissions({
+      view_users: user.view_users == 1,
+      add_users: user.add_users == 1,
+      edit_users: user.edit_users == 1,
+      delete_users: user.delete_users == 1,
+      access_requests: user.access_requests == 1,
+    });
+  };
   return (
     <AnimatePresence>
-    <motion.div
-      initial={{ x: '-100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '-100%' }}
-      transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50 "
-    >
-    <div className="">
-      {/* Header and Search */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 ">
+      <motion.div
+        initial={{ x: "-100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "-100%" }}
+        transition={{ type: "tween", duration: 0.3 }}
+        className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50"
+      >
         <div className="">
-            <h4 className="text-lg font-semibold">Users</h4>
-        </div>
-        <div>
-          <button
-            onClick={onClose}
-            className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
-          >
-            <X size={13} />
-          </button>
-        </div>
+          {/* Header and Search */}
+          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0">
+            <div className="">
+              <h4 className="text-lg font-semibold">Users</h4>
+            </div>
+            <div>
+              <button
+                onClick={onClose}
+                className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          </div>
 
-      </div>
-      <div className=" px-4 pt-3">
-      <div className="flex justify-end gap-2 items-center mb-3">
-        <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
-          <Search size={13} className="text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search users..."
-            className="bg-transparent outline-none f-13"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={() => setAddOpen(true)}
-          className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
-        >
-          <PlusIcon size={12} />
-          Add User
-        </button>
-      </div>
+          <div className="px-4 pt-3">
+            <div className="flex justify-end gap-2 items-center mb-3">
+              <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
+                <Search size={13} className="text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  className="bg-transparent outline-none f-13"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setAddOpen(true)}
+                className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
+              >
+                <PlusIcon size={12} />
+                Add User
+              </button>
+            </div>
 
-      {/* Users List */}
-      <div className="overflow-y-auto h-[84vh] pr-3">
-        <div className="">
-          
-          <div>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="f-13 mb-2 border p-3 flex justify-between items-end"
-                >
+            {/* Users List */}
+            <div className="overflow-y-auto h-[84vh] pr-3">
+              <div className="">
+                <div>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((u) => (
+                      <div
+                        key={u.id}
+                        className={`f-13 mb-2 border p-3 flex justify-between items-end ${
+                          markingSubadmin && markingUserId !== u.id
+                            ? "hidden"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex gap-2">
+                          <div className="text-center">
+                            {u.trashed == 1 ? (
+                              <div className="bg-red-300 mx-auto w-10 h-10 rounded-full flex items-center justify-center">
+                                <Trash2 size={22} className="text-red-600" />
+                              </div>
+                            ) : u.profile_pic ? (
+                              <img
+                                src={"http://localhost:5000" + u.profile_pic}
+                                alt="Profile"
+                                className="w-8 h-8 rounded-full object-cover border"
+                              />
+                            ) : (
+                              <div
+                                className={`w-8 h-8 ${getRandomColor(
+                                  u.id
+                                )} text-white flex items-center justify-center rounded-full text-xs font-bold`}
+                              >
+                                {u.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div
+                              className="font-medium"
+                              style={{
+                                color: u.trashed == 1 ? "red" : "#4b5563",
+                                textDecoration:
+                                  u.trashed == 1 ? "line-through" : "",
+                              }}
+                            >
+                              {u.name}
+                            </div>
+                            <div
+                              className="flex flex-col justify-start items-start"
+                              style={{
+                                color: u.trashed == 1 ? "red" : "#4b5563",
+                                textDecoration:
+                                  u.trashed == 1 ? "line-through" : "",
+                              }}
+                            >
+                              <span className="flex items-center">
+                                <Mail size={13} className="mr-2 font-bold" />{" "}
+                                {u.email}{" "}
+                              </span>
+                              <span className="flex items-center">
+                                <KeyRound
+                                  size={13}
+                                  className="mr-2 font-bold"
+                                />{" "}
+                                {u.password}
+                              </span>
+                            </div>
+                            <div className="flex gap-2 mt-1">
+                              <div
+                                data-tooltip-id="my-tooltip"
+                                data-tooltip-content={
+                                  u.user_panel == "AP"
+                                    ? "Attendance Panel"
+                                    : "Service Provider"
+                                }
+                                className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
+                                style={{
+                                  color: u.trashed == 1 ? "red" : "#fff",
+                                  textDecoration:
+                                    u.trashed == 1 ? "line-through" : "",
+                                }}
+                              >
+                                {u.user_panel}
+                              </div>
+                              <div
+                                className="flex items-center"
+                                style={{
+                                  color: u.trashed == 1 ? "red" : "#4b5563",
+                                  textDecoration:
+                                    u.trashed == 1 ? "line-through" : "",
+                                }}
+                              >
+                                {u.user_type}
 
-                <div className="flex gap-2">
-                  <div className="text-center">
-                    {user.trashed == 1 ? (
-                      <div className="bg-red-300 mx-auto w-10 h-10 rounded-full flex items-center justify-center">
-                        <Trash2 size={22} className="text-red-600" />
-                      </div>
-                    ) : user.profile_pic ? (
-                      <img
-                        src={"http://localhost:5000" + user.profile_pic}
-                        alt="Profile"
-                        className="w-8 h-8 rounded-full object-cover border"
-                      />
-                    ) : (
-                      <div
-                        className={`w-8 h-8 ${getRandomColor(
-                          user.id
-                        )} text-white flex items-center justify-center rounded-full text-xs font-bold`}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    
-                  </div>
-                  <div>
-                      <div
-                        className="font-medium"
-                        style={{
-                          color: user.trashed == 1 ? "red" : "#4b5563",
-                          textDecoration: user.trashed == 1 ? "line-through" : "",
-                        }}
-                      >
-                        {user.name}
-                      </div>
-                      <div
-                        className="flex flex-col justify-start items-start"
-                        style={{
-                          color: user.trashed == 1 ? "red" : "#4b5563",
-                          textDecoration: user.trashed == 1 ? "line-through" : "",
-                        }}
-                      >
-                       <span className="flex items-center"><Mail size={13} className="mr-2 font-bold"/> {user.email} </span> <span className="flex items-center"><KeyRound size={13} className="mr-2 font-bold" /> {user.password}</span>
-                      </div>
-                      <div className="flex gap-2 mt-1">
-                        
-                        <div
-                          data-tooltip-id="my-tooltip"
-                          data-tooltip-content={user.user_panel == "AP" ? "Attendance Panel" : "Service Provider"}
-                          className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
-                          style={{
-                            color: user.trashed == 1 ? "red" : "#fff",
-                            textDecoration: user.trashed == 1 ? "line-through" : "",
-                          }}
-                        >
-                          {user.user_panel}
+                                {u.user_type == "subadmin" && user?.user_type == "admin" && (
+                                  <button
+                                    className="text-purple-500 ml-2"
+                                    onClick={() => {
+                                      handleEditPermissionsClick(u);
+                                    }}
+                                  >
+                                    <Shield size={15} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div
-                          className=""
-                          style={{
-                            color: user.trashed == 1 ? "red" : "#4b5563",
-                            textDecoration: user.trashed == 1 ? "line-through" : "",
-                          }}
-                        >
-                          {user.user_type}
+
+                        <div className="">
+                          {u.trashed == 1 ? (
+                            <div
+                              className="text-red flex items-center justify-center"
+                              style={{ textDecoration: "none !important" }}
+                            >
+                              <Frown size={20} />
+                              <span>Deleted User</span>
+                            </div>
+                          ) : markingSubadmin && markingUserId === u.id ? (
+                            <div className="w-full">
+                              <div className="border-t pt-2 mt-2">
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="font-medium flex items-center">
+                                    <Shield
+                                      size={16}
+                                      className="mr-1 text-purple-600"
+                                    />
+                                    Subadmin Permissions
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-2 mb-3">
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="view_users"
+                                      checked={permissions.view_users}
+                                      onChange={() =>
+                                        handlePermissionChange("view_users")
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="view_users"
+                                      className="text-sm"
+                                    >
+                                      View Users
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="add_users"
+                                      checked={permissions.add_users}
+                                      onChange={() =>
+                                        handlePermissionChange("add_users")
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="add_users"
+                                      className="text-sm"
+                                    >
+                                      Add Users
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="edit_users"
+                                      checked={permissions.edit_users}
+                                      onChange={() =>
+                                        handlePermissionChange("edit_users")
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="edit_users"
+                                      className="text-sm"
+                                    >
+                                      Edit Users
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="delete_users"
+                                      checked={permissions.delete_users}
+                                      onChange={() =>
+                                        handlePermissionChange("delete_users")
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="delete_users"
+                                      className="text-sm"
+                                    >
+                                      Delete Users
+                                    </label>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="access_requests"
+                                      checked={permissions.access_requests}
+                                      onChange={() =>
+                                        handlePermissionChange(
+                                          "access_requests"
+                                        )
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="access_requests"
+                                      className="text-sm"
+                                    >
+                                      Access Requests
+                                    </label>
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={cancelSubadminChange}
+                                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-1 rounded text-xs"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={confirmSubadminChange}
+                                    className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs flex items-center"
+                                  >
+                                    <Check size={12} className="mr-1" />
+                                    Confirm
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col items-end justify-start gap-2">
+                              <div className="flex justify-start gap-2">
+                                {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.edit_users == 1)) && (
+<button
+                                  onClick={() => handleEditClick(u.id)}
+                                  className="text-blue-500 hover:text-blue-700 p-1 border rounded"
+                                >
+                                  <Pencil size={13} />
+                                </button>
+                                )}
+                                {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.delete_users == 1)) && (
+                                <button
+                                  onClick={() => handleDelete(u.id)}
+                                  className="text-red-500 hover:text-red-700 p-1 border rounded"
+                                >
+                                  <Trash size={13} />
+                                </button>
+                                )}
+                              </div>
+                              <div className="flex justify-start gap-2">
+                                {user?.user_type == "admin" && (
+                                  <button
+                                    onClick={() => {
+                                      onClose();
+                                      goToChat(u);
+                                    }}
+                                    className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded f-11"
+                                  >
+                                    <MessagesSquare size={11} /> View Chats
+                                  </button>
+                                )}
+                                {user?.user_type == "admin" && (
+                                  <button
+                                    onClick={() =>
+                                      toggleUserType(u.id, u.user_type)
+                                    }
+                                    className="text-purple-500 hover:text-purple-700 border p-1 rounded f-11"
+                                  >
+                                    {u.user_type === "user"
+                                      ? "Mark as Subadmin"
+                                      : "Mark as User"}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div>
+                      <div
+                        colSpan="5"
+                        className="text-center p-3 text-gray-500"
+                      >
+                        No users found.
                       </div>
                     </div>
-                  </div>
-                  
-                  
-                  <div className="">
-                    {user.trashed == 1 ? (
-                      <div
-                        className="text-red flex items-center justify-center"
-                        style={{ textDecoration: "none !important" }}
-                      >
-                        {" "}
-                        <Frown size={20} />
-                        <span>Deleted User</span>
-                      </div>
-                    ) : (
-                      
-                      <div className="flex flex-col items-end justify-start gap-2">
-                        <div className="flex justify-start gap-2">
-                          <button
-                            onClick={() => handleEditClick(user.id)}
-                            className="text-blue-500 hover:text-blue-700 p-1 border rounded"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="text-red-500 hover:text-red-700 p-1 border rounded"
-                          >
-                            <Trash size={13} />
-                          </button>
-                        </div>
-                        <div className="flex justify-start gap-2">
-                          <button
-                            onClick={() => {
-                              onClose();
-                              goToChat(user)
-                            }}
-                            className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded f-11"
-                          >
-                            <MessagesSquare size={11} /> View Chats
-                          </button>
-                          
-
-                          
-                          <button
-                            onClick={() =>
-                              toggleUserType(user.id, user.user_type)
-                            }
-                            className="text-purple-500 hover:text-purple-700 border p-1 rounded f-11"
-                          >
-                            {user.user_type === "user"
-                              ? "Mark as Subadmin"
-                              : "Mark as User"}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div>
-                <div colSpan="5" className="text-center p-3 text-gray-500">
-                  No users found.
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
-      </div>
-      <AnimatePresence>
-        {addOpen && (
-          <AddUser
-            onClose={() => {
-              setAddOpen(false);
-            }}
-            after={fetchUsers}
-          />
-        )}
-        {editOpen && (
-          <EditUser
-            onClose={() => {
-              setEditOpen(false);
-            }}
-            userId={selectedUser}
-            after={fetchUsers}
-          />
-        )}
-      </AnimatePresence>
 
-      {isModalOpen && (
-        <ConfirmationModal
-          title="Are you sure you want to delete this user?"
-          message="This action cannot be undone."
-          onYes={confirmDelete}
-          onClose={() => setIsModalOpen(false)}
-        />
-      )}
-    </div>
-    </motion.div>
+          <AnimatePresence>
+            {addOpen && (
+              <AddUser
+                onClose={() => {
+                  setAddOpen(false);
+                }}
+                after={fetchUsers}
+              />
+            )}
+            {editOpen && (
+              <EditUser
+                onClose={() => {
+                  setEditOpen(false);
+                }}
+                userId={selectedUser}
+                after={fetchUsers}
+              />
+            )}
+          </AnimatePresence>
+
+          {isModalOpen && (
+            <ConfirmationModal
+              title="Are you sure you want to delete this user?"
+              message="This action cannot be undone."
+              onYes={confirmDelete}
+              onClose={() => setIsModalOpen(false)}
+            />
+          )}
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 };

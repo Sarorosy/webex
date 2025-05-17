@@ -295,7 +295,7 @@ export default function Header() {
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full">
+      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full bg-gradient-to-b from-orange-50">
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
@@ -342,7 +342,7 @@ export default function Header() {
                 {/* Chat */}
               </button>
 
-              {(user.user_type == "admin" || user.user_type == "subadmin") && (
+              {(user.user_type == "admin" || (user.user_type == "subadmin" && user.access_requests == 1)) && (
                 <button
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
@@ -374,7 +374,7 @@ export default function Header() {
                   {/* New Space */}
                 </button>
               )}
-              {user.user_type == "admin" && (
+              {(user.user_type == "admin" || user.user_type == "subadmin" && user.view_users == 1) && (
                 <button
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"

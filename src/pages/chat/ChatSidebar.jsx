@@ -504,7 +504,7 @@ const ChatSidebar = ({
                 className={`flex items-center gap-1 px-2 py-1 rounded f-13 ${
                   activeTab === tab
                     ? "bg-orange-500 text-white font-semibold border border-orange-500"
-                    : "text-gray-600 border border-orange-500"
+                    : "text-gray-600 border border-orange-500  hover:bg-orange-500 hover:text-white"
                 }`}
               >
                 <Icon size={12} />
