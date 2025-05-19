@@ -12,7 +12,7 @@ import Profile from "../pages/user/Profile";
 
 export default function AppRouter() {
   return (
-    <Router >
+    <Router basename="/webex" >
       <ScrollToTop />
       <SelectedUserProvider>
       <Routes>
