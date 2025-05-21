@@ -212,7 +212,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
         transition={{ duration: 0.2 }}
         className="bg-white rounded-md shadow-lg w-full max-w-md"
       >
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
           <h2 className="text-lg font-semibold text-white">Edit Message</h2>
           <div>
             <button

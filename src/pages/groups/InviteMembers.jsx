@@ -146,7 +146,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
       <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative">
        
 
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
           <h2 className="text-lg font-semibold text-white">Invite Members</h2>
           <div>
             <button

@@ -113,7 +113,7 @@ const TotalSearch = ({ onClose }) => {
               <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
                 <button
                   onClick={() => setActiveTab("spaces")}
-                  className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
+                  className={`flex items-center gap-2 px-2 py-1 text-gray-700 border rounded-full hover:bg-gray-200 ${
                     activeTab === "spaces" ? "bg-orange-200" : "bg-gray-100"
                   }`}
                 >
@@ -121,7 +121,7 @@ const TotalSearch = ({ onClose }) => {
                 </button>
                 <button
                   onClick={() => setActiveTab("messages")}
-                  className={`flex items-center gap-2 px-2 py-0.5 text-gray-700 border rounded-full hover:bg-gray-200 ${
+                  className={`flex items-center gap-2 px-2 py-1 text-gray-700 border rounded-full hover:bg-gray-200 ${
                     activeTab === "messages" ? "bg-orange-200" : "bg-gray-100"
                   }`}
                 >

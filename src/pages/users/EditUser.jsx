@@ -117,7 +117,7 @@ const EditUser = ({ userId, onClose, after }) => {
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
             <div className="bg-white rounded-lg w-full max-w-lg shadow-lg relative">
-                <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+                <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
                     <h2 className="text-lg font-semibold text-white">Edit User</h2>
                     <div>
                     <button

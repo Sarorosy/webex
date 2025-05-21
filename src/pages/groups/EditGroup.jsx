@@ -87,7 +87,7 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
     >
       <div className="bg-white w-full max-w-md h-auto overflow-y-auto rounded-lg">
         
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
             <h2 className="text-lg font-semibold text-white">Edit Group</h2>
             <div>
             <button

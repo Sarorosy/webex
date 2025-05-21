@@ -59,7 +59,7 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
       >
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
           <h2 className="text-lg font-semibold text-white">Set Reminder for Message</h2>
           <div>
             <button

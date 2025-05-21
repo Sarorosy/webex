@@ -68,7 +68,7 @@ const AddUser = ({ onClose, after }) => {
                 className="bg-white rounded-lg shadow-lg w-[600px]"
             >
                 
-                <div className='flex justify-between items-center px-4 py-2 bg-orange-500'>
+                <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
                     <h2 className="text-lg font-semibold text-white">Add User</h2>
                     <div>
                     <button
