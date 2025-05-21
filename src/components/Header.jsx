@@ -88,7 +88,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -308,7 +308,7 @@ export default function Header() {
                 
                   {user?.profile_pic ? (
                     <img
-                      src={"http://localhost:5000" + user.profile_pic}
+                      src={"https://webexback.onrender.com" + user.profile_pic}
                       alt="Profile"
                       className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />

@@ -65,7 +65,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messages?sender_id=${
+        `https://webexback.onrender.com/api/chats/messages?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -427,7 +427,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("http://localhost:5000/api/messages/pin", {
+      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -492,7 +492,7 @@ const ChatMessages = ({
           
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "http://localhost:5000/api/chats/messages"
+            "https://webexback.onrender.com/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -699,7 +699,7 @@ const ChatMessages = ({
                     >
                       {msg.profile_pic ? (
                         <img
-                          src={"http://localhost:5000" + msg.profile_pic}
+                          src={"https://webexback.onrender.com" + msg.profile_pic}
                           className="h-8 w-8 rounded-full border-2 border-white shadow-sm"
                         />
                       ) : (
@@ -740,7 +740,7 @@ const ChatMessages = ({
                             "avif",
                             "webp",
                           ].includes(ext);
-                          const fileUrl = `http://localhost:5000/uploads/chatuploads/${msg.filename}`;
+                          const fileUrl = `https://webexback.onrender.com/uploads/chatuploads/${msg.filename}`;
 
                           return (
                             <div className="w-full mb-3">

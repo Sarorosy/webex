@@ -33,7 +33,7 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/messages/find", {
+        const res = await fetch("https://webexback.onrender.com/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -59,7 +59,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/chats/favourite", {
+      const res = await fetch("https://webexback.onrender.com/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,7 +96,7 @@ const ChatHeader = ({
                 src={
                   selectedUser.profile_pic.startsWith("http")
                     ? selectedUser.profile_pic
-                    : "http://localhost:5000" + selectedUser.profile_pic
+                    : "https://webexback.onrender.com" + selectedUser.profile_pic
                 }
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover border"

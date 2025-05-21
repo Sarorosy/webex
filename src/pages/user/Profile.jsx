@@ -37,7 +37,7 @@ const Profile = ({ onClose }) => {
               {/* Profile Picture */}
               {profilePic ? (
                 <img
-                  src={"http://localhost:5000" + profilePic}
+                  src={"https://webexback.onrender.com" + profilePic}
                   alt="Profile"
                   className="w-24 h-24 rounded-full border border-gray-300 shadow-md mb-2"
                 />
