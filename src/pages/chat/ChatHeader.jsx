@@ -1,4 +1,4 @@
-import { DoorOpen, InfoIcon, Pin, Search, Star, X } from "lucide-react";
+import { Building, DoorOpen, InfoIcon, Pin, Search, Star, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
@@ -19,6 +19,7 @@ const ChatHeader = ({
 }) => {
   const { user } = useAuth();
   
+  console.log(selectedUser)
   
   const [isFavourite, setIsFavourite] = useState(
     Array.isArray(JSON.parse(selectedUser?.favourites || "[]")) &&
@@ -128,6 +129,10 @@ const ChatHeader = ({
               </div>
             )}
           </h2>
+
+          {selectedUser?.office_name && selectedUser?.city_name  && (
+            <p className="flex items-center ml-6"><Building className="mr-2 text-gray-700" size={15} /> {selectedUser?.office_name} {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}</p>
+          )}
         </div>
 
         {/* Right Section */}

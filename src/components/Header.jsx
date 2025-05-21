@@ -36,7 +36,9 @@ import toast from "react-hot-toast";
 
 import "./toast.css";
 import TotalSearch from "../pages/chat/TotalSearch.jsx";
+import ConfirmationModal from "./ConfirmationModal.jsx";
 export default function Header() {
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const { user, login, logout } = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
@@ -323,12 +325,12 @@ export default function Header() {
                     }}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Search Globally"
-                className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
               >
                 <Search
                     
                     size={17}
-                    className="text-gray-500"
+                    className=""
                   />
                 {/* Chat */}
               </button>
@@ -336,9 +338,9 @@ export default function Header() {
                 onClick={() => navigate("/chat")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Chat Board"
-                className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
               >
-                <MessagesSquare size={17} className="text-gray-500" />
+                <MessagesSquare size={17} className="" />
                 {/* Chat */}
               </button>
 
@@ -347,9 +349,9 @@ export default function Header() {
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Admin Requests"
-                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
                 >
-                  <LayoutDashboard size={17} className="text-gray-500" />
+                  <LayoutDashboard size={17} className="" />
                   {/* Requests */}
                 </button>
               )}
@@ -358,9 +360,9 @@ export default function Header() {
                   onClick={() => setGroupsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage groups"
-                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
                 >
-                  <Group size={17} className="text-gray-500" />
+                  <Group size={17} className="" />
                   {/* Groups */}
                 </button>
               ) : (
@@ -368,9 +370,9 @@ export default function Header() {
                   onClick={() => setCreateNewSpace(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Create New Space"
-                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
                 >
-                  <Group size={17} className="text-gray-500" />
+                  <Group size={17} className="" />
                   {/* New Space */}
                 </button>
               )}
@@ -379,16 +381,17 @@ export default function Header() {
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage Users"
-                  className="flex items-center p-2 f-13 rounded-full hover:bg-orange-300 text-black transition"
+                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
                 >
-                  <Users size={17} className="text-gray-500" />
+                  <Users size={17} className="" />
                   {/* Manage Users */}
                 </button>
               )}
             </div>
             <div className="flex items-center flex-col" ref={dropdownRef}>
               <button
-                onClick={logout}
+                // onClick={logout}
+                onClick={() => setLogoutOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Logout"
                 className="flex hover:bg-red-500 hover:text-white items-center p-3 rounded-full text-gray-500  transition"
@@ -403,6 +406,17 @@ export default function Header() {
       </div>
 
       <AnimatePresence>
+
+        {logoutOpen && (
+          <ConfirmationModal
+          title="Are you Sure want to logout?"
+          message="You will be logged Out"
+          onYes={logout}
+          onClose={()=>{setLogoutOpen(false)}}
+          />
+        )
+
+        }
         {createNewSpace && (
           <AddGroup
             onClose={() => {

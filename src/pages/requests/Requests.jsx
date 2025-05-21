@@ -133,13 +133,13 @@ const Requests = ({ onClose }) => {
             <div className="flex space-x-2 mb-2">
               <button
                 onClick={() => setTab(1)}
-                className={`px-2 py-1 f-13 rounded ${tab === 1 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                className={`px-3 py-1 f-13 rounded ${tab === 1 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-orange-600 hover:text-white"}`}
               >
                 User Requests
               </button>
               <button
                 onClick={() => setTab(2)}
-                className={`px-2 py-1 f-13 rounded ${tab === 2 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                className={`px-3 py-1 f-13 rounded ${tab === 2 ? "bg-orange-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-orange-600 hover:text-white"}`}
               >
                 Group Requests
               </button>
