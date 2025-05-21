@@ -47,6 +47,8 @@ const EditProfile = ({ onClose }) => {
 
       if (profilePic) {
         formData.append("profile_pic", profilePic); // Send as file
+      }else{
+        formData.append("delete_profile_pic", "yes"); // Send as file
       }
 
       const response = await axios.put(
@@ -180,49 +182,7 @@ const EditProfile = ({ onClose }) => {
               ></textarea>
             </div>
 
-            <div className="">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Choose a cover image
-                </label>
-                <div className="flex flex-wrap gap-1 h-[110px] overflow-y-auto border border-gray-100 p-2">
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                  <button className="border border-gray-200 p-1">
-                    <img src="src/assets/pexels-padrinan-19670.jpg" alt=""  className="w-[70px] h-[40px] " />
-                  </button>
-                </div>
-            </div>
+            
           </div>
 
           <div className="flex justify-end gap-2 mt-3">

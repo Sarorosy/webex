@@ -196,7 +196,14 @@ export default function Login() {
               required
             />
 
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <button
+                    type="button"
+                    onClick={() => {navigate("/forgot-password")}}
+                    className="flex items-center justify-center text-[#D7763D]  py-1 px-2 rounded hover:opacity-90 hover:underline transition f-11"
+                    >
+                    Forgot Password?
+                    </button>
                 <div className="text-end">
                     <button
                     type="submit"
@@ -215,7 +222,10 @@ export default function Login() {
                         "Login"
                     )}
                     </button>
+
+                    
                 </div>
+                
             </div>
           </form>
         ) : (

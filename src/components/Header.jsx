@@ -66,7 +66,7 @@ export default function Header() {
         if ("serviceWorker" in navigator) {
           // Register the service worker manually with the correct path
           const registration = await navigator.serviceWorker.register(
-            "/firebase-messaging-sw.js"
+            "/webex/firebase-messaging-sw.js"
           );
           console.log(
             "Service Worker registered with scope:",

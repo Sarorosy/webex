@@ -36,6 +36,11 @@ const AddGroup = ({ onClose , finalFunction}) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if(selectedMembers.length == 0){
+      toast.error('Please select at least one member');
+      return;
+    }
   
     try {
       setCreating(true)

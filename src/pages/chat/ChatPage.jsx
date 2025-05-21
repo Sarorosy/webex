@@ -8,6 +8,7 @@ import { useAuth } from "../../utils/idb";
 import { AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toast from "react-hot-toast";
+import StartConversation from "./StartConversation";
 
 const ChatPage = () => {
   const { selectedUser, setSelectedUser } = useSelectedUser();
@@ -93,6 +94,7 @@ const ChatPage = () => {
           />
         ) : (
           <div className="flex flex-col flex-1 bg-gradient-to-b from-orange-50 rounded m-2 ml-0 justify-between">
+           <StartConversation />
             </div>
         )}
       </div>
