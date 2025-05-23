@@ -32,7 +32,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
   
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+        const res = await fetch(`https://webexback.onrender.com/api/groups/members/${userId}`);
         const data = await res.json();
   
         if (data.status) {
@@ -41,7 +41,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
             userName: member.name,
             userColor: '#6A0572',
             profilePic: member.profile_pic
-              ? `https://rapidcollaborate.in/webex${member.profile_pic}`
+              ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
           }));
   

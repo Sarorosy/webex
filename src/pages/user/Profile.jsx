@@ -37,7 +37,7 @@ const Profile = ({ onClose }) => {
               {/* Profile Picture */}
               {profilePic ? (
                 <img
-                  src={"https://rapidcollaborate.in/webex" + profilePic}
+                  src={"https://rapidcollaborate.in/ccp" + profilePic}
                   alt="Profile"
                   className="w-24 h-24 rounded-full border border-gray-300 shadow-md mb-2"
                 />

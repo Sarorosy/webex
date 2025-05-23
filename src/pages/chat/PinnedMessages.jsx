@@ -11,7 +11,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
 
     setLoading(true);
     axios
-      .post("http://localhost:5000/api/messages/pinned-messages", {
+      .post("https://webexback.onrender.com/api/messages/pinned-messages", {
         user_id: userId,
         search_user_id: searchUserId,
         type,
@@ -60,7 +60,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                 <div className="flex items-center gap-2 mb-1">
                   {msg.profile_pic ? (
                     <img
-                      src={`http://localhost:5000${msg.profile_pic}`}
+                      src={`https://webexback.onrender.com${msg.profile_pic}`}
                       alt={msg.sender_name}
                       className="w-6 h-6 rounded-full object-cover"
                     />

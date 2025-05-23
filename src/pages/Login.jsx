@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logo from "../assets/rc.png";
+import logo from "../assets/ccp-logo.png";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { useAuth } from "../utils/idb";
@@ -43,7 +43,7 @@ export default function Login() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/users/login", // Adjust endpoint if needed
+        "https://webexback.onrender.com/api/users/login", // Adjust endpoint if needed
         {
           method: "POST",
           headers: {

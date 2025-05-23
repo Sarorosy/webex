@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import logo from "../../assets/rc.png";
+import logo from "../../assets/ccp-logo.png";
 
 const ChatSidebar = ({
   view_user_id,
@@ -111,7 +111,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -564,7 +564,7 @@ const ChatSidebar = ({
                     <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                       {chat.profile_pic ? (
                         <img
-                          src={"https://rapidcollaborate.in/webex" + chat.profile_pic}
+                          src={"https://rapidcollaborate.in/ccp" + chat.profile_pic}
                           alt="Profile"
                           className="w-8 h-8 rounded-full mx-auto object-cover border"
                         />

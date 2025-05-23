@@ -18,7 +18,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/users/getusersforgroup', {
+        const res = await fetch('https://webexback.onrender.com/api/users/getusersforgroup', {
           method: "POST",
           headers: {
             "Content-type": "application/json"
@@ -44,7 +44,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
   
     try {
       setCreating(true)
-      const response = await fetch('http://localhost:5000/api/groups/create', {
+      const response = await fetch('https://webexback.onrender.com/api/groups/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
     });
   };
 
-  const baseURL = "https://rapidcollaborate.in/webex";
+  const baseURL = "https://rapidcollaborate.in/ccp";
 
   // Custom Option with avatar
   const CustomOption = (props) => {

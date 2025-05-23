@@ -2,7 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { ArrowLeft, CheckCircle, Circle } from "lucide-react";
-import logo from "../assets/rc.png";
+import logo from "../assets/ccp-logo.png";
 import { useNavigate } from "react-router-dom";
 
 export default function ForgotPassword() {
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/users/check-user-type",
+        "https://webexback.onrender.com/api/users/check-user-type",
         {
           method: "POST",
           headers: {
@@ -120,7 +120,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        "http://localhost:5000/api/users/update-password",
+        "https://webexback.onrender.com/api/users/update-password",
         {
           method: "POST",
           headers: {

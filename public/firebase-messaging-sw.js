@@ -43,7 +43,7 @@ self.addEventListener('notificationclick', function (event) {
   const data = event.notification.data;
   console.log("Notification clickeddd:", event.notification);
 
-  const targetUrl = 'https://rapidcollaborate.in/webex/chat';
+  const targetUrl = 'https://rapidcollaborate.in/ccp/chat';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {

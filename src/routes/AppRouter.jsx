@@ -13,7 +13,7 @@ import ForgotPassword from "../pages/ForgotPassword";
 
 export default function AppRouter() {
   return (
-    <Router basename="/webex" >
+    <Router basename="/ccp" >
       <ScrollToTop />
       <SelectedUserProvider>
       <Routes>

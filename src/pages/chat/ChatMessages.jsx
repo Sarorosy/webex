@@ -66,7 +66,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messages?sender_id=${
+        `https://webexback.onrender.com/api/chats/messages?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -429,7 +429,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("http://localhost:5000/api/messages/pin", {
+      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -494,7 +494,7 @@ const ChatMessages = ({
           
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "http://localhost:5000/api/chats/messages"
+            "https://webexback.onrender.com/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -701,7 +701,7 @@ const ChatMessages = ({
                     >
                       {msg.profile_pic ? (
                         <img
-                          src={"https://rapidcollaborate.in/webex" + msg.profile_pic}
+                          src={"https://rapidcollaborate.in/ccp" + msg.profile_pic}
                           className="h-8 w-8 rounded-full border-2 border-white shadow-sm"
                         />
                       ) : (
@@ -742,7 +742,7 @@ const ChatMessages = ({
                             "avif",
                             "webp",
                           ].includes(ext);
-                          const fileUrl = `https://rapidcollaborate.in/webex${msg.filename}`;
+                          const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
                           const filenameOnly = msg.filename.split('/').pop();
 
                           return (
