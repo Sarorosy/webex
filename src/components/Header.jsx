@@ -90,7 +90,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -310,7 +310,7 @@ export default function Header() {
                 
                   {user?.profile_pic ? (
                     <img
-                      src={"https://webexback.onrender.com" + user.profile_pic}
+                      src={"https://rapidcollaborate.in/webex" + user.profile_pic}
                       alt="Profile"
                       className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />

@@ -34,7 +34,7 @@ const TotalSearch = ({ onClose }) => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "https://webexback.onrender.com/api/messages/totalfind",
+          "http://localhost:5000/api/messages/totalfind",
           {
             method: "POST",
             headers: {
@@ -160,7 +160,7 @@ const TotalSearch = ({ onClose }) => {
                       >
                         {user.profile_pic ? (
                           <img
-                            src={`https://webexback.onrender.com${user.profile_pic}`}
+                            src={`http://localhost:5000${user.profile_pic}`}
                             alt={user.name}
                             className="w-8 h-8 rounded-full object-cover"
                           />
@@ -196,7 +196,7 @@ const TotalSearch = ({ onClose }) => {
                         <div className="flex items-center gap-2">
                           {msg.profile_pic ? (
                             <img
-                              src={`https://webexback.onrender.com${msg.profile_pic}`}
+                              src={`http://localhost:5000${msg.profile_pic}`}
                               alt={msg.sender_name}
                               className="w-6 h-6 rounded-full object-cover"
                             />

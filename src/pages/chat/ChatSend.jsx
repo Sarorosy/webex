@@ -29,7 +29,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback.onrender.com/api/groups/members/${userId}`
+        `http://localhost:5000/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -41,7 +41,7 @@ const ChatSend = ({
             userName: member.name,
             userColor: "#6A0572",
             profilePic: member.profile_pic
-              ? `https://webexback.onrender.com${member.profile_pic}`
+              ? `http://localhost:5000${member.profile_pic}`
               : null,
           }));
 
@@ -150,7 +150,7 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch("https://webexback.onrender.com/api/chats/send", {
+      const res = await fetch("http://localhost:5000/api/chats/send", {
         method: "POST",
         body: formData, // No need for headers, browser sets Content-Type with boundary
       });
@@ -169,8 +169,12 @@ const ChatSend = ({
       setMessageLoading(false);
       setValue("");
       const chatInput = document.getElementById("chatInput");
+      const chatInput2 = document.getElementById("chatInputuser");
       if (chatInput) {
         chatInput.innerHTML = "";
+      }
+      if (chatInput2) {
+        chatInput2.innerHTML = "";
       }
     }
   };
@@ -185,7 +189,7 @@ const ChatSend = ({
     }
   };
 
-  const handlePaste = (e) => {
+  const handlePasteold = (e) => {
     e.preventDefault();
     const text = e.clipboardData.getData("text/plain");
 
@@ -193,15 +197,89 @@ const ChatSend = ({
     document.execCommand("insertText", false, text);
   };
 
-  useEffect(() => {
-    // Logging the selected users when the state changes
-    console.log("Selected users updated:", selectedUsers);
-  }, [selectedUsers]); // Runs every time selectedUsers changes
+  const handlePaste = (e) => {
+  e.preventDefault();
+
+  const clipboardData = e.clipboardData;
+  const items = clipboardData.items;
+  let imageFound = false;
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type.indexOf("image") !== -1) {
+      imageFound = true;
+
+      const file = item.getAsFile();
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const img = document.createElement("img");
+        img.src = event.target.result;
+
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        range.insertNode(img);
+
+        const p = document.createElement("p");
+        p.innerHTML = "<br>";
+        range.setStartAfter(img);
+        range.insertNode(p);
+
+        range.setStartAfter(p);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        // 🔥 Manually trigger input event to notify React
+        triggerInputEvent(e.target);
+      };
+      reader.readAsDataURL(file);
+
+      break;
+    }
+  }
+
+  if (!imageFound) {
+    const text = clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const p = document.createElement("p");
+    p.innerHTML = "<br>";
+    range.insertNode(p);
+
+    range.setStartAfter(p);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // 🔥 Manually trigger input event to notify React
+    triggerInputEvent(e.target);
+  }
+};
+
+// 🔁 Helper to dispatch an input event manually
+const triggerInputEvent = (el) => {
+  const event = new Event("input", {
+    bubbles: true,
+    cancelable: true,
+  });
+  el.dispatchEvent(event);
+};
+
 
   useEffect(() => {
-    // Logging value updates every time value changes
+    console.log("Selected users updated:", selectedUsers);
+  }, [selectedUsers]);
+
+  useEffect(() => {
     console.log("Value updated:", value);
-  }, [value]); // Runs every time value changes
+  }, [value]);
 
   // Select event handler
   const handleSelect = (e) => {
@@ -306,102 +384,130 @@ const ChatSend = ({
         </div>
       )}
 
-
       <div>
         {/* Paperclip icon (file input trigger) */}
 
         {/* Show selected file with X */}
         {selectedFile && (
-      <div className="flex items-center gap-2">
-          <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile absolute top-[-30px]">
-            <span className="mr-2 truncate max-w-[150px]">
-              {selectedFile.name}
-            </span>
-            <button
-              onClick={() => setSelectedFile(null)}
-              className="text-gray-500 hover:text-red-500"
-            >
-              <X size={14} />
-            </button>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile absolute top-[-30px]">
+              <span className="mr-2 truncate max-w-[150px]">
+                {selectedFile.name}
+              </span>
+              <button
+                onClick={() => setSelectedFile(null)}
+                className="text-gray-500 hover:text-red-500"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
-      </div>
         )}
 
-      <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto">
-        {type === "group" ? (
-          <div className="relative w-full">
-            {value.trim() === "" && (
-              <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
-                Type @ to mention someone...
-              </div>
-            )}
-            <div
-              id="chatInput"
-              contentEditable
-              className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
-              placeholder="Type @ to mention someone..."
-              onInput={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-            ></div>
+        <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto">
+          {type === "group" ? (
+            <div className="relative w-full">
+              {value.trim() === "" && (
+                <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                  Type @ to mention someone...
+                </div>
+              )}
+              <div
+                id="chatInput"
+                contentEditable
+                className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
+                placeholder="Type @ to mention someone..."
+                onInput={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+              ></div>
 
-            <MentionComponent
-              dataSource={groupUsers}
-              ref={mentionRef}
-              fields={{ text: "userName" }}
-              target="#chatInput"
-              mentionChar="@"
-              allowSpaces={true}
-              popupHeight="200px"
-              popupWidth="250px"
-              itemTemplate={itemTemplate}
-              select={handleSelect} // Attach the select event handler
-            />
-          </div>
-        ) : (
-          <textarea
-            value={value}
-            onChange={handleInput}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            rows={5}
-            className="w-full h-[70px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
-          />
-        )}
-
-        <div className="flex flex-col items-center gap-2">
-          {!isReply && (
-            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
-              <Paperclip size={13} />
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => setSelectedFile(e.target.files[0])}
+              <MentionComponent
+                dataSource={groupUsers}
+                ref={mentionRef}
+                fields={{ text: "userName" }}
+                target="#chatInput"
+                mentionChar="@"
+                allowSpaces={true}
+                popupHeight="200px"
+                popupWidth="250px"
+                itemTemplate={itemTemplate}
+                select={handleSelect} // Attach the select event handler
               />
-            </label>
+            </div>
+          ) : (
+            // <textarea
+            //   value={value}
+            //   onChange={handleInput}
+            //   onKeyDown={handleKeyDown}
+            //   placeholder="Type your message..."
+            //   rows={5}
+            //   className="w-full h-[70px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
+            // />
+            <div className="relative w-full">
+              {value.trim() === "" && (
+                <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                  Type your message...
+                </div>
+              )}
+              <div
+                id="chatInputuser"
+                contentEditable
+                className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
+                placeholder="Type @ to mention someone..."
+                onInput={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+              ></div>
+
+              <MentionComponent
+                dataSource={[]}
+                ref={mentionRef}
+                fields={{ text: "userName" }}
+                target="#chatInputuser"
+                mentionChar="^"
+                allowSpaces={true}
+                popupHeight="200px"
+                popupWidth="250px"
+                itemTemplate={itemTemplate}
+                select={handleSelect} // Attach the select event handler
+              />
+            </div>
           )}
 
-          <button
-            onClick={handleSend}
-            disabled={submitBtnDisabled}
-            className="bg-orange-500 text-white px-2 py-2 rounded hover:bg-orange-600 transition "
-          >
-            {submitBtnDisabled ? (
-              <div className="mx-auto flex justify-center w-full">
-                <ScaleLoader
-                  className="mx-auto"
-                  color="#fff"
-                  height={14}
-                  width={3}
-                  radius={2}
+          <div className="flex flex-col items-center gap-2">
+            {!isReply && (
+              <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
+                <Paperclip size={13} />
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
                 />
-              </div>
-            ) : (
-              <Send size={13} />
+              </label>
             )}
-          </button>
+
+            <button
+              onClick={handleSend}
+              disabled={submitBtnDisabled}
+              className="bg-orange-500 text-white px-2 py-2 rounded hover:bg-orange-600 transition "
+            >
+              {submitBtnDisabled ? (
+                <div className="mx-auto flex justify-center w-full">
+                  <ScaleLoader
+                    className="mx-auto"
+                    color="#fff"
+                    height={14}
+                    width={3}
+                    radius={2}
+                  />
+                </div>
+              ) : (
+                <Send size={13} />
+              )}
+            </button>
+          </div>
         </div>
-      </div>
       </div>
     </>
   );

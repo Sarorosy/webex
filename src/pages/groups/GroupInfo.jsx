@@ -34,12 +34,12 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
-        const groupRes = await fetch(`https://webexback.onrender.com/api/groups/group/${selectedGroup.id}`);
+        const groupRes = await fetch(`http://localhost:5000/api/groups/group/${selectedGroup.id}`);
         const groupData = await groupRes.json();
         if (groupData.status) setGroup(groupData.group);
         setLoadingGroup(false);
 
-        const membersRes = await fetch(`https://webexback.onrender.com/api/groups/members/${selectedGroup.id}`);
+        const membersRes = await fetch(`http://localhost:5000/api/groups/members/${selectedGroup.id}`);
         const membersData = await membersRes.json();
         if (membersData.status) setMembers(membersData.members);
         setLoadingMembers(false);
@@ -55,7 +55,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
   const handleSendRequest = async() =>{
     try{
-      const response = await fetch("https://webexback.onrender.com/api/grouplimit/send",{
+      const response = await fetch("http://localhost:5000/api/grouplimit/send",{
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -173,7 +173,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                   <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
                     {member.profile_pic ? (
                       <img
-                        src={`https://webexback.onrender.com${member.profile_pic}`}
+                        src={`http://localhost:5000${member.profile_pic}`}
                         alt={member.name}
                         className="w-10 h-full object-cover"
                       />
