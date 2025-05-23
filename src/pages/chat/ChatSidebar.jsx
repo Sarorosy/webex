@@ -111,7 +111,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -583,7 +583,7 @@ const ChatSidebar = ({
                           : "text-red-500"
                       }`}
                     >
-                      {chat.name}
+                      {chat.id == user?.id ? chat.name+ " (You)" : chat.name}
                     </span>
                     {isFavourite && (
                       <Star

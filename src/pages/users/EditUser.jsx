@@ -28,7 +28,7 @@ const EditUser = ({ userId, onClose, after }) => {
         const fetchUserDetails = async () => {
             try {
                 setFetching(true);
-                const response = await fetch(`https://webexback.onrender.com/api/users/user/${userId}`);
+                const response = await fetch(`http://localhost:5000/api/users/user/${userId}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -48,7 +48,7 @@ const EditUser = ({ userId, onClose, after }) => {
                         max_group_count: data.user.max_group_count || 5,
                         office_name: data.user.office_name || "",
                         city_name: data.user.city_name || "",
-                        profilePic: data.user.profile_pic ? `https://webexback.onrender.com${data.user.profile_pic}` : null
+                        profilePic: data.user.profile_pic ? `https://rapidcollaborate.in/webex${data.user.profile_pic}` : null
                     });
 
                 }
@@ -98,7 +98,7 @@ const EditUser = ({ userId, onClose, after }) => {
             if (userData.profilePic) {
                 formData.append("profile_pic", userData.profilePic);
             }
-            const response = await axios.put(`https://webexback.onrender.com/api/users/update`, formData, {
+            const response = await axios.put(`http://localhost:5000/api/users/update`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             if (response.data.status) {

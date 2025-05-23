@@ -32,7 +32,7 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
   const handleSubmit = async () => {
     const reminderTime = calculateReminderTime(selectedTime);
     try {
-      const response = await axios.post('https://webexback.onrender.com/api/reminders/reminder', {
+      const response = await axios.post('http://localhost:5000/api/reminders/reminder', {
         msg_id: msgId,
         user_id: userId,
         time: reminderTime

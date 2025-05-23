@@ -34,7 +34,7 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("https://webexback.onrender.com/api/messages/find", {
+        const res = await fetch("http://localhost:5000/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -60,7 +60,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback.onrender.com/api/chats/favourite", {
+      const res = await fetch("http://localhost:5000/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -111,7 +111,7 @@ const ChatHeader = ({
 
           <h2 className="text-lg font-bold text-gray-800 tracking-wide flex flex-col ml-2">
             <span className="flex items-center">
-              {selectedUser?.name || "Unknown User"}
+              {selectedUser?.id == user?.id ? selectedUser?.name + " (You)" : selectedUser?.name || "Unknown User"}
               <button onClick={handleFavourite}>
                 <Star
                   size={18}

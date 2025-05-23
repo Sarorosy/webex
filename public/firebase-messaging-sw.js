@@ -30,7 +30,7 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.data.sender_name;
   const options = {
     body: payload.data.message,
-    icon: payload.data.profile_pic,
+    icon: payload.data.profile_pic || `https://ui-avatars.com/api/?name=${payload.data.sender_name.charAt(0)}&background=random&color=fff&size=128`,
     data: payload.data
   };
 

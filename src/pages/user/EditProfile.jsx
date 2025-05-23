@@ -10,7 +10,7 @@ const EditProfile = ({ onClose }) => {
   const [pronouns, setPronouns] = useState(user?.pronouns || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [profilePic, setProfilePic] = useState(
-    user && user.profile_pic ? "https://webexback.onrender.com" + user.profile_pic : null
+    user && user.profile_pic ? "http://localhost:5000" + user.profile_pic : null
   );
   const [loading, setLoading] = useState(false);
 
@@ -52,7 +52,7 @@ const EditProfile = ({ onClose }) => {
       }
 
       const response = await axios.put(
-        `https://webexback.onrender.com/api/users/update`,
+        `http://localhost:5000/api/users/update`,
         formData,
         {
           headers: {

@@ -58,6 +58,7 @@ const ChatMessages = ({
 
   const fetchMessages = async (skipCount = 0) => {
     if (isFetchingRef.current) return [];
+    // if(!hasMore) return [];
 
     try {
       isFetchingRef.current = true;
@@ -65,7 +66,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback.onrender.com/api/chats/messages?sender_id=${
+        `http://localhost:5000/api/chats/messages?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -121,7 +122,7 @@ const ChatMessages = ({
     if (containerRef.current && messages.length > 0) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [messages.length === 0 ? messages : null]);
+  }, [messages.length == 0 ? messages : null]);
 
   const handleScroll = async () => {
     const container = containerRef.current;
@@ -133,16 +134,17 @@ const ChatMessages = ({
       100;
     setShowScrollToBottom(!isAtBottom);
 
-    if (container.scrollTop < 100) {
+    if (container.scrollTop < 10) { // here set to 100
       const prevScrollHeight = container.scrollHeight;
 
-      const olderMessages = await fetchMessages(skip);
+       const olderMessages = await fetchMessages(skip);
+      //const olderMessages = [];
 
       if (olderMessages.length > 0) {
         setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
         setSkip(skip + olderMessages.length);
 
-        const moreAvailable = olderMessages.length === limit;
+        const moreAvailable = olderMessages.length == limit;
         setHasMore(moreAvailable);
         hasMoreRef.current = moreAvailable;
 
@@ -427,7 +429,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -492,7 +494,7 @@ const ChatMessages = ({
           
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback.onrender.com/api/chats/messages"
+            "http://localhost:5000/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",

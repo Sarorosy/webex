@@ -71,7 +71,7 @@ const ManageUsers = ({ onClose }) => {
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        "https://webexback.onrender.com/api/users/fetchallusers"
+        "http://localhost:5000/api/users/fetchallusers"
       );
       const data = await response.json();
       if (data.status) {
@@ -112,7 +112,7 @@ const ManageUsers = ({ onClose }) => {
     if (!selectedUser) return;
     try {
       const response = await fetch(
-        `https://webexback.onrender.com/api/users/delete/${selectedUser}`,
+        `http://localhost:5000/api/users/delete/${selectedUser}`,
         {
           method: "DELETE",
         }
@@ -166,7 +166,7 @@ const ManageUsers = ({ onClose }) => {
       }
 
       const response = await fetch(
-        `https://webexback.onrender.com/api/users/changeUserType`,
+        `http://localhost:5000/api/users/changeUserType`,
         {
           method: "PUT",
           headers: {

@@ -29,7 +29,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback.onrender.com/api/groups/members/${userId}`
+        `http://localhost:5000/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -150,7 +150,7 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch("https://webexback.onrender.com/api/chats/send", {
+      const res = await fetch("http://localhost:5000/api/chats/send", {
         method: "POST",
         body: formData, // No need for headers, browser sets Content-Type with boundary
       });

@@ -90,7 +90,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -180,17 +180,9 @@ export default function Header() {
             <div className="flex-1 w-0 p-4">
               <div className="flex items-start">
                 <div className="flex-shrink-0 pt-0.5">
-                  {profilePic ? (
-                    <img
-                      className="h-10 w-10 rounded-full"
-                      src={profilePic}
-                      alt="Profile"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
+                  <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
                       {initial}
                     </div>
-                  )}
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900">
