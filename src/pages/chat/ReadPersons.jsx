@@ -11,7 +11,7 @@ const ReadPersons = ({ messageId }) => {
     try {
       setLoading(load);
       const res = await axios.get(
-        `http://localhost:5000/api/chats/read-persons/${messageId}`
+        `https://webexback.onrender.com/api/chats/read-persons/${messageId}`
       );
       if (res.data.status) {
         setReadUsers(res.data.data);
@@ -68,7 +68,7 @@ const ReadPersons = ({ messageId }) => {
             >
               {user.profile_pic ? (
                 <img
-                  src={`http://localhost:5000${user.profile_pic}`}
+                  src={`https://rapidcollaborate.in/webex${user.profile_pic}`}
                   alt={user.name}
                   className="w-full h-full object-cover"
                 />
