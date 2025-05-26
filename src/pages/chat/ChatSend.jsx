@@ -22,14 +22,52 @@ const ChatSend = ({
 }) => {
   const [value, setValue] = useState("");
   const mentionRef = useRef(null);
+  const inputRef = useRef(null);
   const [groupUsers, setGroupUsers] = useState([]);
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const localStorageKey = `chat_input_${userId}_type_${type}`;
+
+  
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
+  const TYPING_TIMEOUT = 2000;
+
+  useEffect(() => {
+    const socket = getSocket();
+    connectSocket(user?.id)
+    if (!value.trim()) return;
+
+    if (socket && socket.connected && user?.id && userId) {
+      socket.emit("typing", { from: user?.id, to: userId });
+      setIsTyping(true);
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false);
+      }, TYPING_TIMEOUT);
+    }
+  }, [value]);
+
+  // Optional cleanup
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+
+
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback.onrender.com/api/groups/members/${userId}`
+        `http://localhost:5000/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -45,7 +83,14 @@ const ChatSend = ({
               : null,
           }));
 
-        setGroupUsers(transformedUsers);
+        const allUser = {
+          id: "all",
+          userName: "All",
+          userColor: "#000000",
+          profilePic: null,
+        };
+
+        setGroupUsers([allUser, ...transformedUsers]);
       } else {
         console.error(data.message || "Failed to fetch group members");
       }
@@ -61,6 +106,15 @@ const ChatSend = ({
     if (type === "group") {
       fetchUsers();
     }
+
+    const chatInput = document.getElementById("chatInput");
+    const chatInput2 = document.getElementById("chatInputuser");
+    if (chatInput) {
+      chatInput.innerHTML = "";
+    }
+    if (chatInput2) {
+      chatInput2.innerHTML = "";
+    }
   }, [type, userId]);
 
   useEffect(() => {
@@ -71,6 +125,17 @@ const ChatSend = ({
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const { user } = useAuth(); // Get sender_id
+
+  useEffect(() => {
+    console.log("selected Users:", selectedUsers);
+  }, [selectedUsers]);
+
+  useEffect(() => {
+    const hasAll = selectedUsers.some((u) => u.id === "all");
+    if (hasAll) {
+      setSelectedUsers(groupUsers);
+    }
+  }, [selectedUsers, groupUsers]);
 
   const onSearch = (event) => {
     const query = event.query.toLowerCase();
@@ -101,15 +166,7 @@ const ChatSend = ({
     </div>
   );
 
-  const handleInput = (e) => {
-    setValue(e.target.value);
-
-    const socket = getSocket();
-    socket.emit("typing", {
-      from: user.id,
-      to: userId,
-    });
-  };
+  
 
   const handleSend = async () => {
     if (!value.trim() && !selectedFile) return;
@@ -150,7 +207,7 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch("https://webexback.onrender.com/api/chats/send", {
+      const res = await fetch("http://localhost:5000/api/chats/send", {
         method: "POST",
         body: formData, // No need for headers, browser sets Content-Type with boundary
       });
@@ -176,6 +233,7 @@ const ChatSend = ({
       if (chatInput2) {
         chatInput2.innerHTML = "";
       }
+      localStorage.removeItem(localStorageKey);
     }
   };
 
@@ -189,89 +247,82 @@ const ChatSend = ({
     }
   };
 
-  const handlePasteold = (e) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text/plain");
-
-    // Insert plain text at the cursor position
-    document.execCommand("insertText", false, text);
-  };
+  
 
   const handlePaste = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const clipboardData = e.clipboardData;
-  const items = clipboardData.items;
-  let imageFound = false;
+    const clipboardData = e.clipboardData;
+    const items = clipboardData.items;
+    let imageFound = false;
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (item.type.indexOf("image") !== -1) {
-      imageFound = true;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        imageFound = true;
 
-      const file = item.getAsFile();
+        const file = item.getAsFile();
 
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const img = document.createElement("img");
-        img.src = event.target.result;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = document.createElement("img");
+          img.src = event.target.result;
 
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+          const selection = window.getSelection();
+          if (!selection.rangeCount) return;
 
-        const range = selection.getRangeAt(0);
-        range.insertNode(img);
+          const range = selection.getRangeAt(0);
+          range.insertNode(img);
 
-        const p = document.createElement("p");
-        p.innerHTML = "<br>";
-        range.setStartAfter(img);
-        range.insertNode(p);
+          const p = document.createElement("p");
+          p.innerHTML = "<br>";
+          range.setStartAfter(img);
+          range.insertNode(p);
 
-        range.setStartAfter(p);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
+          range.setStartAfter(p);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
 
-        // 🔥 Manually trigger input event to notify React
-        triggerInputEvent(e.target);
-      };
-      reader.readAsDataURL(file);
+          // 🔥 Manually trigger input event to notify React
+          triggerInputEvent(e.target);
+        };
+        reader.readAsDataURL(file);
 
-      break;
+        break;
+      }
     }
-  }
 
-  if (!imageFound) {
-    const text = clipboardData.getData("text/plain");
-    document.execCommand("insertText", false, text);
+    if (!imageFound) {
+      const text = clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
 
-    const selection = window.getSelection();
-    if (!selection.rangeCount) return;
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
 
-    const range = selection.getRangeAt(0);
-    const p = document.createElement("p");
-    p.innerHTML = "<br>";
-    range.insertNode(p);
+      const range = selection.getRangeAt(0);
+      const p = document.createElement("p");
+      p.innerHTML = "<br>";
+      range.insertNode(p);
 
-    range.setStartAfter(p);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
+      range.setStartAfter(p);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
 
-    // 🔥 Manually trigger input event to notify React
-    triggerInputEvent(e.target);
-  }
-};
+      // 🔥 Manually trigger input event to notify React
+      triggerInputEvent(e.target);
+    }
+  };
 
-// 🔁 Helper to dispatch an input event manually
-const triggerInputEvent = (el) => {
-  const event = new Event("input", {
-    bubbles: true,
-    cancelable: true,
-  });
-  el.dispatchEvent(event);
-};
-
+  // 🔁 Helper to dispatch an input event manually
+  const triggerInputEvent = (el) => {
+    const event = new Event("input", {
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(event);
+  };
 
   useEffect(() => {
     console.log("Selected users updated:", selectedUsers);
@@ -329,8 +380,10 @@ const triggerInputEvent = (el) => {
   // Input change handler to track value changes
   const handleInputChange = (e) => {
     setValue(e.target.innerHTML);
+    localStorage.setItem(localStorageKey, e.target.innerHTML);
     console.log("Input changed, new value:", e.target.innerHTML);
   };
+
   useEffect(() => {
     // Create a dummy DOM to parse the HTML value
     const tempDiv = document.createElement("div");
@@ -353,6 +406,39 @@ const triggerInputEvent = (el) => {
     }
   }, [value]);
 
+  
+  useEffect(() => {
+    if (isReply && inputRef.current) {
+      inputRef.current.focus();
+
+      // Optional: Move cursor to the end
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.selectNodeContents(inputRef.current);
+      range.collapse(false); // move cursor to the end
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, [isReply]);
+
+  useEffect(() => {
+  (async () => {
+    try {
+      const saved = localStorage.getItem(localStorageKey);
+      if (saved) {
+        console.log("Restoring saved input:", saved);
+        setValue(saved);
+        if (inputRef.current) {
+          inputRef.current.innerHTML = saved;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to restore input:", error);
+    }
+  })();
+}, [localStorageKey, userId, type]); 
+ 
+
   return (
     <>
       {isReply && (
@@ -362,11 +448,9 @@ const triggerInputEvent = (el) => {
             <div
               dangerouslySetInnerHTML={{
                 __html:
-                  replyMessage
-                    .split(/\s+/) // split by spaces
-                    .slice(0, 10) // take first 10 words
-                    .join(" ") +
-                  (replyMessage.split(/\s+/).length > 10 ? "..." : ""),
+                  replyMessage.length > 60
+                    ? replyMessage.slice(0, 60) + "..."
+                    : replyMessage,
               }}
             />
           </div>
@@ -414,6 +498,7 @@ const triggerInputEvent = (el) => {
               )}
               <div
                 id="chatInput"
+                ref={inputRef}
                 contentEditable
                 className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
                 placeholder="Type @ to mention someone..."
@@ -436,14 +521,6 @@ const triggerInputEvent = (el) => {
               />
             </div>
           ) : (
-            // <textarea
-            //   value={value}
-            //   onChange={handleInput}
-            //   onKeyDown={handleKeyDown}
-            //   placeholder="Type your message..."
-            //   rows={5}
-            //   className="w-full h-[70px] border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
-            // />
             <div className="relative w-full">
               {value.trim() === "" && (
                 <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
@@ -452,6 +529,7 @@ const triggerInputEvent = (el) => {
               )}
               <div
                 id="chatInputuser"
+                ref={inputRef}
                 contentEditable
                 className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
                 placeholder="Type @ to mention someone..."

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
 import SearchResults from "./SearchResults";
+import { connectSocket, getSocket } from "../../utils/Socket";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
 
 const ChatHeader = ({
   selectedUser,
@@ -19,12 +21,22 @@ const ChatHeader = ({
 }) => {
   const { user } = useAuth();
   
-  console.log(selectedUser)
+  //console.log(selectedUser)
   
-  const [isFavourite, setIsFavourite] = useState(
-    Array.isArray(JSON.parse(selectedUser?.favourites || "[]")) &&
-      JSON.parse(selectedUser.favourites || "[]").includes(user.id)
-  );
+  const [isFavourite, setIsFavourite] = useState(false);
+  const { setSelectedUser } = useSelectedUser();
+
+useEffect(() => {
+  if (selectedUser) {
+    try {
+      const favourites = JSON.parse(selectedUser.favourites || "[]");
+      setIsFavourite(Array.isArray(favourites) && favourites.includes(user?.id));
+    } catch (error) {
+      console.error("Failed to parse favourites", error);
+      setIsFavourite(false);
+    }
+  }
+}, [selectedUser, user?.id]);
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -34,7 +46,7 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("https://webexback.onrender.com/api/messages/find", {
+        const res = await fetch("http://localhost:5000/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -60,7 +72,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback.onrender.com/api/chats/favourite", {
+      const res = await fetch("http://localhost:5000/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -85,6 +97,31 @@ const ChatHeader = ({
     setSelectedMessage(null);
     setQuery("");
   }, [selectedUser]);
+
+  useEffect(() => {
+      connectSocket(user?.id);
+      const socket = getSocket();
+
+    
+  
+      const handleGroupUpdated = (data) => {
+        console.log("groupdata", data)
+        if(selectedUser?.id == data.id && selectedUser?.type == "group") {
+          setSelectedUser((prev) => ({
+            ...prev,
+            name: data.name,
+          }));
+        }
+        
+      };
+  
+  
+     socket.on("group_updated", handleGroupUpdated);
+  
+      return () => {
+        socket.off("group_updated", handleGroupUpdated);
+      };
+    }, [user?.id, selectedUser]);
 
   return (
     <div className="relative">
@@ -111,7 +148,7 @@ const ChatHeader = ({
 
           <h2 className="text-lg font-bold text-gray-800 tracking-wide flex flex-col ml-2">
             <span className="flex items-center">
-              {selectedUser?.id == user?.id ? selectedUser?.name + " (You)" : selectedUser?.name || "Unknown User"}
+              {(selectedUser?.id == user?.id && selectedUser?.type == "user") ? selectedUser?.name + " (You)" : selectedUser?.name || "Unknown User"}
               <button onClick={handleFavourite}>
                 <Star
                   size={18}

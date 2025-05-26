@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 let socket;
 let socketInitialized = false;
 
-const SOCKET_URL = "https://webexback.onrender.com";
+const SOCKET_URL = "http://localhost:5000";
 
 export const getSocket = () => {
   if (!socket) {
@@ -21,7 +21,7 @@ export const getSocket = () => {
   return socket;
 };
 
-export const connectSocket = (userId) => {
+export const connectSocketold = (userId) => {
   const s = getSocket();
   if (userId && !s.connected) {
     s.auth = { userId }; // Add user authentication
@@ -41,6 +41,31 @@ export const connectSocket = (userId) => {
     }
   }
 };
+
+export const connectSocket = (userId) => {
+  const s = getSocket();
+
+  if (userId && !s.connected) {
+    s.connect();
+
+    // Only attach once
+    if (socketInitialized) {
+      s.on("connect", () => {
+        console.log("Socket connected");
+
+        // 🔥 Emit user ID to server
+        s.emit("user-connected", userId);
+      });
+
+      s.on("connect_error", (error) => {
+        console.error("Socket connection error:", error);
+      });
+
+      socketInitialized = false;
+    }
+  }
+};
+
 
 export const disconnectSocket = () => {
   if (socket && socket.connected) {

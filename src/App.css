@@ -1,6 +1,17 @@
 #root {
   width: 100%;
 }
+
+@font-face {
+  font-family: 'Ios';
+  src: url('./assets/ios.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.ios{
+  font-family: 'Ios',sans-serif;
+}
 .f-11 {
   font-size: 11px;
 }
@@ -13,11 +24,12 @@
 
 /* Optional: Style for inserted mention chip (if rich editor is used) */
 .e-mention-chip {
-  color: #e33e16;
-  background: #ececec;
-  padding: 1px 5px;
-  cursor: pointer;
-  border-radius: 4px;
+  color: #000294 !important;
+  font-weight: 600 !important;
+  background: #ececec !important;
+  padding: 1px 5px !important;
+  cursor: pointer !important;
+  border-radius: 4px !important;
 }
 #mention_default .e-input-group,
 #mention_default .e-input-group.e-control-wrapper {
@@ -49,7 +61,14 @@ div#commentsMention[placeholder]:empty:before {
     width: 100%;
   }
 }
+.message{
+  word-wrap: break-word;
+  line-break: anywhere;
+}
 
+#chatInput, #chatInputuser{
+  line-break: anywhere;
+}
 .messages-a-link{
   text-decoration: underline;
   font-weight: 500;
@@ -236,4 +255,8 @@ div#commentsMention[placeholder]:empty:before {
     z-index: 9;
     background: white;
     
+}
+
+.EmojiPickerReact {
+  z-index: 9999999999999 !important;
 }

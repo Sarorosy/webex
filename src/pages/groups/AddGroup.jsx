@@ -18,7 +18,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('https://webexback.onrender.com/api/users/getusersforgroup', {
+        const res = await fetch('http://localhost:5000/api/users/getusersforgroup', {
           method: "POST",
           headers: {
             "Content-type": "application/json"
@@ -44,7 +44,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
   
     try {
       setCreating(true)
-      const response = await fetch('https://webexback.onrender.com/api/groups/create', {
+      const response = await fetch('http://localhost:5000/api/groups/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
       }
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Something went wrong while creating the group.');
+      //toast.error('Something went wrong while creating the group.');
     }finally{
       setCreating(false)
     }

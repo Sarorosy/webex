@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { Pen, X } from "lucide-react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { useAuth } from "../../utils/idb";
 import AddMembers from "./AddMembers";
 import InviteMembers from "./InviteMembers";
 import toast from "react-hot-toast";
+import ConfirmationModal from "../../components/ConfirmationModal";
+import EditGroup from "./EditGroup";
 
 const GroupInfo = ({ selectedGroup, onClose }) => {
-
-  console.log(selectedGroup)
+  console.log(selectedGroup);
   const [group, setGroup] = useState(null);
   const [members, setMembers] = useState([]);
   const [loadingGroup, setLoadingGroup] = useState(true);
@@ -21,61 +22,104 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const [inviteMemberOpen, setInviteMemberOpen] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
+  const [editGroupOpen, setEditGroupOpen] = useState(false);
+
   const handleAddMemberClick = (groupId) => {
     setSelectedGroupId(groupId);
     setAddMemberOpen(true);
-  }
+  };
 
   const handleInviteMemberClick = (groupId) => {
     setSelectedGroupId(groupId);
     setInviteMemberOpen(true);
-  }
+  };
+  const fetchGroupData = async () => {
+    try {
+      const groupRes = await fetch(
+        `http://localhost:5000/api/groups/group/${selectedGroup.id}`
+      );
+      const groupData = await groupRes.json();
+      if (groupData.status) setGroup(groupData.group);
+      setLoadingGroup(false);
 
+      const membersRes = await fetch(
+        `http://localhost:5000/api/groups/members/${selectedGroup.id}`
+      );
+      const membersData = await membersRes.json();
+      if (membersData.status) setMembers(membersData.members);
+      setLoadingMembers(false);
+    } catch (err) {
+      console.error("Error fetching group data:", err);
+      setLoadingGroup(false);
+      setLoadingMembers(false);
+    }
+  };
   useEffect(() => {
-    const fetchGroupData = async () => {
-      try {
-        const groupRes = await fetch(`https://webexback.onrender.com/api/groups/group/${selectedGroup.id}`);
-        const groupData = await groupRes.json();
-        if (groupData.status) setGroup(groupData.group);
-        setLoadingGroup(false);
-
-        const membersRes = await fetch(`https://webexback.onrender.com/api/groups/members/${selectedGroup.id}`);
-        const membersData = await membersRes.json();
-        if (membersData.status) setMembers(membersData.members);
-        setLoadingMembers(false);
-      } catch (err) {
-        console.error("Error fetching group data:", err);
-        setLoadingGroup(false);
-        setLoadingMembers(false);
-      }
-    };
-
     fetchGroupData();
   }, [selectedGroup]);
 
-  const handleSendRequest = async() =>{
-    try{
-      const response = await fetch("https://webexback.onrender.com/api/grouplimit/send",{
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+  const [deleteMemberOpen, setDeleteMemberOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+
+  const confirmDeleteMember = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/groups/remove-member",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            delete_user_name: selectedMember?.name,
+            user_id: selectedMember?.id,
+            user_name: user?.name,
+            own: false,
+            group_id: selectedGroup?.id,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.status) {
+        setDeleteMemberOpen(false);
+        setSelectedMember(null);
+        toast.success("Done");
+      } else {
+        toast.error(data.message || "Error");
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      fetchGroupData();
+    }
+  };
+
+  const handleSendRequest = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/grouplimit/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             group_id: selectedGroup.id,
-            sender_id: user.id
-            })
-      })
-      const data = await response.json()
-      if(data.status){
+            sender_id: user.id,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.status) {
         toast.success(data.message || "Request Sent Succesfully");
-        onClose()
-      }else{
+        onClose();
+      } else {
         toast.error(data.message || "Failed to send request");
       }
-    }catch{
+    } catch {
       console.error("Error sending request");
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-end justify-center">
@@ -100,7 +144,15 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         {/* Group Info Card */}
         <div className="px-6 -mt-12">
           <div className="bg-white rounded-xl shadow-md p-5">
-            <h2 className="text-lg font-bold text-gray-800">{selectedGroup?.name}</h2>
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              {selectedGroup?.name}
+              <button
+                onClick={() => setEditGroupOpen(true)}
+                className="border p-1 rounded-full "
+              >
+                <Pen size={13} />
+              </button>
+            </h2>
             {loadingGroup ? (
               <>
                 <Skeleton height={28} width={160} className="mb-2" />
@@ -111,36 +163,54 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                 <p className="text-gray-600 mt-1 mb-3">{group.description}</p>
                 <div className="flex flex-wrap gap-6 text-sm text-gray-500 items-center">
                   <div>
-                    <span className="font-medium text-gray-700">Created by:</span>{" "}
+                    <span className="font-medium text-gray-700">
+                      Created by:
+                    </span>{" "}
                     {group.created_by_username}
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Member Limit:</span>{" "}
+                    <span className="font-medium text-gray-700">
+                      Member Limit:
+                    </span>{" "}
                     {group.member_limit}
                   </div>
-                  {!loadingMembers && (
-                    group.member_limit == members.length ? (
+                  {!loadingMembers &&
+                    (group.member_limit == members.length ? (
                       <div className="flex items-center">
-                        <span className="font-medium text-red-500 bg-red-100 px-1 py-1 rounded">Member Limit Full</span>{" "}
+                        <span className="font-medium text-red-500 bg-red-100 px-1 py-1 rounded">
+                          Member Limit Full
+                        </span>{" "}
                         <span className="ml-2">
-                          <button className="bg-orange-500 text-white px-2 py-1 rounded"
-                          onClick={handleSendRequest}
-                          >Send Request</button> to Increase Limit ?
+                          <button
+                            className="bg-orange-500 text-white px-2 py-1 rounded"
+                            onClick={handleSendRequest}
+                          >
+                            Send Request
+                          </button>{" "}
+                          to Increase Limit ?
                         </span>
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            handleAddMemberClick(selectedGroup?.id);
+                          }}
+                          className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded"
+                        >
+                          Add Member(s)
+                        </button>
 
-                      <button 
-                      onClick={()=>{handleAddMemberClick(selectedGroup?.id)}}
-                      className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded">Add Member(s)</button>
-
-                      <button 
-                      onClick={()=>{handleInviteMemberClick(selectedGroup?.id)}}
-                      className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded">Invite Member(s)</button>
+                        <button
+                          onClick={() => {
+                            handleInviteMemberClick(selectedGroup?.id);
+                          }}
+                          className="bg-orange-500 text-white px-2 py-1 f-11 hover:bg-orange-600 rounded"
+                        >
+                          Invite Member(s)
+                        </button>
                       </div>
-                    )
-                  )}
+                    ))}
                 </div>
               </>
             )}
@@ -154,7 +224,10 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
           {loadingMembers ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[...Array(4)].map((_, idx) => (
-                <div key={idx} className="flex gap-3 items-center p-3 bg-gray-50 rounded-xl shadow-sm">
+                <div
+                  key={idx}
+                  className="flex gap-3 items-center p-3 bg-gray-50 rounded-xl shadow-sm"
+                >
                   <Skeleton circle height={42} width={42} />
                   <div className="flex-1">
                     <Skeleton width="80%" height={14} />
@@ -185,6 +258,18 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                     <p className="font-medium text-gray-900">{member.name}</p>
                     <p className="f-11 text-gray-500">{member.email}</p>
                   </div>
+                  {member.id !== user?.id && (
+                    <button
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setDeleteMemberOpen(true);
+                      }}
+                      className="text-gray-400 hover:text-red-500"
+                      title="Remove member"
+                    >
+                      <X size={18} />
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -195,12 +280,43 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
       </motion.div>
       <AnimatePresence>
         {addMemberOpen && (
-          <AddMembers groupId={selectedGroupId} onClose={()=>{setAddMemberOpen(false)}} onSelect={(ids) => console.log(ids)} members={members} />
-
+          <AddMembers
+            groupId={selectedGroupId}
+            onClose={() => {
+              setAddMemberOpen(false);
+            }}
+            onSelect={(ids) => console.log(ids)}
+            members={members}
+            finalFunction={fetchGroupData}
+          />
         )}
 
         {inviteMemberOpen && (
-          <InviteMembers groupId={selectedGroupId} onClose={()=>{setInviteMemberOpen(false)}} onSelect={(ids) => console.log(ids)} members={members} />
+          <InviteMembers
+            groupId={selectedGroupId}
+            onClose={() => {
+              setInviteMemberOpen(false);
+            }}
+            onSelect={(ids) => console.log(ids)}
+            members={members}
+          />
+        )}
+        {deleteMemberOpen && (
+          <ConfirmationModal
+            title="Are you sure want to remove this member?"
+            message="This action cannot be undone."
+            onYes={confirmDeleteMember}
+            onClose={() => setDeleteMemberOpen(false)}
+          />
+        )}
+        {editGroupOpen && (
+          <EditGroup
+            selectedGroup={{group_id :selectedGroup?.id}}
+            onClose={() => {
+              setEditGroupOpen(false);
+            }}
+            finalFunction={onClose}
+          />
         )}
       </AnimatePresence>
     </div>

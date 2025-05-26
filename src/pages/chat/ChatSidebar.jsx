@@ -36,7 +36,7 @@ const ChatSidebar = ({
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
   useEffect(() => {
-    connectSocket();
+    connectSocket(user?.id);
     const socket = getSocket();
 
     const handleGroupLeft = ({ id, user_id, type }) => {
@@ -84,16 +84,24 @@ const ChatSidebar = ({
       }
     };
 
+    const handleOnlineUsers = (userIds) => {
+      console.log("Online user IDs received:", userIds);
+    setOnlineUserIds(userIds); // userIds is assumed to be an array from server
+  };
+  
+
     socket.on("group_left", handleGroupLeft);
     socket.on("group_updated", handleGroupUpdated);
     socket.on("group_created", handleGroupCreated);
     socket.on("group_deleted", handleGroupDeleted);
+    socket.on("online-users", handleOnlineUsers);
 
     return () => {
       socket.off("group_left", handleGroupLeft);
       socket.off("group_updated", handleGroupUpdated);
       socket.off("group_created", handleGroupCreated);
       socket.off("group_deleted", handleGroupDeleted);
+      socket.off("online-users", handleOnlineUsers);
     };
   }, [user?.id, selectedUser]);
 
@@ -111,7 +119,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -223,40 +231,7 @@ const ChatSidebar = ({
     onSelect(null);
   }, [view_user_id]);
 
-  // Filter chats based on the selected tab and search query
-  useEffect(() => {
-    const filtered = chats.filter((chat) => {
-      const matchesTab =
-        activeTab === "all" ||
-        (activeTab === "direct" && chat.type === "user") ||
-        (activeTab === "group" && chat.type === "group");
-
-      const matchesSearch = chat.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-      return matchesTab && matchesSearch;
-    });
-
-    // Only sort in "all" tab
-    if (activeTab === "all") {
-      const favourites = [];
-      const others = [];
-
-      filtered.forEach((chat) => {
-        const favs = JSON.parse(chat.favourites || "[]");
-        if (Array.isArray(favs) && favs.includes(user.id)) {
-          favourites.push(chat);
-        } else {
-          others.push(chat);
-        }
-      });
-
-      setFilteredData([...favourites, ...others]);
-    } else {
-      setFilteredData(filtered);
-    }
-  }, [chats, activeTab, searchQuery]);
+  
 
   const sendNotification = (title, message) => {
     if (window.electronAPI) {
@@ -267,7 +242,7 @@ const ChatSidebar = ({
   };
 
   useEffect(() => {
-    connectSocket();
+    connectSocket(user?.id);
     const socket = getSocket();
 
     const handleIncoming = (msgOrReply, isReply = false) => {
@@ -363,15 +338,61 @@ const ChatSidebar = ({
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-
+// Filter chats based on the selected tab and search query
   useEffect(() => {
-    connectSocket();
+    const filtered = chats.filter((chat) => {
+      const matchesTab =
+        activeTab === "all" ||
+        (activeTab === "direct" && chat.type === "user") ||
+        (activeTab === "group" && chat.type === "group");
+
+      const matchesSearch = chat.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+
+      return matchesTab && matchesSearch;
+    });
+
+    // Only sort in "all" tab
+    if (activeTab === "all") {
+      const favourites = [];
+      const others = [];
+
+      const uniqueMap = new Map();
+
+      filtered.forEach((chat) => {
+        const key = `${chat.type}-${chat.id}`; // Composite key
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, chat);
+        }
+      });
+
+      const uniqueFiltered = Array.from(uniqueMap.values());
+
+
+      uniqueFiltered.forEach((chat) => {
+        const favs = JSON.parse(chat.favourites || "[]");
+        if (Array.isArray(favs) && favs.includes(user.id)) {
+          favourites.push(chat);
+        } else {
+          others.push(chat);
+        }
+      });
+
+      setFilteredData([...favourites, ...others]);
+    } else {
+      setFilteredData(filtered);
+    }
+  }, [chats, activeTab, searchQuery]);
+  useEffect(() => {
+    connectSocket(user?.id);
     const socket = getSocket();
 
     socket.on("favouriteUpdated", ({ id, favourites, type }) => {
+      console.log("favouriteUpdated", id, favourites, type);
       setChats((prev) =>
         prev.map((chat) =>
-          chat.id === id && chat.type === type
+          chat.id == id && chat.type == type
             ? { ...chat, favourites: JSON.stringify(favourites) }
             : chat
         )
@@ -384,7 +405,7 @@ const ChatSidebar = ({
   }, []);
 
   useEffect(() => {
-    connectSocket();
+    connectSocket(user?.id);
     const socket = getSocket();
 
     const handleGroupLeft = ({ id, user_id, type }) => {
@@ -557,7 +578,7 @@ const ChatSidebar = ({
                     setChats(updatedChats);
                   }}
                   className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
-                    selectedUser?.id === chat.id ? "bg-gray-300" : ""
+                    (selectedUser?.id === chat.id && selectedUser?.type == chat.type) ? "bg-gray-300" : ""
                   } ${chat.read_status === 1 ? "font-bold" : ""}`}
                 >
                   <div className="flex items-center gap-2">
@@ -583,7 +604,7 @@ const ChatSidebar = ({
                           : "text-red-500"
                       }`}
                     >
-                      {chat.id == user?.id ? chat.name+ " (You)" : chat.name}
+                      {(chat.id == user?.id && chat.type == "user") ? chat.name+ " (You)" : chat.name}
                     </span>
                     {isFavourite && (
                       <Star
@@ -606,7 +627,7 @@ const ChatSidebar = ({
               );
 
               return (
-                <React.Fragment key={chat.id}>
+                <React.Fragment key={`${chat.id}-${chat.type}`}>
                   {ChatContent}
                   {activeTab === "all" && isLastFavourite && (
                     <div className="border-b border-gray-300 mb-1 mx-1"></div>

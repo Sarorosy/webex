@@ -32,7 +32,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
   
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`https://webexback.onrender.com/api/groups/members/${userId}`);
+        const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
         const data = await res.json();
   
         if (data.status) {
@@ -253,13 +253,40 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
             />
           </div>
         ) : (
-          <textarea
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            rows={1}
-            placeholder="Edit your message..."
-            className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
-          />
+          // <textarea
+          //   value={value}
+          //   onChange={(e) => setValue(e.target.value)}
+          //   rows={1}
+          //   placeholder="Edit your message..."
+          //   className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
+          // />
+          <div className="relative w-full">
+            {value.trim() === "" && (
+              <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                Type your message...
+              </div>
+            )}
+            <div
+              id="chatInput"
+              ref={chatInputRef}
+              contentEditable
+              className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
+              placeholder="Type @ to mention someone..."
+              onInput={handleInputChange} // Track changes in the input
+            ></div>
+
+            <MentionComponent
+              dataSource={[]}
+              fields={{ text: "userName" }}
+              target="#chatInput"
+              mentionChar="^"
+              allowSpaces={true}
+              popupHeight="200px"
+              popupWidth="250px"
+              itemTemplate={itemTemplate}
+              select={handleSelect} // Attach the select event handler
+            />
+          </div>
         )}
 
         <div className="mt-4 flex justify-end gap-2">

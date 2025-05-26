@@ -16,8 +16,10 @@ import {
   VideoIcon,
   FileSpreadsheet,
   SquareArrowOutUpRightIcon,
+  Smile,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import EmojiPicker from "emoji-picker-react";
 import EditModal from "./EditModal";
 import ReadPersons from "./ReadPersons";
 import ReminderModal from "./ReminderModal";
@@ -33,8 +35,7 @@ const ChatMessages = ({
   setReplyMsgId,
   setReplyMessage,
 }) => {
-
-  const {selectedMessage, setSelectedMessage} = useSelectedUser();
+  const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [messages, setMessages] = useState([]);
@@ -66,7 +67,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback.onrender.com/api/chats/messages?sender_id=${
+        `http://localhost:5000/api/chats/messages?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -116,7 +117,7 @@ const ChatMessages = ({
       setSkip(0);
       setHasMore(true);
     };
-  }, [userId, user?.id]);
+  }, [userId, userType, user?.id]);
 
   useEffect(() => {
     if (containerRef.current && messages.length > 0) {
@@ -134,10 +135,11 @@ const ChatMessages = ({
       100;
     setShowScrollToBottom(!isAtBottom);
 
-    if (container.scrollTop < 10) { // here set to 100
+    if (container.scrollTop < 10) {
+      // here set to 100
       const prevScrollHeight = container.scrollHeight;
 
-       const olderMessages = await fetchMessages(skip);
+      const olderMessages = await fetchMessages(skip);
       //const olderMessages = [];
 
       if (olderMessages.length > 0) {
@@ -245,12 +247,18 @@ const ChatMessages = ({
         console.log("cuurent userId", userId);
 
         const isGroupMessage =
-          msg.user_type == "group" && msg.receiver_id == userId;
+          msg.user_type == "group" &&
+          msg.receiver_id == userId &&
+          msg.user_type == userType;
 
         const isPrivateMessage =
           msg.user_type == "user" &&
-          ((msg.sender_id == user.id && msg.receiver_id == parsedUserId) ||
-            (msg.sender_id == parsedUserId && msg.receiver_id == user.id));
+          ((msg.sender_id == user.id &&
+            msg.receiver_id == parsedUserId &&
+            msg.user_type == userType) ||
+            (msg.sender_id == parsedUserId &&
+              msg.receiver_id == user.id &&
+              msg.user_type == userType));
 
         if (isGroupMessage || isPrivateMessage) {
           setMessages((prevMessages) => {
@@ -429,7 +437,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -484,17 +492,14 @@ const ChatMessages = ({
     if (selmsg) {
       console.log("coming");
       // Check if the message is already in the current messages array
-      let existingMessage = messages.find(
-        (msg) => msg.id == selmsg.id
-      );
+      let existingMessage = messages.find((msg) => msg.id == selmsg.id);
 
       // If message is not found, we'll implement a multi-step fetch strategy
       if (!existingMessage) {
         try {
-          
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback.onrender.com/api/chats/messages"
+            "http://localhost:5000/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -539,9 +544,7 @@ const ChatMessages = ({
           setMessages(mergedMessages);
 
           // Find the specific message
-          existingMessage = mergedMessages.find(
-            (msg) => msg.id == selmsg.id
-          );
+          existingMessage = mergedMessages.find((msg) => msg.id == selmsg.id);
         } catch (error) {
           console.error("Error fetching messages:", error);
           return;
@@ -575,7 +578,7 @@ const ChatMessages = ({
 
   useEffect(() => {
     if (selectedMessage != null) {
-      console.log("selectedMessage", selectedMessage)
+      console.log("selectedMessage", selectedMessage);
       scrollToMessage(selectedMessage);
     }
   }, [selectedMessage]);
@@ -583,10 +586,106 @@ const ChatMessages = ({
   const isValidViewUserId =
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
+  const EmojiPopup = ({ onSelect }) => (
+    <div className="ios absolute bottom-8 flex gap-1 px-2 py-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
+      {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
+        <button
+          key={emoji}
+          onClick={() => onSelect(emoji)}
+          className="hover:bg-gray-100 hover:scale-125 px-1.5 py-0.5 rounded-full text-sm"
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  );
+  const emojiRef = useRef(null);
+  const [showEmojiPopup, setShowEmojiPopup] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (emojiRef.current && !emojiRef.current.contains(e.target)) {
+        setShowEmojiPopup(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setShowEmojiPopup(false);
+  }, [hoveredMessageId]);
+
+  const handleReact = (msgId, emoji) => {
+    if (!user?.id) return;
+
+    const socket = getSocket();
+    connectSocket(user.id);
+
+    socket.emit("message_react", {
+      msgId,
+      emoji,
+      userId: user.id,
+    });
+  };
+
+  useEffect(() => {
+    const socket = getSocket();
+    connectSocket(user.id);
+
+    const handleReactionsUpdated = ({ msgId, reactions }) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === msgId ? { ...msg, reactions } : msg))
+      );
+    };
+
+    socket.on("reactions_updated", handleReactionsUpdated);
+
+    return () => {
+      socket.off("reactions_updated", handleReactionsUpdated);
+    };
+  }, [user.id]);
+
+  const [hoveredEmoji, setHoveredEmoji] = useState(null);
+  const [reactionUsers, setReactionUsers] = useState([]);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const tooltipRef = useRef(null);
+  const [loadingReactions, setLoadingReactions] = useState(false);
+
+  const handleReactionHover = async (e, emoji, msg) => {
+    const rect = e.target.getBoundingClientRect();
+    setTooltipPosition({
+      top: rect.bottom + window.scrollY + 5,
+      left: rect.left + window.scrollX,
+    });
+    setHoveredEmoji(emoji);
+    setLoadingReactions(true);
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
+      );
+      const users = await res.json();
+      setReactionUsers(users);
+    } catch (error) {
+      console.error("Failed to fetch reactions:", error);
+    } finally {
+      setLoadingReactions(false);
+    }
+  };
+
+  // Optional: delay clearing hover to prevent flickering
+  const clearHover = () => {
+    setTimeout(() => {
+      setHoveredEmoji(null);
+      setReactionUsers([]);
+    }, 100);
+  };
+
   return (
     <div
       ref={containerRef}
-      className="messages-container flex flex-col p-3 bg-gradient-to-b from-orange-50 to-white chat-messages-container-div overflow-y-auto h-[90%]"
+      className="messages-container ios flex flex-col p-3 bg-gradient-to-b from-orange-50 to-white chat-messages-container-div overflow-y-auto h-[90%]"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -667,7 +766,10 @@ const ChatMessages = ({
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
                     onMouseEnter={() => setHoveredMessageId(msg.id)}
-                    onMouseLeave={() => setHoveredMessageId(null)}
+                    onMouseLeave={() => {
+                      setHoveredMessageId(null);
+                      clearHover();
+                    }}
                     onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
@@ -701,8 +803,10 @@ const ChatMessages = ({
                     >
                       {msg.profile_pic ? (
                         <img
-                          src={"https://rapidcollaborate.in/ccp" + msg.profile_pic}
-                          className="h-8 w-8 rounded-full border-2 border-white shadow-sm"
+                          src={
+                            "https://rapidcollaborate.in/ccp" + msg.profile_pic
+                          }
+                          className="h-8 w-8 rounded-full object-cover border-2 border-white shadow-sm"
                         />
                       ) : (
                         <div className="flex justify-center items-center h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
@@ -711,7 +815,7 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative max-w-[70%] min-w-[20%] ${
+                      className={`message relative max-w-[60%] min-w-[20%] ${
                         isSent
                           ? "bg-gray-100 text-gray-900"
                           : "bg-white text-gray-800 border border-gray-200"
@@ -743,7 +847,7 @@ const ChatMessages = ({
                             "webp",
                           ].includes(ext);
                           const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
-                          const filenameOnly = msg.filename.split('/').pop();
+                          const filenameOnly = msg.filename.split("/").pop();
 
                           return (
                             <div className="w-full mb-3">
@@ -783,7 +887,7 @@ const ChatMessages = ({
                                       rel="noopener noreferrer"
                                       className="f-11 text-blue-600 hover:underline  flex items-center"
                                     >
-                                       {msg.filename.split('/').pop()}
+                                      {msg.filename.split("/").pop()}
                                     </a>
                                   </span>
                                 </summary>
@@ -910,6 +1014,81 @@ const ChatMessages = ({
                         <Clock size={10} className="mr-1" />
                         {formatTime(msg.created_at)}
                       </div>
+                      {(() => {
+                        let reactions = [];
+
+                        try {
+                          const parsed =
+                            typeof msg.reactions === "string"
+                              ? JSON.parse(msg.reactions)
+                              : msg.reactions;
+
+                          if (Array.isArray(parsed)) {
+                            reactions = parsed;
+                          }
+                        } catch {
+                          reactions = [];
+                        }
+
+                        if (reactions.length === 0) return null;
+
+                        const reactionMap = reactions.reduce((acc, r) => {
+                          acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                          return acc;
+                        }, {});
+
+                        return (
+                          <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
+                            {hoveredEmoji && (
+                              <div
+                                ref={tooltipRef}
+                                className="absolute top-0 left-[-200px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                
+                              >
+                                
+                                {loadingReactions ? (
+                                  <div>Loading...</div>
+                                ) : (
+                                  <div className="space-y-1 ios">
+                                    {reactionUsers.map((user) => (
+                                      <div
+                                        key={user.id}
+                                        className="flex items-center gap-2"
+                                      >
+                                        <img
+                                          src={ user.profile_pic ? "https://rapidcollaborate.in/ccp" +user.profile_pic : `https://ui-avatars.com/api/?name=${user.name.charAt(0)}&background=random&color=fff&size=128`}
+                                          alt={user.name}
+                                          className="w-5 h-5 rounded-full"
+                                        />
+                                        <span>{user.name}</span>
+                                        <span>{user.emoji}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {Object.entries(reactionMap).map(
+                              ([emoji, count]) => (
+                                <div
+                                  key={emoji}
+                                  onMouseEnter={(e) =>
+                                    handleReactionHover(e, emoji, msg)
+                                  }
+                                  //onMouseLeave={clearHover}
+                                  className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
+                                >
+                                  <span className="mr-1">{emoji}</span>
+                                  <span className="text-[10px] font-medium">
+                                    {count}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div
@@ -918,6 +1097,23 @@ const ChatMessages = ({
                           [isSent ? "left" : "right"]: "2%",
                         }}
                       >
+                        <div className="relative" ref={emojiRef}>
+                          <button
+                            onClick={() => setShowEmojiPopup((prev) => !prev)}
+                            className="action-button p-2 px-3 text-gray-600 hover:bg-yellow-50 transition-colors"
+                            title="React"
+                          >
+                            <Smile size={14} />
+                          </button>
+                          {showEmojiPopup && (
+                            <EmojiPopup
+                              onSelect={(emoji) => {
+                                handleReact(msg.id, emoji);
+                                setShowEmojiPopup(false);
+                              }}
+                            />
+                          )}
+                        </div>
                         {isSent && (
                           <button
                             onClick={() => handleEdit(msg.id, msg.message)}

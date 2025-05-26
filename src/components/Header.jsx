@@ -90,7 +90,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -265,7 +265,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    connectSocket();
+    connectSocket(user?.id);
     const socket = getSocket();
 
     const handleUserUpdated = (updatedUser) => {
@@ -307,7 +307,9 @@ export default function Header() {
                       className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />
                   ) : (
+                    <div className="w-8 h-8 rounded-full mx-auto object-cover border">
                     user.name[0]
+                    </div>
                   )}
               </button>
 
@@ -326,15 +328,15 @@ export default function Header() {
                   />
                 {/* Chat */}
               </button>
-              <button
+              {/* <button
                 onClick={() => navigate("/chat")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Chat Board"
                 className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
               >
                 <MessagesSquare size={17} className="" />
-                {/* Chat */}
-              </button>
+              
+              </button> */}
 
               {(user.user_type == "admin" || (user.user_type == "subadmin" && user.access_requests == 1)) && (
                 <button

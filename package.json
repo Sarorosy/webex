@@ -60,6 +60,7 @@
     "buffer": "^6.0.3",
     "draft-js": "^0.11.7",
     "electron-squirrel-startup": "^1.0.1",
+    "emoji-picker-react": "^4.12.2",
     "firebase": "^11.7.3",
     "framer-motion": "^12.10.1",
     "idb-keyval": "^6.2.1",

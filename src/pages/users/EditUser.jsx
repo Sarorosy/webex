@@ -28,7 +28,7 @@ const EditUser = ({ userId, onClose, after }) => {
         const fetchUserDetails = async () => {
             try {
                 setFetching(true);
-                const response = await fetch(`https://webexback.onrender.com/api/users/user/${userId}`);
+                const response = await fetch(`http://localhost:5000/api/users/user/${userId}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -41,7 +41,6 @@ const EditUser = ({ userId, onClose, after }) => {
                     setUserData({
                         name: data.user.name,
                         email: data.user.email,
-                        password: data.user.password, // Fixed access issue
                         pronouns: data.user.pronouns,
                         bio: data.user.bio,
                         user_panel: data.user.user_panel || "AP",
@@ -98,7 +97,7 @@ const EditUser = ({ userId, onClose, after }) => {
             if (userData.profilePic) {
                 formData.append("profile_pic", userData.profilePic);
             }
-            const response = await axios.put(`https://webexback.onrender.com/api/users/update`, formData, {
+            const response = await axios.put(`http://localhost:5000/api/users/update`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             if (response.data.status) {

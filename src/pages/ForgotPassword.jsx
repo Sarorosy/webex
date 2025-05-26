@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
-import { ArrowLeft, CheckCircle, Circle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Circle, Eye, EyeOff } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { useNavigate } from "react-router-dom";
 
@@ -21,6 +21,8 @@ export default function ForgotPassword() {
   const hasNumber = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*]/.test(password);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,7 +38,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await fetch(
-        "https://webexback.onrender.com/api/users/check-user-type",
+        "http://localhost:5000/api/users/check-user-type",
         {
           method: "POST",
           headers: {
@@ -120,7 +122,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        "https://webexback.onrender.com/api/users/update-password",
+        "http://localhost:5000/api/users/update-password",
         {
           method: "POST",
           headers: {
@@ -167,7 +169,6 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center background-log">
-        
       <div className="bg-log-set rounded p-4 w-full max-w-sm">
         {step !== "email" ? (
           <button
@@ -184,8 +185,10 @@ export default function ForgotPassword() {
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </button>
         ) : (
-            <button
-            onClick={()=>{navigate("/login")}}
+          <button
+            onClick={() => {
+              navigate("/login");
+            }}
             className="flex items-center text-sm text-[#092e46] hover:underline"
           >
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
@@ -221,6 +224,15 @@ export default function ForgotPassword() {
 
         {step === "webcode" && (
           <div className="space-y-3">
+            {userPanel == "AP" ? (
+              <p className="text-sm text-gray-600">
+                Enter the Web Code received on Attendance Panel
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600">
+               Enter the Web Code received on Service Provider Panel
+              </p>
+            )}
             <input
               type="text"
               maxLength={4}
@@ -245,20 +257,43 @@ export default function ForgotPassword() {
 
         {step === "reset" && (
           <div className="space-y-3">
-            <input
-              type="password"
-              placeholder="New Password"
-              className="w-full px-3 py-2 border rounded f-14"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              className="w-full px-3 py-2 border rounded f-14"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="New Password"
+                className="w-full px-3 py-2 border rounded f-14 pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {!showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                className="w-full px-3 py-2 border rounded f-14 pr-10"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {!showConfirmPassword ? (
+                  <EyeOff size={18} />
+                ) : (
+                  <Eye size={18} />
+                )}
+              </button>
+            </div>
             <button
               onClick={handlePasswordReset}
               className="w-full bg-[#D7763D] text-white py-2 rounded"
