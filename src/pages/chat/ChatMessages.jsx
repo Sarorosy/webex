@@ -1042,7 +1042,7 @@ const ChatMessages = ({
                             {hoveredEmoji && (
                               <div
                                 ref={tooltipRef}
-                                className="absolute top-0 left-[-200px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
                                 
                               >
                                 

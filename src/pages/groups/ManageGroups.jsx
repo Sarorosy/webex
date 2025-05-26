@@ -76,6 +76,27 @@ const ManageGroups = ({onClose}) => {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+  
+    const totalPages = Math.ceil(groups.length / itemsPerPage);
+  
+    const paginatedGroups = groups.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+  
+    const handlePageChange = (page) => {
+      if (page >= 1 && page <= totalPages) {
+        setCurrentPage(page);
+      }
+    };
+  
+    useEffect(() => {
+      // Reset to page 1 if filters change
+      setCurrentPage(1);
+    }, []);
+
   const toggleGroup = (id) => {
     setExpandedGroupId((prev) => (prev === id ? null : id));
   };
@@ -125,7 +146,7 @@ const ManageGroups = ({onClose}) => {
 
             {/* GROUP LIST */}
             <div className="space-y-3 px-4 pb-4 overflow-y-auto h-[86vh]">
-              {groups.map((group) => (
+              {paginatedGroups.map((group) => (
                 <div key={group.group_id} className="border px-2 py-2 rounded">
                   <div className="flex justify-between items-end gap-2">
                     <div>
@@ -209,6 +230,38 @@ const ManageGroups = ({onClose}) => {
                   </AnimatePresence>
                 </div>
               ))}
+
+              {totalPages > 1 && (
+                  <div className="flex justify-center items-center mb-12 gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage == 1}
+                      className="px-2 py-1 text-sm border rounded disabled:opacity-50"
+                    >
+                      Prev
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i + 1)}
+                        className={`px-3 py-1 text-sm border rounded ${
+                          currentPage == i + 1 ? "bg-purple-600 text-white" : ""
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage == totalPages}
+                      className="px-2 py-1 text-sm border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
             </div>
 
             {/* Modals */}

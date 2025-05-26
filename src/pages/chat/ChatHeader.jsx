@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import SearchResults from "./SearchResults";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
+import AgoraCall from "../../components/AgraCall";
 
 const ChatHeader = ({
   selectedUser,
@@ -165,6 +166,7 @@ useEffect(() => {
                 Typing...
               </div>
             )}
+            <AgoraCall />
           </h2>
 
           {selectedUser?.office_name && selectedUser?.city_name  && (

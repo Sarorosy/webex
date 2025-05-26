@@ -156,7 +156,7 @@ const EditProfile = ({ onClose }) => {
                   />
                 </div>
 
-                <div className="w-full">
+                {/* <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pronouns
                   </label>
@@ -167,10 +167,10 @@ const EditProfile = ({ onClose }) => {
                     className="w-full border p-2 rounded-md"
                     placeholder="e.g., He/Him"
                   />
-                </div>
+                </div> */}
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Bio
               </label>
@@ -180,7 +180,7 @@ const EditProfile = ({ onClose }) => {
                 className="w-full border p-2 rounded-md"
                 placeholder="Write something about yourself..."
               ></textarea>
-            </div>
+            </div> */}
 
             
           </div>

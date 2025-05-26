@@ -41,6 +41,7 @@ const getRandomColor = (id) => {
 };
 
 const ManageUsers = ({ onClose }) => {
+  const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -70,6 +71,7 @@ const ManageUsers = ({ onClose }) => {
 
   const fetchUsers = async () => {
     try {
+      setLoading(true);
       const response = await fetch(
         "http://localhost:5000/api/users/fetchallusers"
       );
@@ -84,7 +86,8 @@ const ManageUsers = ({ onClose }) => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error("Error fetching users");
+    }finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
@@ -97,6 +100,27 @@ const ManageUsers = ({ onClose }) => {
       user.name.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  useEffect(() => {
+    // Reset to page 1 if filters change
+    setCurrentPage(1);
+  }, []);
 
   const handleEditClick = (id) => {
     setSelectedUser(id);
@@ -244,7 +268,7 @@ const ManageUsers = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="px-4 pt-3">
+          <div className="px-4 pt-3  mb-12">
             <div className="flex justify-end gap-2 items-center mb-3">
               <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
                 <Search size={13} className="text-gray-500" />
@@ -256,15 +280,15 @@ const ManageUsers = ({ onClose }) => {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
-              {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.add_users == 1)) && (
-
-              <button
-                onClick={() => setAddOpen(true)}
-                className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
-              >
-                <PlusIcon size={12} />
-                Add User
-              </button>
+              {(user?.user_type == "admin" ||
+                (user?.user_type == "subadmin" && user?.add_users == 1)) && (
+                <button
+                  onClick={() => setAddOpen(true)}
+                  className="bg-orange-500 text-white px-2 py-1 f-13 rounded-md flex items-center gap-1 hover:bg-orange-600 transition"
+                >
+                  <PlusIcon size={12} />
+                  Add User
+                </button>
               )}
             </div>
 
@@ -272,8 +296,8 @@ const ManageUsers = ({ onClose }) => {
             <div className="overflow-y-auto h-[84vh] pr-3">
               <div className="">
                 <div>
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((u) => (
+                  {paginatedUsers.length > 0 ? (
+                    paginatedUsers.map((u) => (
                       <div
                         key={u.id}
                         className={`f-13 mb-2 border p-3 flex justify-between items-end ${
@@ -290,7 +314,10 @@ const ManageUsers = ({ onClose }) => {
                               </div>
                             ) : u.profile_pic ? (
                               <img
-                                src={"https://rapidcollaborate.in/ccp" + u.profile_pic}
+                                src={
+                                  "https://rapidcollaborate.in/ccp" +
+                                  u.profile_pic
+                                }
                                 alt="Profile"
                                 className="w-8 h-8 rounded-full object-cover border"
                               />
@@ -327,7 +354,6 @@ const ManageUsers = ({ onClose }) => {
                                 <Mail size={13} className="mr-2 font-bold" />{" "}
                                 {u.email}{" "}
                               </span>
-                              
                             </div>
                             <div className="flex gap-2 mt-1">
                               <div
@@ -356,16 +382,17 @@ const ManageUsers = ({ onClose }) => {
                               >
                                 {u.user_type}
 
-                                {u.user_type == "subadmin" && user?.user_type == "admin" && (
-                                  <button
-                                    className="text-purple-500 ml-2"
-                                    onClick={() => {
-                                      handleEditPermissionsClick(u);
-                                    }}
-                                  >
-                                    <Shield size={15} />
-                                  </button>
-                                )}
+                                {u.user_type == "subadmin" &&
+                                  user?.user_type == "admin" && (
+                                    <button
+                                      className="text-purple-500 ml-2"
+                                      onClick={() => {
+                                        handleEditPermissionsClick(u);
+                                      }}
+                                    >
+                                      <Shield size={15} />
+                                    </button>
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -503,21 +530,25 @@ const ManageUsers = ({ onClose }) => {
                           ) : (
                             <div className="flex flex-col items-end justify-start gap-2">
                               <div className="flex justify-start gap-2">
-                                {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.edit_users == 1)) && (
-<button
-                                  onClick={() => handleEditClick(u.id)}
-                                  className="text-blue-500 hover:text-blue-700 p-1 border rounded"
-                                >
-                                  <Pencil size={13} />
-                                </button>
+                                {(user?.user_type == "admin" ||
+                                  (user?.user_type == "subadmin" &&
+                                    user?.edit_users == 1)) && (
+                                  <button
+                                    onClick={() => handleEditClick(u.id)}
+                                    className="text-blue-500 hover:text-blue-700 p-1 border rounded"
+                                  >
+                                    <Pencil size={13} />
+                                  </button>
                                 )}
-                                {(user?.user_type == "admin" || (user?.user_type == "subadmin" && user?.delete_users == 1)) && (
-                                <button
-                                  onClick={() => handleDelete(u.id)}
-                                  className="text-red-500 hover:text-red-700 p-1 border rounded"
-                                >
-                                  <Trash size={13} />
-                                </button>
+                                {(user?.user_type == "admin" ||
+                                  (user?.user_type == "subadmin" &&
+                                    user?.delete_users == 1)) && (
+                                  <button
+                                    onClick={() => handleDelete(u.id)}
+                                    className="text-red-500 hover:text-red-700 p-1 border rounded"
+                                  >
+                                    <Trash size={13} />
+                                  </button>
                                 )}
                               </div>
                               <div className="flex justify-start gap-2">
@@ -556,11 +587,42 @@ const ManageUsers = ({ onClose }) => {
                         colSpan="5"
                         className="text-center p-3 text-gray-500"
                       >
-                        No users found.
+                        {loading  ? "Loading..." : "No users found"}
                       </div>
                     </div>
                   )}
                 </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mb-12 gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage == 1}
+                      className="px-2 py-1 text-sm border rounded disabled:opacity-50"
+                    >
+                      Prev
+                    </button>
+
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i + 1)}
+                        className={`px-3 py-1 text-sm border rounded ${
+                          currentPage == i + 1 ? "bg-purple-600 text-white" : ""
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage == totalPages}
+                      className="px-2 py-1 text-sm border rounded disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

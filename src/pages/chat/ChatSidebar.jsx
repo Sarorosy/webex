@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Users,
   User,
@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import logo from "../../assets/ccp-logo.png";
+import isEqual from "lodash.isequal";
 
 const ChatSidebar = ({
   view_user_id,
@@ -28,7 +29,7 @@ const ChatSidebar = ({
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [chats, setChats] = useState([]); // Will store groups and users
+  const [chats, setChats] = useState([]); 
   const [chatsLoaded, setChatsLoaded] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
   const { user } = useAuth();
@@ -200,6 +201,36 @@ const ChatSidebar = ({
   };
 
   useEffect(() => {
+  if (!chats || chats.length === 0) return;
+
+  const stripHtml = (html) => {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  };
+
+  // Only update draft flag without overwriting logged_in_status or others
+  const updatedChats = chats.map((chat) => {
+    const key = `chat_input_${chat.id}_type_${chat.type}`;
+    const savedDraft = localStorage.getItem(key);
+
+    const draft = savedDraft && stripHtml(savedDraft).trim() !== "";
+
+    if (chat.draft === draft) return chat; // no change
+
+    return { ...chat, draft };
+  });
+
+  // Check if any update happened
+  const hasChanges = updatedChats.some(
+    (chat, i) => chat.draft !== chats[i].draft
+  );
+
+  if (hasChanges) setChats(updatedChats);
+}, [chats]);
+
+
+  useEffect(() => {
     fetchChats(true);
   }, [view_user_id]);
 
@@ -338,8 +369,11 @@ const ChatSidebar = ({
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-// Filter chats based on the selected tab and search query
-  useEffect(() => {
+
+
+  const filteredResult = useMemo(() => {
+    if (!chats || chats.length ==0 || !user) return [];
+
     const filtered = chats.filter((chat) => {
       const matchesTab =
         activeTab === "all" ||
@@ -353,22 +387,17 @@ const ChatSidebar = ({
       return matchesTab && matchesSearch;
     });
 
-    // Only sort in "all" tab
     if (activeTab === "all") {
       const favourites = [];
       const others = [];
-
       const uniqueMap = new Map();
 
       filtered.forEach((chat) => {
-        const key = `${chat.type}-${chat.id}`; // Composite key
-        if (!uniqueMap.has(key)) {
-          uniqueMap.set(key, chat);
-        }
+        const key = `${chat.type}-${chat.id}`;
+        if (!uniqueMap.has(key)) uniqueMap.set(key, chat);
       });
 
       const uniqueFiltered = Array.from(uniqueMap.values());
-
 
       uniqueFiltered.forEach((chat) => {
         const favs = JSON.parse(chat.favourites || "[]");
@@ -379,11 +408,25 @@ const ChatSidebar = ({
         }
       });
 
-      setFilteredData([...favourites, ...others]);
+      return [...favourites, ...others];
     } else {
-      setFilteredData(filtered);
+      return filtered;
     }
-  }, [chats, activeTab, searchQuery]);
+  }, [chats, activeTab, searchQuery, user?.id]);
+
+  // Update filteredData only if changed
+  useEffect(() => {
+    setFilteredData((prev) => {
+      if (isEqual(prev, filteredResult)) {
+        return prev;
+      }
+      return filteredResult;
+    });
+  }, [filteredResult]);
+
+ 
+
+  
   useEffect(() => {
     connectSocket(user?.id);
     const socket = getSocket();
@@ -452,6 +495,10 @@ const ChatSidebar = ({
       socket.off("group_created", handleGroupCreated);
     };
   }, [user?.id]);
+
+  
+
+
 
   return (
     <div
@@ -611,6 +658,11 @@ const ChatSidebar = ({
                         size={13}
                         className="fill-yellow-500 text-yellow-500"
                       />
+                    )}
+                    {chat.draft && (
+                      <span className="text-xs text-gray-500 italic">
+                        Draft
+                      </span>
                     )}
                   </div>
                   {chat.read_status == 1 && (

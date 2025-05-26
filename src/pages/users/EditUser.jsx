@@ -153,12 +153,12 @@ const EditUser = ({ userId, onClose, after }) => {
                             <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter your email" />
                             
                             <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter password" />
-                            <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Pronouns" />
+                            {/* <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Pronouns" /> */}
 
                             <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Office Name" />
                             <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="City Name" />
 
-                            <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 py-1 rounded-md" placeholder="Bio"></textarea>
+                            {/* <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 py-1 rounded-md" placeholder="Bio"></textarea> */}
                             <div className="flex flex-col">
                                 <label className="f-13 mb-1">Panel:</label>
                                 <select

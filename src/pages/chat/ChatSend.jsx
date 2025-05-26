@@ -9,6 +9,7 @@ import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import { Paperclip, Send, X } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
+import EmojiPicker from "emoji-picker-react";
 
 const ChatSend = ({
   type,
@@ -29,14 +30,13 @@ const ChatSend = ({
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
-  
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
   const TYPING_TIMEOUT = 2000;
 
   useEffect(() => {
     const socket = getSocket();
-    connectSocket(user?.id)
+    connectSocket(user?.id);
     if (!value.trim()) return;
 
     if (socket && socket.connected && user?.id && userId) {
@@ -61,8 +61,6 @@ const ChatSend = ({
       }
     };
   }, []);
-
-
 
   const fetchUsers = async () => {
     try {
@@ -166,8 +164,6 @@ const ChatSend = ({
     </div>
   );
 
-  
-
   const handleSend = async () => {
     if (!value.trim() && !selectedFile) return;
 
@@ -185,6 +181,7 @@ const ChatSend = ({
     try {
       setSubmitBtnDisabled(true);
       setMessageLoading(true);
+      setShowEmojiPicker(false)
 
       const formData = new FormData();
       formData.append("isReply", isReply);
@@ -207,10 +204,13 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch("http://localhost:5000/api/chats/send", {
-        method: "POST",
-        body: formData, // No need for headers, browser sets Content-Type with boundary
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/chats/send",
+        {
+          method: "POST",
+          body: formData, // No need for headers, browser sets Content-Type with boundary
+        }
+      );
 
       if (!res.ok) throw new Error("Message send failed");
 
@@ -234,6 +234,7 @@ const ChatSend = ({
         chatInput2.innerHTML = "";
       }
       localStorage.removeItem(localStorageKey);
+      
     }
   };
 
@@ -246,8 +247,6 @@ const ChatSend = ({
       }
     }
   };
-
-  
 
   const handlePaste = (e) => {
     e.preventDefault();
@@ -383,6 +382,42 @@ const ChatSend = ({
     localStorage.setItem(localStorageKey, e.target.innerHTML);
     console.log("Input changed, new value:", e.target.innerHTML);
   };
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const onEmojiClick = (event, emojiObject) => {
+  const emoji = event.emoji;
+
+  console.log("Emoji clicked:", event);
+
+  if (inputRef.current) {
+    inputRef.current.focus();
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+
+    // Create a text node with emoji and insert it
+    const textNode = document.createTextNode(emoji);
+    range.insertNode(textNode);
+
+    // Move the caret immediately after the inserted emoji node
+    range.setStartAfter(textNode);
+    range.setEndAfter(textNode);
+
+    // Collapse the range to the end point (so caret is after emoji)
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    // Update the state with new innerHTML of contentEditable div
+    setValue(inputRef.current.innerHTML);
+
+    // Save to localStorage
+    localStorage.setItem(localStorageKey, inputRef.current.innerHTML);
+    setShowEmojiPicker(false);
+  }
+};
+
 
   useEffect(() => {
     // Create a dummy DOM to parse the HTML value
@@ -406,7 +441,6 @@ const ChatSend = ({
     }
   }, [value]);
 
-  
   useEffect(() => {
     if (isReply && inputRef.current) {
       inputRef.current.focus();
@@ -422,27 +456,26 @@ const ChatSend = ({
   }, [isReply]);
 
   useEffect(() => {
-  (async () => {
-    try {
-      const saved = localStorage.getItem(localStorageKey);
-      if (saved) {
-        console.log("Restoring saved input:", saved);
-        setValue(saved);
-        if (inputRef.current) {
-          inputRef.current.innerHTML = saved;
+    (async () => {
+      try {
+        const saved = localStorage.getItem(localStorageKey);
+        if (saved) {
+          console.log("Restoring saved input:", saved);
+          setValue(saved);
+          if (inputRef.current) {
+            inputRef.current.innerHTML = saved;
+          }
         }
+      } catch (error) {
+        console.error("Failed to restore input:", error);
       }
-    } catch (error) {
-      console.error("Failed to restore input:", error);
-    }
-  })();
-}, [localStorageKey, userId, type]); 
- 
+    })();
+  }, [localStorageKey, userId, type]);
 
   return (
     <>
       {isReply && (
-        <div className="bg-gray-100 p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
+        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
           <div>
             Replying to:{" "}
             <div
@@ -488,7 +521,36 @@ const ChatSend = ({
           </div>
         )}
 
-        <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto">
+        <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto ios">
+          <div className="flex flex-col items-center gap-2">
+            {!isReply && (
+              <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
+                <Paperclip size={13} />
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                />
+              </label>
+            )}
+        <button
+          type="button"
+          className=" text-xl"
+          onClick={() => setShowEmojiPicker((val) => !val)}
+          aria-label="Toggle emoji picker"
+        >
+          😊
+        </button>
+
+        {/* Emoji picker popup */}
+        {showEmojiPicker && (
+          <div className="absolute bottom-full mb-2 left-0 z-50">
+            <EmojiPicker onEmojiClick={onEmojiClick} lazyLoadEmojis={true} theme="dark" 
+            
+            />
+          </div>
+        )}
+          </div>
           {type === "group" ? (
             <div className="relative w-full">
               {value.trim() === "" && (
@@ -552,19 +614,7 @@ const ChatSend = ({
               />
             </div>
           )}
-
           <div className="flex flex-col items-center gap-2">
-            {!isReply && (
-              <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
-                <Paperclip size={13} />
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
-              </label>
-            )}
-
             <button
               onClick={handleSend}
               disabled={submitBtnDisabled}
