@@ -242,7 +242,9 @@ div#commentsMention[placeholder]:empty:before {
 .chat-funt-set button {
     border-right: 1px solid #ccc;
 }
-
+.chat-funt-set div {
+    border-right: 1px solid #ccc;
+}
 
 
 

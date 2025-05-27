@@ -19,6 +19,8 @@ import { ScaleLoader } from "react-spinners";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import logo from "../../assets/ccp-logo.png";
 import isEqual from "lodash.isequal";
+import faviconimg from '../../assets/ccp-fav.png'; // Path to your favicon image
+import notificationsound from '../../assets/notification-sound.mp3';
 
 const ChatSidebar = ({
   view_user_id,
@@ -187,6 +189,7 @@ const ChatSidebar = ({
             }
           }
 
+
           return {
             ...chat,
             logged_in_status,
@@ -228,6 +231,81 @@ const ChatSidebar = ({
 
   if (hasChanges) setChats(updatedChats);
 }, [chats]);
+
+function updateFaviconWithCount(count) {
+  const originalFaviconPath = faviconimg; // your favicon image path
+
+  if (count == 0) {
+    const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+    link.rel = 'icon';
+    link.href = originalFaviconPath;
+    document.head.appendChild(link);
+    return;
+  }
+
+  const favicon = new Image();
+  favicon.src = faviconimg; // Your favicon path
+
+  favicon.onload = () => {
+    const canvas = document.createElement('canvas');
+    const size = 64;
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(favicon, 0, 0, size, size);
+
+    if (count > 0) {
+      // Draw red circle
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(size - 12, 12, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw count text
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(count > 99 ? '99+' : count.toString(), size - 12, 12);
+    }
+
+    const link = document.querySelector("link[rel~='icon']") || document.createElement('link');
+    link.rel = 'icon';
+    link.href = canvas.toDataURL('image/png');
+
+    document.head.appendChild(link);
+  };
+}
+
+useEffect(() => {
+  const updatedChats = chats.map(chat => {
+    if (
+      selectedUser &&
+      selectedUser.id == chat.id &&
+      selectedUser.type == chat.type &&
+      chat.unread_count > 0
+    ) {
+      return { ...chat, unread_count: 0 }; // reset unread count
+    }
+    return chat;
+  });
+
+  const unreadCount = updatedChats.reduce(
+    (acc, chat) => acc + (chat.unread_count || 0),
+    0
+  );
+
+  if (unreadCount > 0) {
+    document.title = `(${unreadCount}) New Messages`;
+    updateFaviconWithCount(unreadCount);
+  } else {
+    document.title = 'CCP';
+    updateFaviconWithCount(0); // optional: reset badge
+  }
+
+}, [chats, selectedUser]);
+
 
 
   useEffect(() => {
@@ -290,6 +368,8 @@ const ChatSidebar = ({
       const otherUserId =
         msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
 
+        
+
       console.log("otherUserId", otherUserId);
 
       const isRelevant =
@@ -327,6 +407,11 @@ const ChatSidebar = ({
           return prevChats;
         }
 
+        const isSameAsSelected =
+    selectedUser &&
+    selectedUser.id == otherUserId &&
+    selectedUser.type == msg.user_type;
+
         const updatedChats = [...prevChats];
         updatedChats[index] = {
           ...updatedChats[index],
@@ -335,7 +420,9 @@ const ChatSidebar = ({
             msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
               ? 1
               : 0,
-          unread_count: (updatedChats[index]?.unread_count || 0) + 1,
+          unread_count: isSameAsSelected
+      ? updatedChats[index]?.unread_count || 0 
+      : (updatedChats[index]?.unread_count || 0) + 1,
           is_mentioned:
             Array.isArray(msg.mentioned_users) &&
             msg.mentioned_users.includes(user?.id),
@@ -365,6 +452,40 @@ const ChatSidebar = ({
       socket.off("new_reply", handleNewMessageSidebar);
     };
   }, [user?.id, chatsLoaded, selectedUser]);
+
+  useEffect(() => {
+  if (!user || !chats) return;
+
+  connectSocket(user.id);
+  const socket = getSocket();
+
+  const handleUserLoggedIn = (loggedInUser) => {
+
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (
+          chat.type === "user" &&
+          chat.id == loggedInUser.id // or chat.userId depending on your structure
+        ) {
+          return { ...chat, logged_in_status: true };
+        }
+        return chat;
+      })
+    );
+  };
+
+  socket.on("connect", () => {
+    socket.emit("user_loggedin", user);
+  });
+
+  socket.on("user_loggedin", handleUserLoggedIn);
+
+  return () => {
+    socket.off("user_loggedin", handleUserLoggedIn);
+  };
+}, [user, chats]);
+
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -618,7 +739,7 @@ const ChatSidebar = ({
                     onSelect(chat);
                     const updatedChats = chats.map((c) => {
                       if (c.id === chat.id && c.type === chat.type) {
-                        return { ...c, read_status: 0 };
+                        return { ...c, read_status: 0, unread_count:0, is_mentioned: false, };
                       }
                       return c;
                     });

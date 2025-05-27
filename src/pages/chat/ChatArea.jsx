@@ -10,7 +10,6 @@ import GroupInfo from "../groups/GroupInfo";
 import SearchResults from "./SearchResults";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import PinnedMessages from "./PinnedMessages";
-
 const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
   
   const [input, setInput] = useState("");
@@ -32,6 +31,8 @@ const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
     setSelectedGroup(groupId);
     setGroupInfoOpen(true);
   }
+
+  const [selectedQuoteMessage, setSelectedQuoteMessage] = useState(null);
 
   useEffect(() => {
     if (user?.id && selectedUser.id) {
@@ -85,7 +86,15 @@ const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  
+  const containerRef = useRef(null);
+  const scrollToBottom = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight + 10000000,
+        behavior: "smooth",
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col flex-1 bg-white rounded m-2 ml-0 justify-between">
@@ -95,7 +104,19 @@ const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
 
         {/* Messages */}
        
-          <ChatMessages userId={selectedUser?.id} view_user_id={view_user_id} userType={selectedUser?.type} isReply={isReply} setIsReply={setIsReply} replyMsgId={replyMsgId} setReplyMsgId={setReplyMsgId} setReplyMessage={setReplyMessage} selectedMessage={selectedMessage} />
+          <ChatMessages userId={selectedUser?.id} 
+          view_user_id={view_user_id} 
+          userType={selectedUser?.type} 
+          isReply={isReply} 
+          setIsReply={setIsReply}
+           replyMsgId={replyMsgId}
+            setReplyMsgId={setReplyMsgId}
+            setReplyMessage={setReplyMessage} 
+            selectedMessage={selectedMessage} 
+            setSelectedQuoteMessage={setSelectedQuoteMessage}
+            scrollToBottom={scrollToBottom}
+            containerRef={containerRef}
+            />
         
         </div>
         <div className="chat-text-n mt-2 bg-white">
@@ -110,6 +131,9 @@ const ChatArea = ({view_user_id, selectedUser, setLeftGroupOpen }) => {
             replyMessage={replyMessage}
             setReplyMessage={setReplyMessage}
             
+            selectedQuoteMessage={selectedQuoteMessage}
+            setSelectedQuoteMessage={setSelectedQuoteMessage}
+            scrollToBottom={scrollToBottom}
           />
         </div>
       </div>

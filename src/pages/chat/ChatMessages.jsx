@@ -17,6 +17,7 @@ import {
   FileSpreadsheet,
   SquareArrowOutUpRightIcon,
   Smile,
+  QuoteIcon,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -24,6 +25,7 @@ import EditModal from "./EditModal";
 import ReadPersons from "./ReadPersons";
 import ReminderModal from "./ReminderModal";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
+import FileModal from "../../components/FileModal";
 
 const ChatMessages = ({
   view_user_id,
@@ -34,6 +36,9 @@ const ChatMessages = ({
   setIsReply,
   setReplyMsgId,
   setReplyMessage,
+  setSelectedQuoteMessage,
+  scrollToBottom,
+  containerRef,
 }) => {
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -44,7 +49,7 @@ const ChatMessages = ({
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
   const [latestMessageId, setLatestMessageId] = useState(null);
-  const containerRef = useRef(null);
+
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
   const { user } = useAuth();
@@ -161,15 +166,6 @@ const ChatMessages = ({
     }
   };
 
-  const scrollToBottom = () => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        top: containerRef.current.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  };
-
   useEffect(() => {
     console.log("Setting up IntersectionObserver");
 
@@ -267,6 +263,7 @@ const ChatMessages = ({
             }
             return [...prevMessages, msg];
           });
+
           setLatestMessageId(msg.id);
           console.log("read_message-emit");
           socket.emit("read_message_socket", {
@@ -423,6 +420,7 @@ const ChatMessages = ({
     setIsReply(true);
     setReplyMsgId(msgId);
     setReplyMessage(messageText);
+    setSelectedQuoteMessage(null); // Clear any selected quote message
   };
 
   const [selectedMessageForReminder, setSelectedMessageForReminder] =
@@ -486,11 +484,19 @@ const ChatMessages = ({
     }
   };
 
+  const handleQuote = (msg) => {
+    console.log("Quote message:", msg);
+    setSelectedQuoteMessage(msg);
+    setIsReply(false);
+    setReplyMsgId(null);
+    setReplyMessage(null);
+  };
+
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
   const scrollToMessage = async (selmsg) => {
     if (selmsg) {
-      console.log("coming");
+      console.log("coming", selmsg);
       // Check if the message is already in the current messages array
       let existingMessage = messages.find((msg) => msg.id == selmsg.id);
 
@@ -682,6 +688,20 @@ const ChatMessages = ({
     }, 100);
   };
 
+  const isSingleEmoji = (message) => {
+    if (!message) return false;
+
+    // Remove wrapping tags like <p>...</p> if any
+    const temp = document.createElement("div");
+    temp.innerHTML = message;
+    const text = temp.textContent.trim();
+
+    // Regex to match a single emoji
+    const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
+    return emojiRegex.test(text);
+  };
+
+  const [openFileModal, setOpenFileModal] = useState(null);
   return (
     <div
       ref={containerRef}
@@ -786,7 +806,7 @@ const ChatMessages = ({
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
-                        ? "animate-pulse-highlight bg-yellow-50"
+                        ? "animate-pulse-highlight bg-gray-300"
                         : ""
                     } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
                       msg.id
@@ -801,7 +821,9 @@ const ChatMessages = ({
                         isSent ? "items-end " : "items-start "
                       } `}
                     >
-                      {msg.profile_pic ? (
+                      {msg.profile_pic &&
+                      msg.profile_pic != "null" &&
+                      msg.profile_pic != "" ? (
                         <img
                           src={
                             "https://rapidcollaborate.in/ccp" + msg.profile_pic
@@ -895,24 +917,48 @@ const ChatMessages = ({
                                 {/* File Preview */}
                                 <div className="p-3 border-t border-gray-200">
                                   {isImage ? (
-                                    <img
-                                      src={fileUrl}
-                                      alt={msg.filename}
-                                      className="rounded-md shadow max-w-36 h-full object-contain"
-                                    />
+                                    <button
+                                      onClick={() =>
+                                        setOpenFileModal({
+                                          url: `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                          name: msg.filename.split("/").pop(),
+                                        })
+                                      }
+                                    >
+                                      <img
+                                        src={fileUrl}
+                                        alt={msg.filename}
+                                        className="rounded-md shadow max-w-36 h-full object-contain"
+                                      />
+                                    </button>
                                   ) : (
-                                    <a
-                                      href={fileUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
+                                    // <a
+                                    //   href={fileUrl}
+                                    //   target="_blank"
+                                    //   rel="noopener noreferrer"
+                                    //   className="text-sm text-blue-600 hover:underline flex items-center"
+                                    // >
+                                    //   open{" "}
+                                    //   <SquareArrowOutUpRightIcon
+                                    //     size={15}
+                                    //     className="ml-1"
+                                    //   />
+                                    // </a>
+                                    <button
                                       className="text-sm text-blue-600 hover:underline flex items-center"
+                                      onClick={() =>
+                                        setOpenFileModal({
+                                          url: `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                          name: msg.filename.split("/").pop(),
+                                        })
+                                      }
                                     >
                                       open{" "}
                                       <SquareArrowOutUpRightIcon
                                         size={15}
                                         className="ml-1"
                                       />
-                                    </a>
+                                    </button>
                                   )}
                                 </div>
                               </details>
@@ -921,8 +967,51 @@ const ChatMessages = ({
                         })()}
 
                       <div className="message-content">
+                        {msg.is_quoted == 1 &&
+                          msg.quoted_msg &&
+                          msg.quoted_msg_name &&
+                          msg.quoted_msg_id && (
+                            <div className="border-l-2 border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-bold text-gray-700 mr-1">
+                                  {msg.quoted_msg_name?.length > 15
+                                    ? msg.quoted_msg_name.slice(0, 15) + "…"
+                                    : msg.quoted_msg_name}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    try {
+                                      const quoted = JSON.parse(
+                                        msg.quoted_msg_json
+                                      );
+                                      setSelectedMessage(quoted);
+                                    } catch (e) {
+                                      console.error(
+                                        "Invalid quoted_msg_json",
+                                        e.message
+                                      );
+                                    }
+                                  }}
+                                  className="text-orange-500 hover:underline"
+                                >
+                                  Go to message →
+                                </button>
+                              </div>
+                              <div
+                                className="text-[11px] text-gray-700"
+                                dangerouslySetInnerHTML={{
+                                  __html: msg.quoted_msg,
+                                }}
+                              ></div>
+                            </div>
+                          )}
+
                         <div
-                          className="prose prose-sm max-w-none"
+                          className={`prose prose-sm max-w-none ${
+                            isSingleEmoji(msg.message)
+                              ? "text-[26px]"
+                              : "text-[13px]"
+                          }`}
                           dangerouslySetInnerHTML={{ __html: msg.message }}
                         ></div>
                         {(() => {
@@ -1043,9 +1132,7 @@ const ChatMessages = ({
                               <div
                                 ref={tooltipRef}
                                 className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
-                                
                               >
-                                
                                 {loadingReactions ? (
                                   <div>Loading...</div>
                                 ) : (
@@ -1056,7 +1143,14 @@ const ChatMessages = ({
                                         className="flex items-center gap-2"
                                       >
                                         <img
-                                          src={ user.profile_pic ? "https://rapidcollaborate.in/ccp" +user.profile_pic : `https://ui-avatars.com/api/?name=${user.name.charAt(0)}&background=random&color=fff&size=128`}
+                                          src={
+                                            user.profile_pic
+                                              ? "https://rapidcollaborate.in/ccp" +
+                                                user.profile_pic
+                                              : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                  0
+                                                )}&background=random&color=fff&size=128`
+                                          }
                                           alt={user.name}
                                           className="w-5 h-5 rounded-full"
                                         />
@@ -1097,7 +1191,7 @@ const ChatMessages = ({
                           [isSent ? "left" : "right"]: "2%",
                         }}
                       >
-                        <div className="relative" ref={emojiRef}>
+                        <div className="relative action-button" ref={emojiRef}>
                           <button
                             onClick={() => setShowEmojiPopup((prev) => !prev)}
                             className="action-button p-2 px-3 text-gray-600 hover:bg-yellow-50 transition-colors"
@@ -1138,6 +1232,13 @@ const ChatMessages = ({
                           title="Set reminder"
                         >
                           <BellDot size={13} />
+                        </button>
+                        <button
+                          onClick={() => handleQuote(msg)}
+                          className="action-button p-2 px-3 text-gray-600 hover:bg-purple-50  transition-colors"
+                          title="Quote message"
+                        >
+                          <QuoteIcon size={13} />
                         </button>
 
                         <button
@@ -1202,6 +1303,13 @@ const ChatMessages = ({
             onClose={() => {
               setReminderModalOpen(false);
             }}
+          />
+        )}
+        {openFileModal && (
+          <FileModal
+            fileUrl={openFileModal.url}
+            filename={openFileModal.name}
+            onClose={() => setOpenFileModal(null)}
           />
         )}
       </AnimatePresence>

@@ -7,7 +7,7 @@ import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import { Paperclip, Send, X } from "lucide-react";
+import { Paperclip, QuoteIcon, Send, X } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
 import EmojiPicker from "emoji-picker-react";
 
@@ -20,6 +20,9 @@ const ChatSend = ({
   setReplyMsgId,
   replyMessage,
   setReplyMessage,
+  selectedQuoteMessage,
+  setSelectedQuoteMessage,
+  scrollToBottom
 }) => {
   const [value, setValue] = useState("");
   const mentionRef = useRef(null);
@@ -101,6 +104,7 @@ const ChatSend = ({
     setValue("");
     setSelectedFile(null);
     setIsReply(false);
+    setSelectedQuoteMessage(null);
     if (type === "group") {
       fetchUsers();
     }
@@ -192,6 +196,7 @@ const ChatSend = ({
       formData.append("message", linkifiedMessage);
       formData.append("sender_name", user.name);
       formData.append("profile_pic", user.profile_pic);
+      formData.append("selected_quote_message", selectedQuoteMessage ? JSON.stringify(selectedQuoteMessage) : null);
       formData.append("is_file", selectedFile ? "1" : "0");
       let selectedUserIds = [];
 
@@ -219,6 +224,7 @@ const ChatSend = ({
       setIsReply(false);
       setReplyMsgId(null);
       setReplyMessage(null);
+      setSelectedQuoteMessage(null);
     } catch (error) {
       console.error("Send error:", error);
     } finally {
@@ -234,7 +240,7 @@ const ChatSend = ({
         chatInput2.innerHTML = "";
       }
       localStorage.removeItem(localStorageKey);
-      
+      scrollToBottom();
     }
   };
 
@@ -493,6 +499,38 @@ const ChatSend = ({
               setIsReply(false);
               setReplyMsgId(null);
               setReplyMessage(null);
+            }}
+            className="text-red-600 text-xs ml-2"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {selectedQuoteMessage && (
+        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
+          <div>
+            <div className="flex items-center gap-2">
+              <QuoteIcon size={15} className="text-orange-500" />{" "}
+            <div
+              dangerouslySetInnerHTML={{
+                __html:selectedQuoteMessage.sender_name
+                  
+              }}
+            />
+            </div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html:
+                  selectedQuoteMessage.message.length > 60
+                    ? selectedQuoteMessage.message.slice(0, 60) + "..."
+                    : selectedQuoteMessage.message,
+              }}
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              setSelectedQuoteMessage(null);
             }}
             className="text-red-600 text-xs ml-2"
           >

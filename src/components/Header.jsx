@@ -37,6 +37,8 @@ import toast from "react-hot-toast";
 import "./toast.css";
 import TotalSearch from "../pages/chat/TotalSearch.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
+import notificationsound from '../assets/notification-sound.mp3';
+
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const { user, login, logout } = useAuth();
@@ -140,12 +142,14 @@ export default function Header() {
   useEffect(() => {
     selectedUserRef.current = selectedUser;
   }, [selectedUser]);
-
+  const audioRef = useRef(new Audio(notificationsound));
   useEffect(() => {
     requestPermission();
 
     onMessage(messaging, (payload) => {
       console.log("Message received: ", payload.data);
+
+      
 
       const currentSelectedUser = selectedUserRef.current;
 
@@ -153,6 +157,13 @@ export default function Header() {
         payload.data.user_type == "group" &&
         payload.data.receiver_id != currentSelectedUser?.id
       ) {
+
+        try {
+          audioRef.current.currentTime = 0; 
+          audioRef.current.play();
+        } catch (e) {
+          console.warn("Notification sound playback failed:", e);
+        }
         console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
@@ -203,6 +214,14 @@ export default function Header() {
           </div>
         ));
       } else if (payload.data.sender_id != currentSelectedUser?.id) {
+
+        try {
+        audioRef.current.currentTime = 0; 
+        audioRef.current.play();
+      } catch (e) {
+        console.warn("Notification sound playback failed:", e);
+      }
+
         console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
@@ -363,7 +382,7 @@ export default function Header() {
                 <button
                   onClick={() => setCreateNewSpace(true)}
                   data-tooltip-id="my-tooltip"
-                  data-tooltip-content="Create New Space"
+                  data-tooltip-content="Create New Group"
                   className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
                 >
                   <Group size={17} className="" />

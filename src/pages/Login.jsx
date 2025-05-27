@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { ScaleLoader } from "react-spinners";
 import { useAuth } from "../utils/idb";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -15,6 +15,9 @@ export default function Login() {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [userPanel, setUserPanel] = useState(null);
   const [tempUser, setTempUser] = useState(null);
+
+   const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const { user, login } = useAuth();
   useEffect(() => {
@@ -56,20 +59,20 @@ export default function Login() {
       const data = await response.json();
 
       if (data.status) {
-        if (data.data.user_type != "admin") {
+        //if (data.data.user_type != "admin") {
 
-          setTempUser(data.data);
-          setUserPanel(data.data.user_panel);
-          setShowWebCode(true);
+          //setTempUser(data.data);
+          //setUserPanel(data.data.user_panel);
+          //setShowWebCode(true);
 
           // login(data.data);
           // navigate("/chat");
 
-        } else {
+        //} else {
           toast.success("Login successful!");
           login(data.data);
           navigate("/chat");
-        }
+        //}
       } else {
         toast.error(data.message || "Invalid credentials.");
       }
@@ -187,14 +190,23 @@ export default function Login() {
               required
             />
 
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D] f-14"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="w-full px-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-[#D7763D] f-14"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {!showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             <div className="flex justify-between items-center">
               <button

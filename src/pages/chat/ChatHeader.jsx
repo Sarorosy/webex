@@ -166,7 +166,7 @@ useEffect(() => {
                 Typing...
               </div>
             )}
-            <AgoraCall />
+            {/* <AgoraCall /> */}
           </h2>
 
           {selectedUser?.office_name && selectedUser?.city_name  && (
@@ -229,7 +229,7 @@ useEffect(() => {
           
           <button
             data-tooltip-id="my-tooltip"
-            data-tooltip-content="Pined Messages"
+            data-tooltip-content="Pinned Messages"
             onClick={() => setPinMessagesOpen(true)}
             className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
           >
