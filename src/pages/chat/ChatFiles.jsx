@@ -27,7 +27,7 @@ import ReminderModal from "./ReminderModal";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import FileModal from "../../components/FileModal";
 
-const ChatMessages = ({
+const ChatFiles = ({
   view_user_id,
   userId,
   userType,
@@ -48,12 +48,11 @@ const ChatMessages = ({
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
-  const [hoveredReplyMessageId, setHoveredReplyMessageId] = useState(null);
   const [latestMessageId, setLatestMessageId] = useState(null);
 
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
-  const { user, theme } = useAuth();
+  const { user } = useAuth();
   const topSentinelRef = useRef(null);
   const hasMoreRef = useRef(true);
 
@@ -73,7 +72,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/files?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -228,116 +227,115 @@ const ChatMessages = ({
     };
   }, [skip, hasMore, isLoading]);
 
-  useEffect(() => {
-    let mounted = true;
+//   useEffect(() => {
+//     let mounted = true;
 
-    if (user?.id && userId) {
-      const socket = getSocket();
-      connectSocket(user.id);
+//     if (user?.id && userId) {
+//       const socket = getSocket();
+//       connectSocket(user.id);
 
-      const parsedUserId = parseInt(userId);
+//       const parsedUserId = parseInt(userId);
 
-      const handleNewMessage = (msg) => {
-        if (!mounted) return;
+//       const handleNewMessage = (msg) => {
+//         if (!mounted) return;
 
-        console.log(msg, "msg from socket");
-        console.log("cuurent userId", userId);
+//         console.log(msg, "msg from socket");
+//         console.log("cuurent userId", userId);
 
-        const isGroupMessage =
-          msg.user_type == "group" &&
-          msg.receiver_id == userId &&
-          msg.user_type == userType;
+//         const isGroupMessage =
+//           msg.user_type == "group" &&
+//           msg.receiver_id == userId &&
+//           msg.user_type == userType;
 
-        const isPrivateMessage =
-          msg.user_type == "user" &&
-          ((msg.sender_id == user.id &&
-            msg.receiver_id == parsedUserId &&
-            msg.user_type == userType) ||
-            (msg.sender_id == parsedUserId &&
-              msg.receiver_id == user.id &&
-              msg.user_type == userType));
+//         const isPrivateMessage =
+//           msg.user_type == "user" &&
+//           ((msg.sender_id == user.id &&
+//             msg.receiver_id == parsedUserId &&
+//             msg.user_type == userType) ||
+//             (msg.sender_id == parsedUserId &&
+//               msg.receiver_id == user.id &&
+//               msg.user_type == userType));
 
-        if (isGroupMessage || isPrivateMessage) {
-          setMessages((prevMessages) => {
-            if (prevMessages.some((m) => m.id === msg.id)) {
-              return prevMessages;
-            }
-            return [...prevMessages, msg];
-          });
+//         if (isGroupMessage || isPrivateMessage) {
+//           setMessages((prevMessages) => {
+//             if (prevMessages.some((m) => m.id === msg.id)) {
+//               return prevMessages;
+//             }
+//             return [...prevMessages, msg];
+//           });
 
-          setLatestMessageId(msg.id);
-          console.log("read_message-emit");
-          socket.emit("read_message_socket", {
-            user_id: user.id,
-            message_ids: [msg.id],
-            receiver_id: msg.receiver_id,
-            user_type: msg.user_type,
-          });
+//           setLatestMessageId(msg.id);
+//           console.log("read_message-emit");
+//           socket.emit("read_message_socket", {
+//             user_id: user.id,
+//             message_ids: [msg.id],
+//             receiver_id: msg.receiver_id,
+//             user_type: msg.user_type,
+//           });
 
-          const isAtBottom =
-            containerRef.current.scrollHeight -
-              containerRef.current.scrollTop -
-              containerRef.current.clientHeight <
-            100;
+//           const isAtBottom =
+//             containerRef.current.scrollHeight -
+//               containerRef.current.scrollTop -
+//               containerRef.current.clientHeight <
+//             100;
 
-          if (!isAtBottom) {
-            setShowScrollToBottom(true);
-          } else {
-            // If user is at the bottom, scroll to show the new message
-            setTimeout(() => {
-              if (containerRef.current) {
-                containerRef.current.scrollTop =
-                  containerRef.current.scrollHeight;
-              }
-            }, 0);
-          }
-        }
-      };
+//           if (!isAtBottom) {
+//             setShowScrollToBottom(true);
+//           } else {
+//             setTimeout(() => {
+//               if (containerRef.current) {
+//                 containerRef.current.scrollTop =
+//                   containerRef.current.scrollHeight;
+//               }
+//             }, 0);
+//           }
+//         }
+//       };
 
-      const handleNewReply = (reply) => {
-        if (!mounted) return;
+//       const handleNewReply = (reply) => {
+//         if (!mounted) return;
 
-        console.log("reply", reply);
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => {
-            if (msg.id == reply.reply_msg_id) {
-              let existingReplies = [];
+//         console.log("reply", reply);
+//         setMessages((prevMessages) =>
+//           prevMessages.map((msg) => {
+//             if (msg.id == reply.msg_id) {
+//               let existingReplies = [];
 
-              try {
-                existingReplies = Array.isArray(msg.replies)
-                  ? msg.replies
-                  : JSON.parse(msg.replies || "[]");
-              } catch {
-                existingReplies = [];
-              }
+//               try {
+//                 existingReplies = Array.isArray(msg.replies)
+//                   ? msg.replies
+//                   : JSON.parse(msg.replies || "[]");
+//               } catch {
+//                 existingReplies = [];
+//               }
 
-              return {
-                ...msg,
-                replies: [...existingReplies, reply],
-              };
-            }
-            return msg;
-          })
-        );
-      };
+//               return {
+//                 ...msg,
+//                 replies: [...existingReplies, reply],
+//               };
+//             }
+//             return msg;
+//           })
+//         );
+//       };
 
-      socket.off("new_message", handleNewMessage);
-      socket.on("new_message", handleNewMessage);
+//       socket.off("new_message", handleNewMessage);
+//       socket.on("new_message", handleNewMessage);
 
-      socket.off("new_reply", handleNewReply);
-      socket.on("new_reply", handleNewReply);
+//       socket.off("new_reply", handleNewReply);
+//       socket.on("new_reply", handleNewReply);
 
-      return () => {
-        mounted = false;
-        socket.off("new_message", handleNewMessage);
-        socket.off("new_reply", handleNewReply);
-      };
-    }
+//       return () => {
+//         mounted = false;
+//         socket.off("new_message", handleNewMessage);
+//         socket.off("new_reply", handleNewReply);
+//       };
+//     }
 
-    return () => {
-      mounted = false;
-    };
-  }, [user?.id, userId]);
+//     return () => {
+//       mounted = false;
+//     };
+//   }, [user?.id, userId]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -465,32 +463,18 @@ const ChatMessages = ({
     }
   };
 
-  const handleDeleteMsg = (msgId, type) => {
+  const handleDeleteMsg = (msgId) => {
     try {
       // Emit the 'delete_message' event to the server
       const socket = getSocket(); // Assuming you have a socket connection
-      socket.emit("delete_message", { msgId, type });
+      socket.emit("delete_message", msgId);
 
       // Mark the message as deleted (set is_deleted = 1) in the state
-      if (type == "message") {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === msgId ? { ...msg, is_deleted: 1 } : msg
-          )
-        );
-      } else if (type == "reply") {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => {
-            if (!Array.isArray(msg.replies)) return msg;
-
-            const updatedReplies = msg.replies.map((rep) =>
-              rep.id === msgId ? { ...rep, is_deleted: 1 } : rep
-            );
-
-            return { ...msg, replies: updatedReplies };
-          })
-        );
-      }
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === msgId ? { ...msg, is_deleted: 1 } : msg
+        )
+      );
 
       console.log(`Message with ID ${msgId} marked as deleted`);
     } catch (error) {
@@ -514,29 +498,13 @@ const ChatMessages = ({
       console.log("coming", selmsg);
       // Check if the message is already in the current messages array
       let existingMessage = messages.find((msg) => msg.id == selmsg.id);
-      let needtofetch = false;
-
-      if (!existingMessage) {
-        // Search in replies of each message
-        for (let msg of messages) {
-          if (Array.isArray(msg.replies)) {
-            const foundReply = msg.replies.find((rep) => rep.id == selmsg.id);
-            if (foundReply) {
-              existingMessage = foundReply;
-              break;
-            } else {
-              needtofetch = true;
-            }
-          }
-        }
-      }
 
       // If message is not found, we'll implement a multi-step fetch strategy
-      if (!existingMessage && needtofetch) {
+      if (!existingMessage) {
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "http://localhost:5000/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messages"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -582,8 +550,6 @@ const ChatMessages = ({
 
           // Find the specific message
           existingMessage = mergedMessages.find((msg) => msg.id == selmsg.id);
-
-          console.log("existingMessage", existingMessage);
         } catch (error) {
           console.error("Error fetching messages:", error);
           return;
@@ -605,7 +571,6 @@ const ChatMessages = ({
 
           // Set highlighted message
           setHighlightedMessageId(selectedMessage.id);
-          console.log("gonna highlight is", selectedMessage.id);
 
           // Remove highlight after 3 seconds
           setTimeout(() => {
@@ -627,7 +592,7 @@ const ChatMessages = ({
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
   const EmojiPopup = ({ onSelect }) => (
-    <div className="ios absolute bottom-6 flex gap-1 px-2 py-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
+    <div className="ios absolute bottom-8 flex gap-1 px-2 py-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
@@ -640,17 +605,12 @@ const ChatMessages = ({
     </div>
   );
   const emojiRef = useRef(null);
-  const replyemojiRef = useRef(null);
   const [showEmojiPopup, setShowEmojiPopup] = useState(false);
-  const [showReplyEmojiPopup, setShowReplyEmojiPopup] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (emojiRef.current && !emojiRef.current.contains(e.target)) {
         setShowEmojiPopup(false);
-      }
-      if (replyemojiRef.current && !replyemojiRef.current.contains(e.target)) {
-        setShowReplyEmojiPopup(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -659,10 +619,9 @@ const ChatMessages = ({
 
   useEffect(() => {
     setShowEmojiPopup(false);
-    setShowReplyEmojiPopup(false);
   }, [hoveredMessageId]);
 
-  const handleReact = (msgId, emoji, type) => {
+  const handleReact = (msgId, emoji) => {
     if (!user?.id) return;
 
     const socket = getSocket();
@@ -671,7 +630,6 @@ const ChatMessages = ({
     socket.emit("message_react", {
       msgId,
       emoji,
-      type,
       userId: user.id,
     });
   };
@@ -680,24 +638,10 @@ const ChatMessages = ({
     const socket = getSocket();
     connectSocket(user.id);
 
-    const handleReactionsUpdated = ({ msgId, type, reactions }) => {
-      if (type == "message") {
-        setMessages((prev) =>
-          prev.map((msg) => (msg.id === msgId ? { ...msg, reactions } : msg))
-        );
-      } else if (type == "reply") {
-        setMessages((prev) =>
-          prev.map((msg) => {
-            if (!Array.isArray(msg.replies)) return msg;
-
-            const updatedReplies = msg.replies.map((rep) =>
-              rep.id === msgId ? { ...rep, reactions } : rep
-            );
-
-            return { ...msg, replies: updatedReplies };
-          })
-        );
-      }
+    const handleReactionsUpdated = ({ msgId, reactions }) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg.id === msgId ? { ...msg, reactions } : msg))
+      );
     };
 
     socket.on("reactions_updated", handleReactionsUpdated);
@@ -708,23 +652,18 @@ const ChatMessages = ({
   }, [user.id]);
 
   const [hoveredEmoji, setHoveredEmoji] = useState(null);
-  const [hoveredReplyEmoji, setHoveredReplyEmoji] = useState(null);
   const [reactionUsers, setReactionUsers] = useState([]);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const tooltipRef = useRef(null);
   const [loadingReactions, setLoadingReactions] = useState(false);
 
-  const handleReactionHover = async (e, emoji, msg, type) => {
+  const handleReactionHover = async (e, emoji, msg) => {
     const rect = e.target.getBoundingClientRect();
     setTooltipPosition({
       top: rect.bottom + window.scrollY + 5,
       left: rect.left + window.scrollX,
     });
-    if(type== "message"){
-      setHoveredEmoji(msg.id);
-    }else{
-      setHoveredReplyEmoji(msg.id);
-    }
+    setHoveredEmoji(emoji);
     setLoadingReactions(true);
 
     try {
@@ -748,13 +687,6 @@ const ChatMessages = ({
     }, 100);
   };
 
-  const clearReplyHover = () => {
-    setTimeout(() => {
-      setHoveredReplyEmoji(null);
-      setReactionUsers([]);
-    }, 100);
-  };
-
   const isSingleEmoji = (message) => {
     if (!message) return false;
 
@@ -772,7 +704,7 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className={`messages-container ios flex flex-col p-3 ${theme == "dark" ? "bg-gray-900" : "bg-gradient-to-b from-orange-50 to-white"} chat-messages-container-div overflow-y-auto h-[90%]`}
+      className="messages-container ios flex flex-col p-3 bg-gradient-to-b from-orange-50 to-white chat-messages-container-div overflow-y-auto h-[90%]"
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -793,8 +725,7 @@ const ChatMessages = ({
             <div className="p-4 bg-white rounded-full mb-4 shadow-md">
               <MessageSquare size={40} className="text-blue-400" />
             </div>
-            <p className="text-lg font-medium text-gray-600">No messages yet</p>
-            <p className="text-sm text-gray-400">Start a conversation!</p>
+            <p className="text-lg font-medium text-gray-600">No files shared yet</p>
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
@@ -825,7 +756,7 @@ const ChatMessages = ({
                     </div>
                   );
                 }
-                if (msg.is_deleted == 1 && msg.is_reply == 0) {
+                if (msg.is_deleted == 1) {
                   return (
                     <div
                       key={`${msg.id}-${msg.created_at}`}
@@ -852,12 +783,12 @@ const ChatMessages = ({
                   <div
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
-                    onMouseEnter={() => setHoveredMessageId(msg.id)}
-                    onMouseLeave={() => {
-                      setHoveredMessageId(null);
-                      clearHover();
-                    }}
-                    onDoubleClick={() => handleReply(msg.id, msg.message)}
+                    //onMouseEnter={() => setHoveredMessageId(msg.id)}
+                    //onMouseLeave={() => {
+                    //  setHoveredMessageId(null);
+                    //  clearHover();
+                    //}}
+                    //onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
@@ -869,13 +800,13 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper gap-2 rounded-lg py-1 w-full flex ${
+                    className={`message-wrapper gap-2 rounded-lg py-3 w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
                         ? "animate-pulse-highlight bg-gray-300"
                         : ""
-                    }  relative ${theme == "dark" ? "hover:bg-gray-400" : "hover:bg-gray-50"} border border-transparent hover:border-gray-200 msg-number-${
+                    } mb-3 relative hover:bg-gray-50 border border-transparent hover:border-gray-200 msg-number-${
                       msg.id
                     } ${isSent ? "pr-2" : "pl-2"} ${
                       isReply && replyMsgId == msg.id
@@ -906,15 +837,15 @@ const ChatMessages = ({
                     <div
                       className={`message relative max-w-[60%] min-w-[20%] ${
                         isSent
-                          ? `${theme == "dark" ? "bg-gray-500 text-gray-50" : "bg-gray-100 text-gray-900"}`
-                          : `${theme == "dark" ? "bg-gray-500 text-gray-50 border border-gray-400" : "bg-gray-100 text-gray-900 border border-gray-200"} `
+                          ? "bg-gray-100 text-gray-900"
+                          : "bg-white text-gray-800 border border-gray-200"
                       } rounded-2xl px-4 py-3 shadow-sm ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
                       <div
                         className={`text-xs  mb-1 font-medium ${
-                          isSent ? "text-white-600 text-right" : `${theme == "dark" ? "text-white" : "text-gray-600"}`
+                          isSent ? "text-white-600 text-right" : "text-gray-600"
                         }`}
                       >
                         {isSent && !view_user_id
@@ -999,6 +930,18 @@ const ChatMessages = ({
                                       />
                                     </button>
                                   ) : (
+                                    // <a
+                                    //   href={fileUrl}
+                                    //   target="_blank"
+                                    //   rel="noopener noreferrer"
+                                    //   className="text-sm text-blue-600 hover:underline flex items-center"
+                                    // >
+                                    //   open{" "}
+                                    //   <SquareArrowOutUpRightIcon
+                                    //     size={15}
+                                    //     className="ml-1"
+                                    //   />
+                                    // </a>
                                     <button
                                       className="text-sm text-blue-600 hover:underline flex items-center"
                                       onClick={() =>
@@ -1062,7 +1005,7 @@ const ChatMessages = ({
                           )}
 
                         <div
-                          className={`prose prose-sm ${isSent ? "text-end"  : "text-start"} max-w-none ${
+                          className={`prose prose-sm max-w-none ${
                             isSingleEmoji(msg.message)
                               ? "text-[26px]"
                               : "text-[13px]"
@@ -1111,321 +1054,36 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-3 space-y-2.5 min-w-80">
-                              {replies.map((reply) => {
-                                if (
-                                  reply.is_deleted == 1 &&
-                                  reply.is_reply == 1
-                                ) {
-                                  return (
-                                    <div
-                                      key={`${reply.id}-${reply.created_at}`}
-                                      className={`w-full flex justify-center my-2 `}
-                                    >
-                                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1.5 rounded-full text-center flex items-center space-x-2 shadow-sm">
-                                        <Trash2
-                                          size={10}
-                                          className="text-gray-500 mr-1"
-                                        />
-                                        <div>
-                                          {reply.sender_name ?? ""} deleted
-                                          their own reply
-                                        </div>
-                                        <div className="text-[9px] opacity-70">
-                                          {formatTime(reply.created_at)}
-                                        </div>
-                                      </div>
+                            <div className="mt-3 space-y-2.5">
+                              {replies.map((reply) => (
+                                <div
+                                  key={`${reply.id}-${reply.created_at}`}
+                                  className="reply-box bg-gray-50 border-l-4 border-blue-400 p-3 rounded-md text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow"
+                                >
+                                  <div className="font-semibold text-blue-700 flex items-center gap-2 mb-1">
+                                    <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                      <Reply
+                                        size={10}
+                                        className="text-blue-600"
+                                      />
                                     </div>
-                                  );
-                                }
-
-                                const isReplySent = isValidViewUserId
-                                  ? reply.sender_id == view_user_id
-                                  : reply.sender_id == user.id;
-
-                                return (
-                                  <div
-                                    key={`${reply.id}-${reply.created_at}`}
-                                    ref={(el) =>
-                                      (messageRefs.current[reply.id] = el)
-                                    }
-                                    className={`reply-box  ${
-                                        highlightedMessageId == reply.id
-                                          ? " bg-gray-300"
-                                          : " bg-gray-50"
-                                      } border-l-2 border-blue-400 p-2 rounded text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow relative`}
-                                    onMouseEnter={() =>
-                                      setHoveredReplyMessageId(
-                                        `reply-${reply.id}`
-                                      )
-                                    }
-                                    onMouseLeave={() => {
-                                      setHoveredReplyMessageId(null);
-                                      clearReplyHover();
-                                    }}
-                                  >
-                                    <div className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}>
-                                      <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <Reply
-                                          size={10}
-                                          className="text-blue-600"
-                                        />
-                                      </div>
-                                      {reply.profile_pic &&
-                                      reply.profile_pic != "null" &&
-                                      reply.profile_pic != "" ? (
-                                        <img
-                                          src={
-                                            "https://rapidcollaborate.in/ccp" +
-                                            reply.profile_pic
-                                          }
-                                          className="h-6 w-6 rounded-full object-cover border-2 border-white shadow-sm"
-                                        />
-                                      ) : (
-                                        <div className="flex justify-center items-center h-6 w-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
-                                          {reply.sender_name
-                                            ? reply.sender_name.charAt(0)
-                                            : "U"}
-                                        </div>
-                                      )}
-                                      {reply.sender_id == user?.id &&
-                                      !view_user_id
-                                        ? "You"
-                                        : reply.sender_name || "User"}
-                                    </div>
-                                    <div
-                                      className="prose prose-sm max-w-none"
-                                      dangerouslySetInnerHTML={{
-                                        __html: reply.message,
-                                      }}
-                                    ></div>
-                                    {(() => {
-                                      let pinned = [];
-
-                                      if (Array.isArray(reply.pinned_users)) {
-                                        pinned = reply.pinned_users;
-                                      } else {
-                                        try {
-                                          pinned = JSON.parse(
-                                            reply.pinned_users
-                                          );
-                                        } catch {
-                                          pinned = [];
-                                        }
-                                      }
-
-                                      return Array.isArray(pinned) &&
-                                        pinned.includes(
-                                          isValidViewUserId
-                                            ? view_user_id
-                                            : user?.id
-                                        ) ? (
-                                        <span className="absolute top-[-8px] right-[-3px] animate-pulse">
-                                          <Pin
-                                            size={18}
-                                            className="text-orange-500 fill-orange-500 rotate-45"
-                                          />
-                                        </span>
-                                      ) : null;
-                                    })()}
-                                    {(() => {
-                                      let reactions = [];
-
-                                      try {
-                                        const parsed =
-                                          typeof reply.reactions === "string"
-                                            ? JSON.parse(reply.reactions)
-                                            : reply.reactions;
-
-                                        if (Array.isArray(parsed)) {
-                                          reactions = parsed;
-                                        }
-                                      } catch {
-                                        reactions = [];
-                                      }
-
-                                      if (reactions.length === 0) return null;
-
-                                      const reactionMap = reactions.reduce(
-                                        (acc, r) => {
-                                          acc[r.emoji] =
-                                            (acc[r.emoji] || 0) + 1;
-                                          return acc;
-                                        },
-                                        {}
-                                      );
-
-                                      return (
-                                        <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                                          {hoveredReplyEmoji && hoveredReplyEmoji == reply.id && (
-                                            <div
-                                              ref={tooltipRef}
-                                              className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
-                                            >
-                                              {loadingReactions ? (
-                                                <div>Loading...</div>
-                                              ) : (
-                                                <div className="space-y-1 ios">
-                                                  {reactionUsers.map((user) => (
-                                                    <div
-                                                      key={user.id}
-                                                      className="flex items-center gap-2"
-                                                    >
-                                                      <img
-                                                        src={
-                                                          user.profile_pic
-                                                            ? "https://rapidcollaborate.in/ccp" +
-                                                              user.profile_pic
-                                                            : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                                0
-                                                              )}&background=random&color=fff&size=128`
-                                                        }
-                                                        alt={user.name}
-                                                        className="w-5 h-5 rounded-full"
-                                                      />
-                                                      <span>{user.name}</span>
-                                                      <span>{user.emoji}</span>
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
-
-                                          {Object.entries(reactionMap).map(
-                                            ([emoji, count]) => (
-                                              <div
-                                                key={emoji}
-                                                onMouseEnter={(e) =>
-                                                  handleReactionHover(
-                                                    e,
-                                                    emoji,
-                                                    reply,
-                                                    "reply"
-                                                  )
-                                                }
-                                                //onMouseLeave={clearHover}
-                                                className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
-                                              >
-                                                <span className="mr-1">
-                                                  {emoji}
-                                                </span>
-                                                <span className="text-[10px] font-medium">
-                                                  {count}
-                                                </span>
-                                              </div>
-                                            )
-                                          )}
-                                        </div>
-                                      );
-                                    })()}
-                                    <div className="text-xs text-gray-500 mt-2 flex items-center">
-                                      <Clock size={10} className="mr-1" />
-                                      {formatTime(reply.created_at)}
-                                    </div>
-
-                                    {/* Reply Actions */}
-                                    {hoveredReplyMessageId ==
-                                      `reply-${reply.id}` && (
-                                      <div className="chat-funt-set message-actions absolute -top-5 -right-2 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md">
-                                        <div
-                                          className="relative action-button"
-                                          ref={emojiRef}
-                                        >
-                                          <button
-                                            onClick={() =>
-                                              setShowReplyEmojiPopup(
-                                                (prev) => !prev
-                                              )
-                                            }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
-                                            title="React"
-                                          >
-                                            <Smile size={12} />
-                                          </button>
-                                          {showReplyEmojiPopup && (
-                                            <EmojiPopup
-                                              onSelect={(emoji) => {
-                                                handleReact(
-                                                  reply.id,
-                                                  emoji,
-                                                  "reply"
-                                                );
-                                                setShowReplyEmojiPopup(false);
-                                              }}
-                                            />
-                                          )}
-                                        </div>
-                                        {isReplySent && (
-                                          <button
-                                            onClick={() =>
-                                              handleEdit(
-                                                reply.id,
-                                                reply.message
-                                              )
-                                            }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                                            title="Edit reply"
-                                          >
-                                            <Pen size={11} />
-                                          </button>
-                                        )}
-
-                                        <button
-                                          onClick={() =>
-                                            handleReply(
-                                              reply.reply_msg_id,
-                                              reply.message
-                                            )
-                                          }
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-green-50 transition-colors"
-                                          title="Reply to reply"
-                                        >
-                                          <Reply size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() =>
-                                            handleReminder(reply.id)
-                                          }
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
-                                          title="Set reminder"
-                                        >
-                                          <BellDot size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() => handleQuote(reply)}
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
-                                          title="Quote reply"
-                                        >
-                                          <QuoteIcon size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() => handlePinMsg(reply.id)}
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-orange-50 transition-colors"
-                                          title="Pin reply"
-                                        >
-                                          <Pin size={11} />
-                                        </button>
-
-                                        {isReplySent && (
-                                          <button
-                                            onClick={() =>
-                                              handleDeleteMsg(reply.id, "reply")
-                                            }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-red-50 transition-colors"
-                                            title="Delete reply"
-                                          >
-                                            <Trash2 size={11} />
-                                          </button>
-                                        )}
-                                      </div>
-                                    )}
+                                    {reply.sender_id == user?.id &&
+                                    !view_user_id
+                                      ? "You"
+                                      : reply.reply_user_name || "User"}
                                   </div>
-                                );
-                              })}
+                                  <div
+                                    className="prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{
+                                      __html: reply.reply_message,
+                                    }}
+                                  ></div>
+                                  <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                    <Clock size={10} className="mr-1" />
+                                    {formatTime(reply.reply_at)}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           ) : null;
                         })()}
@@ -1433,7 +1091,7 @@ const ChatMessages = ({
                       <div
                         className={`message-time flex items-center text-xs ${
                           isSent ? "justify-end" : "justify-start"
-                        } mt-1.5 ${isSent ? `${theme == "dark" ? "text-gray-100" : "text-gray-600"}` : `${theme == "dark" ? "text-gray-100" : "text-gray-400"}` }`}
+                        } mt-1.5 ${isSent ? "text-gray-600" : "text-gray-400"}`}
                       >
                         {msg.is_edited == 1 && (
                           <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
@@ -1468,7 +1126,7 @@ const ChatMessages = ({
 
                         return (
                           <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                            {hoveredEmoji && hoveredEmoji == msg.id &&  (
+                            {hoveredEmoji && (
                               <div
                                 ref={tooltipRef}
                                 className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
@@ -1508,7 +1166,7 @@ const ChatMessages = ({
                                 <div
                                   key={emoji}
                                   onMouseEnter={(e) =>
-                                    handleReactionHover(e, emoji, msg, "message")
+                                    handleReactionHover(e, emoji, msg)
                                   }
                                   //onMouseLeave={clearHover}
                                   className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
@@ -1542,7 +1200,7 @@ const ChatMessages = ({
                           {showEmojiPopup && (
                             <EmojiPopup
                               onSelect={(emoji) => {
-                                handleReact(msg.id, emoji, "message");
+                                handleReact(msg.id, emoji);
                                 setShowEmojiPopup(false);
                               }}
                             />
@@ -1591,7 +1249,7 @@ const ChatMessages = ({
 
                         {isSent && (
                           <button
-                            onClick={() => handleDeleteMsg(msg.id, "message")}
+                            onClick={() => handleDeleteMsg(msg.id)}
                             className="action-button p-2 px-3 text-gray-600 hover:bg-red-50  transition-colors"
                             title="Delete message"
                           >
@@ -1657,4 +1315,4 @@ const ChatMessages = ({
   );
 };
 
-export default ChatMessages;
+export default ChatFiles;

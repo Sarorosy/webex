@@ -126,7 +126,7 @@ const ChatSend = ({
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const { user } = useAuth(); // Get sender_id
+  const { user, theme } = useAuth(); // Get sender_id
 
   useEffect(() => {
     console.log("selected Users:", selectedUsers);
@@ -545,7 +545,7 @@ const ChatSend = ({
         {/* Show selected file with X */}
         {selectedFile && (
           <div className="flex items-center gap-2">
-            <div className="flex items-center bg-gray-200 rounded px-2 py-1 text-sm chatfile absolute top-[-30px]">
+            <div className={`flex items-center ${theme == "dark" ? "bg-gray-500" : "bg-gray-200"} rounded px-2 py-1 text-sm chatfile absolute top-[-30px]`}>
               <span className="mr-2 truncate max-w-[150px]">
                 {selectedFile.name}
               </span>
@@ -559,7 +559,7 @@ const ChatSend = ({
           </div>
         )}
 
-        <div className="chat-send-container space-x-2 flex items-center justify-between mx-auto ios">
+        <div className={` ${theme == "dark" ? "bg-gray-500 text-white" : "bg-white"} chat-send-container space-x-2 flex items-center justify-between mx-auto ios`}>
           <div className="flex flex-col items-center gap-2">
             {!isReply && (
               <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">

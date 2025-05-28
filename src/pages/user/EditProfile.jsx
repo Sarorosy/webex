@@ -6,11 +6,13 @@ import { useAuth } from "../../utils/idb";
 const EditProfile = ({ onClose }) => {
   const { user, login } = useAuth();
   const [name, setName] = useState(user?.name || "");
-  const [password, setPassword] = useState("")
+  const [password, setPassword] = useState("");
   const [pronouns, setPronouns] = useState(user?.pronouns || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [profilePic, setProfilePic] = useState(
-    user && user.profile_pic ? "https://rapidcollaborate.in/ccp" + user.profile_pic : null
+    user && user.profile_pic
+      ? "https://rapidcollaborate.in/ccp" + user.profile_pic
+      : null
   );
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +49,7 @@ const EditProfile = ({ onClose }) => {
 
       if (profilePic) {
         formData.append("profile_pic", profilePic); // Send as file
-      }else{
+      } else {
         formData.append("delete_profile_pic", "yes"); // Send as file
       }
 
@@ -66,7 +68,7 @@ const EditProfile = ({ onClose }) => {
         login({
           ...user,
           name: updatedUser.name,
-          password : updatedUser.password,
+          password: updatedUser.password,
           pronouns: updatedUser.pronouns,
           bio: updatedUser.bio,
           profile_pic: updatedUser.profile_pic, // Will be file path
@@ -128,9 +130,9 @@ const EditProfile = ({ onClose }) => {
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className=" flex items-center">
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 ">
                 Display name *
               </label>
               <input
@@ -141,22 +143,22 @@ const EditProfile = ({ onClose }) => {
                 placeholder="Enter your name"
               />
             </div>
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 ">
+                Password *
+              </label>
+              <input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border p-2 rounded-md"
+                placeholder="Enter password"
+              />
+            </div>
 
-            <div className="flex gap-3">
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password *
-                  </label>
-                  <input
-                    type="text"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full border p-2 rounded-md"
-                    placeholder="Enter password"
-                  />
-                </div>
+            {/* <div className="flex gap-3"> */}
 
-                {/* <div className="w-full">
+            {/* <div className="w-full">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pronouns
                   </label>
@@ -168,7 +170,7 @@ const EditProfile = ({ onClose }) => {
                     placeholder="e.g., He/Him"
                   />
                 </div> */}
-            </div>
+            {/* </div> */}
 
             {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -181,14 +183,9 @@ const EditProfile = ({ onClose }) => {
                 placeholder="Write something about yourself..."
               ></textarea>
             </div> */}
-
-            
           </div>
 
           <div className="flex justify-end gap-2 mt-3">
-            <button className="bg-gray-300 text-black px-2 py-1 rounded-md f-13">
-              Cancel
-            </button>
             {/* Save Button */}
             <button
               onClick={handleSubmit}

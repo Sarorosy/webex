@@ -1,4 +1,14 @@
-import { Building, DoorOpen, InfoIcon, Pin, Search, Star, X } from "lucide-react";
+import {
+  Building,
+  CircleMinus,
+  DoorOpen,
+  InfoIcon,
+  MoreVertical,
+  Pin,
+  Search,
+  Star,
+  X,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
@@ -18,26 +28,30 @@ const ChatHeader = ({
   query,
   setQuery,
   setSearchResults,
-  setLeftGroupOpen
+  setLeftGroupOpen,
+  chatTab,
+  setChatTab,
 }) => {
-  const { user } = useAuth();
-  
+  const { user, theme } = useAuth();
+
   //console.log(selectedUser)
-  
+
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
 
-useEffect(() => {
-  if (selectedUser) {
-    try {
-      const favourites = JSON.parse(selectedUser.favourites || "[]");
-      setIsFavourite(Array.isArray(favourites) && favourites.includes(user?.id));
-    } catch (error) {
-      console.error("Failed to parse favourites", error);
-      setIsFavourite(false);
+  useEffect(() => {
+    if (selectedUser) {
+      try {
+        const favourites = JSON.parse(selectedUser.favourites || "[]");
+        setIsFavourite(
+          Array.isArray(favourites) && favourites.includes(user?.id)
+        );
+      } catch (error) {
+        console.error("Failed to parse favourites", error);
+        setIsFavourite(false);
+      }
     }
-  }
-}, [selectedUser, user?.id]);
+  }, [selectedUser, user?.id]);
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -97,37 +111,36 @@ useEffect(() => {
     setSearchOpen(false);
     setSelectedMessage(null);
     setQuery("");
+    setChatTab("chats");
   }, [selectedUser]);
 
   useEffect(() => {
-      connectSocket(user?.id);
-      const socket = getSocket();
+    connectSocket(user?.id);
+    const socket = getSocket();
 
-    
-  
-      const handleGroupUpdated = (data) => {
-        console.log("groupdata", data)
-        if(selectedUser?.id == data.id && selectedUser?.type == "group") {
-          setSelectedUser((prev) => ({
-            ...prev,
-            name: data.name,
-          }));
-        }
-        
-      };
-  
-  
-     socket.on("group_updated", handleGroupUpdated);
-  
-      return () => {
-        socket.off("group_updated", handleGroupUpdated);
-      };
-    }, [user?.id, selectedUser]);
+    const handleGroupUpdated = (data) => {
+      console.log("groupdata", data);
+      if (selectedUser?.id == data.id && selectedUser?.type == "group") {
+        setSelectedUser((prev) => ({
+          ...prev,
+          name: data.name,
+        }));
+      }
+    };
+
+    socket.on("group_updated", handleGroupUpdated);
+
+    return () => {
+      socket.off("group_updated", handleGroupUpdated);
+    };
+  }, [user?.id, selectedUser]);
+
+  const [showMenu, setShowMenu] = useState(false);
 
   return (
     <div className="relative">
       {/* HEADER */}
-      <div className="flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 chat-header-bg rounded-t-lg shadow-inner">
+      <div className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${theme == "dark" ? "chat-header-bg-dark text-white" : "chat-header-bg text-gray-800"} rounded-t-lg shadow-inner`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedUser?.profile_pic ? (
@@ -135,7 +148,8 @@ useEffect(() => {
                 src={
                   selectedUser.profile_pic.startsWith("http")
                     ? selectedUser.profile_pic
-                    : "https://rapidcollaborate.in/ccp" + selectedUser.profile_pic
+                    : "https://rapidcollaborate.in/ccp" +
+                      selectedUser.profile_pic
                 }
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover border"
@@ -147,9 +161,11 @@ useEffect(() => {
             )}
           </div>
 
-          <h2 className="text-lg font-bold text-gray-800 tracking-wide flex flex-col ml-2">
+          <h2 className="text-lg font-bold  tracking-wide flex flex-col ml-2">
             <span className="flex items-center">
-              {(selectedUser?.id == user?.id && selectedUser?.type == "user") ? selectedUser?.name + " (You)" : selectedUser?.name || "Unknown User"}
+              {selectedUser?.id == user?.id && selectedUser?.type == "user"
+                ? selectedUser?.name + " (You)"
+                : selectedUser?.name || "Unknown User"}
               <button onClick={handleFavourite}>
                 <Star
                   size={18}
@@ -162,15 +178,19 @@ useEffect(() => {
               </button>
             </span>
             {isTyping && (
-              <div className="typing-indicator italic text-gray-800 f-11">
+              <div className="typing-indicator italic  f-11">
                 Typing...
               </div>
             )}
             {/* <AgoraCall /> */}
           </h2>
 
-          {selectedUser?.office_name && selectedUser?.city_name  && (
-            <p className="flex items-center ml-6"><Building className="mr-2 text-gray-700" size={15} /> {selectedUser?.office_name} {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}</p>
+          {selectedUser?.office_name && selectedUser?.city_name && (
+            <p className="flex items-center ml-6">
+              <Building className="mr-2 text-gray-700" size={15} />{" "}
+              {selectedUser?.office_name}{" "}
+              {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}
+            </p>
           )}
         </div>
 
@@ -216,17 +236,25 @@ useEffect(() => {
               >
                 <InfoIcon size={13} />
               </button>
-              <button 
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Leave group"
-              onClick={() => setLeftGroupOpen(true)}
-              className="p-2 bg-red-300 text-black hover:text-white f-13 rounded-full hover:bg-red-600 transition">
+              <button
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Leave group"
+                onClick={() => setLeftGroupOpen(true)}
+                className="p-2 bg-red-300 text-black hover:text-white f-13 rounded-full hover:bg-red-600 transition"
+              >
                 <DoorOpen size={13} />
               </button>
             </div>
           )}
 
-          
+          <button
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="More"
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
+          >
+            <MoreVertical size={13} />
+          </button>
           <button
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Pinned Messages"
@@ -235,11 +263,41 @@ useEffect(() => {
           >
             <Pin size={13} />
           </button>
+          <button
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Close Chat"
+            onClick={() => setSelectedUser(null)}
+            className="p-2 bg-red-200 text-black f-13 rounded-full hover:bg-gray-300 hover:text-red-500 transition"
+          >
+            <CircleMinus size={13} />
+          </button>
         </div>
       </div>
-
+      {showMenu && (
+      <div className="py-0.5 px-4 z-50 message-file-selector">
+        <button
+          onClick={() => setChatTab("chats")}
+          className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ${
+            chatTab === "chats"
+              ? "bg-orange-500 text-white  border"
+              : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
+          }`}
+        >
+          Messages
+        </button>
+        <button
+          onClick={() => setChatTab("files")}
+          className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ml-4 ${
+            chatTab === "files"
+              ? "bg-orange-500 text-white  border"
+              : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
+          }`}
+        >
+          Files
+        </button>
+      </div>
+)}
       {/* FLOATING RESULTS */}
-      
     </div>
   );
 };

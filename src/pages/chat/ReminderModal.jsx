@@ -52,14 +52,18 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
+      style={{zIndex:60}}
     >
       <motion.div
         className="bg-white rounded-lg shadow-lg w-[400px]"
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
+        
       >
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
+        <div 
+        
+        className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
           <h2 className="text-lg font-semibold text-white">Set Reminder for Message</h2>
           <div>
             <button

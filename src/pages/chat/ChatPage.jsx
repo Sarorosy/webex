@@ -13,7 +13,7 @@ import StartConversation from "./StartConversation";
 const ChatPage = () => {
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   let { view_user_id, view_user_name } = useParams();
   const location = useLocation();
   const passedState = location.state;
@@ -94,7 +94,7 @@ const ChatPage = () => {
             setLeftGroupOpen={setLeftGroupOpen}
           />
         ) : (
-          <div className="flex flex-col flex-1 bg-gradient-to-b from-orange-50 rounded m-2 ml-0 justify-between">
+          <div className={`flex flex-col flex-1 ${theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"} rounded m-2 ml-0 justify-between`}>
            <StartConversation />
             </div>
         )}

@@ -83,7 +83,13 @@ div#commentsMention[placeholder]:empty:before {
   background-size: cover;
 
 }
+.chat-header-bg-dark{
+  background-image: url('./assets/pexels-tobiasbjorkli-2873541.jpg');
+  object-fit: cover;
+  background-position: center;
+  background-size: cover;
 
+}
 .cur-wait{
   cursor: wait !important;
 }
@@ -162,14 +168,16 @@ div#commentsMention[placeholder]:empty:before {
 
 .overflow-y-auto::-webkit-scrollbar
 {
-	width: 3px;
+	width: 8px;
 	background-color: #e85720;
+  border-radius: 8px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb
 {
 	background-color: #e85720;
 	border: 2px solid #e85720;
+  border-radius: 8px;
 }
 
 
@@ -182,14 +190,16 @@ div#commentsMention[placeholder]:empty:before {
 
 .m-list-h::-webkit-scrollbar
 {
-	width: 2px;
+	width: 8px;
 	background-color: #e85720;
+  border-radius:8px;
 }
 
 .m-list-h::-webkit-scrollbar-thumb
 {
 	background-color: #e85720;
-	border: 2px solid #e85720;
+	border: 8px solid #e85720;
+  border-radius:8px;
 }
 
 
@@ -255,10 +265,17 @@ div#commentsMention[placeholder]:empty:before {
     height: 95px;
     position: relative;
     z-index: 9;
-    background: white;
     
 }
 
 .EmojiPickerReact {
   z-index: 9999999999999 !important;
+}
+
+.message-file-selector{
+    position: absolute;
+    width: 100%;
+    background: #fff;
+    padding: 10px 15px;
+
 }

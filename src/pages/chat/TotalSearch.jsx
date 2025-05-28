@@ -8,7 +8,7 @@ import { useSelectedUser } from "../../utils/SelectedUserContext";
 
 const TotalSearch = ({ onClose }) => {
 
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const navigate = useNavigate();
   const inputRef = useRef(null);
 
@@ -77,7 +77,7 @@ const TotalSearch = ({ onClose }) => {
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: -300, opacity: 0 }}
         transition={{ type: "tween", duration: 0.3 }}
-        className="fixed top-0 left-0 w-[28.6%] h-[100vh] bg-white shadow-xl border-l border-gray-300 z-50 overflow-y-auto"
+        className={`fixed top-0 left-0 w-[28.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white" : "bg-white"} shadow-xl border-l border-gray-300 z-50 overflow-y-auto`}
       >
         <div className="p-4 py-2 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
           <span>Search Globally</span>
@@ -146,7 +146,7 @@ const TotalSearch = ({ onClose }) => {
                     results.results.map((user) => (
                       <div
                         key={user.id}
-                        className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        className={`flex items-center gap-3 p-2 ${theme == "dark" ? "hover:bg-gray-600 text-white" : "hover:bg-gray-100"} rounded cursor-pointer`}
                         onClick={() => {
                             onClose();
                           console.log("Clicked user:", user);
@@ -184,7 +184,7 @@ const TotalSearch = ({ onClose }) => {
                     results.messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className="p-2 border-b last:border-b-0 hover:bg-gray-100 cursor-pointer rounded"
+                        className={`p-2 border-b  last:border-b-0 ${theme == "dark" ? "bg-gray-500 hover:bg-gray-600 text-white" : "hover:bg-gray-100"} cursor-pointer rounded`}
                         onClick={() => {
                           console.log("Clicked message:", msg);
                           navigate("/chat", {
@@ -215,7 +215,7 @@ const TotalSearch = ({ onClose }) => {
                           </div>
                         </div>
                         <div
-                          className="text-sm text-gray-700 mt-1"
+                          className={`text-sm ${theme == "dark" ? " text-white" : "text-gray-700"} mt-1`}
                           dangerouslySetInnerHTML={{ __html: msg.message }}
                         />
                         <div className="text-xs text-gray-400 mt-1">

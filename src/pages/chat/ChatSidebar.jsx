@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Users,
   User,
@@ -34,7 +34,7 @@ const ChatSidebar = ({
   const [chats, setChats] = useState([]); 
   const [chatsLoaded, setChatsLoaded] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
@@ -619,14 +619,57 @@ useEffect(() => {
 
   
 
+const [sidebarWidth, setSidebarWidth] = useState(300);
+const [isResizing, setIsResizing] = useState(false);
+const resizeRef = useRef({
+  startX: 0,
+  startWidth: 300,
+});
+
+const handleMouseDown = (e) => {
+  resizeRef.current.startX = e.clientX;
+  resizeRef.current.startWidth = sidebarWidth;
+  setIsResizing(true);
+};
+
+useEffect(() => {
+  const handleMouseMove = (e) => {
+    if (isResizing) {
+      const deltaX = e.clientX - resizeRef.current.startX;
+      const newWidth = resizeRef.current.startWidth + deltaX;
+      if (newWidth >= 250 && newWidth <= 500) {
+        setSidebarWidth(newWidth);
+      }
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(false);
+  };
+
+  window.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", handleMouseUp);
+
+  return () => {
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
+  };
+}, [isResizing]);
+
 
 
   return (
     <div
-      className={`w-1/4 bg-gray-100 p-2 px-1  rounded-md m-2 ${
+      className={` ${theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}  p-2 px-1 relative select-none rounded-md m-2 ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
+      style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '600px' }}
     >
+      <div
+    onMouseDown={handleMouseDown}
+    className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[#2d2e5291] hover:bg-orange-300 hover:w-1"
+  ></div>
+
       <div className="px-2  border-b mb-2">
         
 
@@ -693,7 +736,7 @@ useEffect(() => {
                 className={`flex items-center gap-1 px-2 py-1 rounded f-13 ${
                   activeTab === tab
                     ? "bg-orange-500 text-white font-semibold border border-orange-500"
-                    : "text-gray-600 border border-orange-500  hover:bg-orange-500 hover:text-white"
+                    : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
                 }`}
               >
                 <Icon size={12} />
@@ -704,7 +747,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="px-2 m-list-h">
+      <div className="px-2 m-list-h overflow-y-hidden">
         {sideBarLoading ? (
           <div className="mx-auto flex justify-center w-full">
             <ScaleLoader
@@ -745,8 +788,8 @@ useEffect(() => {
                     });
                     setChats(updatedChats);
                   }}
-                  className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 mb-1 overflow-hidden ${
-                    (selectedUser?.id === chat.id && selectedUser?.type == chat.type) ? "bg-gray-300" : ""
+                  className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 hover:text-black mb-1 overflow-hidden ${
+                    (selectedUser?.id === chat.id && selectedUser?.type == chat.type) ? "bg-gray-300 text-black" : ""
                   } ${chat.read_status === 1 ? "font-bold" : ""}`}
                 >
                   <div className="flex items-center gap-2">
@@ -811,6 +854,8 @@ useEffect(() => {
           </>
         )}
       </div>
+
+      
     </div>
   );
 };

@@ -5,14 +5,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState("light");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
       const storedUser = await get("User");
+      const storedTheme = localStorage.getItem("Theme");
       if (storedUser) {
         setUser(storedUser);
       }
+      if (storedTheme) setTheme(storedTheme);
       setLoading(false);
     };
 
@@ -46,9 +49,15 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateTheme =  (theme) => {
+    setTheme(theme);
+    localStorage.setItem("Theme", theme);
+
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, setFavourites }}
+      value={{ user, login, logout, loading, setFavourites, theme, updateTheme }}
     >
       {children}
     </AuthContext.Provider>

@@ -50,19 +50,12 @@ const Profile = ({ onClose }) => {
               {/* Profile Info */}
               <h2 className="text-xl font-bold text-gray-900">
                 {name}{" "}
-                <span className="text-gray-500 text-sm font-normal">
-                  {pronounces}
-                </span>
+               
               </h2>
-              <h2 className="text-xl font-bold text-gray-900">
-                <span className="text-gray-400 text-sm font-normal">
-                  Active
-                </span>
-              </h2>
+              
               <p className="text-gray-700 mt-1">{email}</p>
-              <p className="text-gray-600 mt-1">{bio}</p>
-              {user?.office_name && <p className="text-gray-600 mt-1">{bio}</p>}
-              {user?.city_name && <p className="text-gray-600 mt-1">{bio}</p>}
+              {user?.office_name && <p className="text-gray-600 mt-1">{user?.office_name}</p>}
+              {user?.city_name && <p className="text-gray-600 mt-1">{user?.city_name}</p>}
             </div>
           </div>
         </div>

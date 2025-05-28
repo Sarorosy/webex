@@ -1,9 +1,11 @@
 import { Outlet, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import { Facebook, Instagram, Twitter } from "lucide-react";
+import { useAuth } from "../utils/idb";
 
 export default function UserLayout() {
   const navigate = useNavigate();
+  const { theme } = useAuth();
 
   return (
     <div className=" flex  bg-gray-50 w-full overflow-hidden f-13">
@@ -11,7 +13,7 @@ export default function UserLayout() {
       
       {/* Main content should scroll, others stay fixed */}
       <main className="flex-grow">
-        <div className="bg-white rounded shadow-md">
+        <div className={`${theme == "dark" ? "bg-gray-500" : "bg-white"} rounded shadow-md`}>
           <Outlet />
         </div>
       </main>

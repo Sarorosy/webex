@@ -15,6 +15,8 @@ import {
   LayoutDashboard,
   MessagesSquare,
   Group,
+  MoonIcon,
+  Sun,
 } from "lucide-react";
 import logo from "../assets/rc.png";
 import { AnimatePresence } from "framer-motion";
@@ -37,11 +39,11 @@ import toast from "react-hot-toast";
 import "./toast.css";
 import TotalSearch from "../pages/chat/TotalSearch.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
-import notificationsound from '../assets/notification-sound.mp3';
+import notificationsound from "../assets/notification-sound.mp3";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, theme, updateTheme } = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
@@ -149,17 +151,14 @@ export default function Header() {
     onMessage(messaging, (payload) => {
       console.log("Message received: ", payload.data);
 
-      
-
       const currentSelectedUser = selectedUserRef.current;
 
       if (
         payload.data.user_type == "group" &&
         payload.data.receiver_id != currentSelectedUser?.id
       ) {
-
         try {
-          audioRef.current.currentTime = 0; 
+          audioRef.current.currentTime = 0;
           audioRef.current.play();
         } catch (e) {
           console.warn("Notification sound playback failed:", e);
@@ -192,8 +191,8 @@ export default function Header() {
               <div className="flex items-start">
                 <div className="flex-shrink-0 pt-0.5">
                   <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
-                      {initial}
-                    </div>
+                    {initial}
+                  </div>
                 </div>
                 <div className="ml-3 flex-1">
                   <p className="text-sm font-medium text-gray-900">
@@ -214,13 +213,12 @@ export default function Header() {
           </div>
         ));
       } else if (payload.data.sender_id != currentSelectedUser?.id) {
-
         try {
-        audioRef.current.currentTime = 0; 
-        audioRef.current.play();
-      } catch (e) {
-        console.warn("Notification sound playback failed:", e);
-      }
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        } catch (e) {
+          console.warn("Notification sound playback failed:", e);
+        }
 
         console.log(selectedUser, "testt");
         const data = payload.data || {};
@@ -288,7 +286,7 @@ export default function Header() {
     const socket = getSocket();
 
     const handleUserUpdated = (updatedUser) => {
-      console.log("user" , updatedUser);
+      console.log("user", updatedUser);
       if (updatedUser?.id == user?.id) {
         console.log("two");
         login(updatedUser);
@@ -302,13 +300,30 @@ export default function Header() {
     };
   }, [user?.id]);
 
+  const [onlineUserIds, setOnlineUserIds] = useState([]);
+  useEffect(() => {
+    connectSocket(user?.id);
+    const socket = getSocket();
+
+    const handleOnlineUsers = (userIds) => {
+      console.log("Online user IDs received:", userIds);
+      setOnlineUserIds(userIds); // userIds is assumed to be an array from server
+    };
+
+    socket.on("online-users", handleOnlineUsers);
+
+    return () => {
+      socket.off("online-users", handleOnlineUsers);
+    };
+  }, [user?.id, selectedUser]);
+
   return (
     <header
-      className={`bg-white text-[#092e46] shadow-md ${
+      className={`${theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]" } shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full bg-gradient-to-b from-orange-50">
+      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full ">
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
@@ -316,53 +331,53 @@ export default function Header() {
                 onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Profile"
-                className="flex items-center p-1 f-13 rounded-full hover:bg-orange-200 text-black transition"
+                className="flex items-center p-1 f-13 rounded-full hover:bg-orange-200  transition relative"
               >
-                
-                  {user?.profile_pic ? (
-                    <img
-                      src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full mx-auto object-cover border"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full mx-auto object-cover border">
+                {user?.profile_pic ? (
+                  <img
+                    src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full mx-auto object-cover border"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full mx-auto object-cover border">
                     {user.name[0]}
-                    </div>
-                  )}
+                  </div>
+                )}
+                {onlineUserIds.includes(user?.id) && (
+                        <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
+                      )}
               </button>
 
               <button
                 onClick={() => {
-                      setSearchOpen(true);
-                    }}
+                  setSearchOpen(true);
+                }}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Search Globally"
-                className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
               >
-                <Search
-                    
-                    size={17}
-                    className=""
-                  />
+                <Search size={17} className="" />
                 {/* Chat */}
               </button>
               {/* <button
                 onClick={() => navigate("/chat")}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Chat Board"
-                className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
               >
                 <MessagesSquare size={17} className="" />
               
               </button> */}
 
-              {(user.user_type == "admin" || (user.user_type == "subadmin" && user.access_requests == 1)) && (
+              {(user.user_type == "admin" ||
+                (user.user_type == "subadmin" &&
+                  user.access_requests == 1)) && (
                 <button
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Admin Requests"
-                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
                 >
                   <LayoutDashboard size={17} className="" />
                   {/* Requests */}
@@ -373,7 +388,7 @@ export default function Header() {
                   onClick={() => setGroupsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage groups"
-                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
                 >
                   <Group size={17} className="" />
                   {/* Groups */}
@@ -383,18 +398,19 @@ export default function Header() {
                   onClick={() => setCreateNewSpace(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Create New Group"
-                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
                 >
                   <Group size={17} className="" />
                   {/* New Space */}
                 </button>
               )}
-              {(user.user_type == "admin" || user.user_type == "subadmin" && user.view_users == 1) && (
+              {(user.user_type == "admin" ||
+                (user.user_type == "subadmin" && user.view_users == 1)) && (
                 <button
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage Users"
-                  className="flex items-center p-2 f-13 rounded-full text-gray-700 hover:bg-orange-500 hover:text-white transition"
+                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
                 >
                   <Users size={17} className="" />
                   {/* Manage Users */}
@@ -402,6 +418,25 @@ export default function Header() {
               )}
             </div>
             <div className="flex items-center flex-col" ref={dropdownRef}>
+              {theme == "dark" ? (
+                <button
+                onClick={() => updateTheme("light")}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Switch to Dark Theme"
+                className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-3 rounded-full text-gray-500  transition"
+              >
+                <Sun size={17} className="" />
+              </button>
+              ) : (
+                <button
+                onClick={() => updateTheme("dark")}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Switch to Light Theme"
+                className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-3 rounded-full text-gray-500  transition"
+              >
+                <MoonIcon size={17} className="" />
+              </button>
+              )}
               <button
                 // onClick={logout}
                 onClick={() => setLogoutOpen(true)}
@@ -419,17 +454,16 @@ export default function Header() {
       </div>
 
       <AnimatePresence>
-
         {logoutOpen && (
           <ConfirmationModal
-          title="Are you Sure want to logout?"
-          message="You will be logged Out"
-          onYes={logout}
-          onClose={()=>{setLogoutOpen(false)}}
+            title="Are you Sure want to logout?"
+            message="You will be logged Out"
+            onYes={logout}
+            onClose={() => {
+              setLogoutOpen(false);
+            }}
           />
-        )
-
-        }
+        )}
         {createNewSpace && (
           <AddGroup
             onClose={() => {
