@@ -203,7 +203,7 @@ const ChatHeader = ({
                 onChange={(e) => setQuery(e.target.value)}
                 type="text"
                 placeholder="Search..."
-                className="px-2 py-1 pr-9 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13"
+                className={` ${theme == "dark" ? "text-black" : ""} px-2 py-1 pr-9 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13`}
               />
               <button
                 onClick={() => {

@@ -636,6 +636,8 @@ const handleMouseDown = (e) => {
   resizeRef.current.startX = e.clientX;
   resizeRef.current.startWidth = sidebarWidth;
   setIsResizing(true);
+  document.body.style.cursor = "col-resize";
+  
 };
 
 useEffect(() => {
@@ -651,6 +653,7 @@ useEffect(() => {
 
   const handleMouseUp = () => {
     setIsResizing(false);
+     document.body.style.cursor = "default";
   };
 
   window.addEventListener("mousemove", handleMouseMove);
