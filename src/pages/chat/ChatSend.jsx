@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
+        `http://localhost:5000/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -212,7 +212,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/chats/send",
+        "http://localhost:5000/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary

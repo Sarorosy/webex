@@ -19,7 +19,7 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
         setGroupMemberIds(ids); // Optional: still store them if needed
 
         // Step 2: Fetch users excluding these IDs
-        const userRes = await fetch('https://webexback-vb1k.onrender.com/api/users/getusersexcluding', {
+        const userRes = await fetch('http://localhost:5000/api/users/getusersexcluding', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ exclude_ids: ids }),
@@ -98,7 +98,7 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
     const handleSubmit = async(ids) => {
         try{
             setSubmitting(true);
-            const response = await fetch("https://webexback-vb1k.onrender.com/api/groups/add-members", {
+            const response = await fetch("http://localhost:5000/api/groups/add-members", {
                 method : "POST",
                 headers : { "Content-type" : "application/json"},
                 body : JSON.stringify({

@@ -50,6 +50,7 @@ const ChatMessages = ({
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
   const [hoveredReplyMessageId, setHoveredReplyMessageId] = useState(null);
   const [latestMessageId, setLatestMessageId] = useState(null);
+  const [latestMessage, setLatestMessage] = useState(null);
 
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
@@ -73,7 +74,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -85,8 +86,32 @@ const ChatMessages = ({
       const data = await res.json();
       const reversedData = data.reverse();
 
+      console.log(reversedData);
+
       if (reversedData.length > 0) {
-        setLatestMessageId(reversedData[reversedData.length - 1].id);
+        let maxId = 0;
+        let latestMsg = null;
+
+        reversedData.forEach((msg) => {
+          // check the main message ID
+          if (msg.id > maxId) {
+            maxId = msg.id;
+            latestMsg = msg;
+          }
+
+          // check replies if any
+          if (msg.replies && Array.isArray(msg.replies)) {
+            msg.replies.forEach((reply) => {
+              if (reply.id > maxId) {
+                maxId = reply.id;
+                latestMsg = reply;
+              }
+            });
+          }
+        });
+
+        setLatestMessageId(maxId);
+        setLatestMessage(latestMsg)
       }
 
       return reversedData;
@@ -99,7 +124,6 @@ const ChatMessages = ({
       setMessageLoading(false);
     }
   };
-  
 
   useEffect(() => {
     console.log("latest msg id", latestMessageId);
@@ -230,6 +254,22 @@ const ChatMessages = ({
     };
   }, [skip, hasMore, isLoading]);
 
+  useEffect(()=>{
+    if(latestMessage){
+      const socket = getSocket();
+      connectSocket(user?.id);
+      console.log("latestmessage" ,latestMessage)
+
+      socket.emit("read_message_socket", {
+        user_id: user.id,
+        message_ids: [latestMessage.id],
+        receiver_id: latestMessage.receiver_id,
+        user_type: latestMessage.user_type,
+      });
+
+    }
+  },[latestMessage])
+
   useEffect(() => {
     let mounted = true;
 
@@ -312,6 +352,14 @@ const ChatMessages = ({
               } catch {
                 existingReplies = [];
               }
+
+              setLatestMessageId(reply.id);
+              socket.emit("read_message_socket", {
+                user_id: user.id,
+                message_ids: [reply.id],
+                receiver_id: reply.receiver_id,
+                user_type: reply.user_type,
+              });
 
               return {
                 ...msg,
@@ -438,7 +486,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -538,7 +586,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -722,16 +770,16 @@ const ChatMessages = ({
       top: rect.bottom + window.scrollY + 5,
       left: rect.left + window.scrollX,
     });
-    if(type== "message"){
+    if (type == "message") {
       setHoveredEmoji(msg.id);
-    }else{
+    } else {
       setHoveredReplyEmoji(msg.id);
     }
     setLoadingReactions(true);
 
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -774,7 +822,11 @@ const ChatMessages = ({
   return (
     <div
       ref={containerRef}
-      className={`messages-container ios flex flex-col p-3 ${theme == "dark" ? "bg-gray-900" : "bg-gradient-to-b from-orange-50 to-white"} chat-messages-container-div overflow-y-auto h-[90%]`}
+      className={`messages-container ios flex flex-col p-3 ${
+        theme == "dark"
+          ? "bg-gray-900"
+          : "bg-gradient-to-b from-orange-50 to-white"
+      } chat-messages-container-div overflow-y-auto h-[90%]`}
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -877,7 +929,9 @@ const ChatMessages = ({
                       highlightedMessageId === msg.id
                         ? "animate-pulse-highlight bg-gray-300"
                         : ""
-                    }  relative ${theme == "dark" ? "hover:bg-gray-400" : "hover:bg-gray-50"} border border-transparent hover:border-gray-200 msg-number-${
+                    }  relative ${
+                      theme == "dark" ? "hover:bg-gray-400" : "hover:bg-gray-50"
+                    } border border-transparent hover:border-gray-200 msg-number-${
                       msg.id
                     } ${isSent ? "pr-2" : "pl-2"} ${
                       isReply && replyMsgId == msg.id
@@ -908,15 +962,27 @@ const ChatMessages = ({
                     <div
                       className={`message relative max-w-[60%] min-w-[20%] ${
                         isSent
-                          ? `${theme == "dark" ? "bg-gray-500 text-gray-50" : "bg-gray-100 text-gray-900"}`
-                          : `${theme == "dark" ? "bg-gray-500 text-gray-50 border border-gray-400" : "bg-gray-100 text-gray-900 border border-gray-200"} `
+                          ? `${
+                              theme == "dark"
+                                ? "bg-gray-500 text-gray-50"
+                                : "bg-gray-100 text-gray-900"
+                            }`
+                          : `${
+                              theme == "dark"
+                                ? "bg-gray-500 text-gray-50 border border-gray-400"
+                                : "bg-gray-100 text-gray-900 border border-gray-200"
+                            } `
                       } rounded-2xl px-4 py-3 shadow-sm ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
                       <div
                         className={`text-xs  mb-1 font-medium ${
-                          isSent ? "text-white-600 text-right" : `${theme == "dark" ? "text-white" : "text-gray-600"}`
+                          isSent
+                            ? "text-white-600 text-right"
+                            : `${
+                                theme == "dark" ? "text-white" : "text-gray-600"
+                              }`
                         }`}
                       >
                         {isSent && !view_user_id
@@ -1064,7 +1130,9 @@ const ChatMessages = ({
                           )}
 
                         <div
-                          className={`prose prose-sm ${isSent ? "text-end"  : "text-start"} max-w-none ${
+                          className={`prose prose-sm ${
+                            isSent ? "text-end" : "text-start"
+                          } max-w-none ${
                             isSingleEmoji(msg.message)
                               ? "text-[26px]"
                               : "text-[13px]"
@@ -1152,10 +1220,10 @@ const ChatMessages = ({
                                       (messageRefs.current[reply.id] = el)
                                     }
                                     className={`reply-box  ${
-                                        highlightedMessageId == reply.id
-                                          ? " bg-gray-300"
-                                          : " bg-gray-50"
-                                      } border-l-2 border-blue-400 p-2 rounded text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow relative`}
+                                      highlightedMessageId == reply.id
+                                        ? " bg-gray-300"
+                                        : " bg-gray-50"
+                                    } border-l-2 border-blue-400 p-2 rounded text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow relative`}
                                     onMouseEnter={() =>
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
@@ -1166,7 +1234,9 @@ const ChatMessages = ({
                                       clearReplyHover();
                                     }}
                                   >
-                                    <div className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}>
+                                    <div
+                                      className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}
+                                    >
                                       <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                                         <Reply
                                           size={10}
@@ -1259,40 +1329,47 @@ const ChatMessages = ({
 
                                       return (
                                         <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                                          {hoveredReplyEmoji && hoveredReplyEmoji == reply.id && (
-                                            <div
-                                              ref={tooltipRef}
-                                              className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
-                                            >
-                                              {loadingReactions ? (
-                                                <div>Loading...</div>
-                                              ) : (
-                                                <div className="space-y-1 ios">
-                                                  {reactionUsers.map((user) => (
-                                                    <div
-                                                      key={user.id}
-                                                      className="flex items-center gap-2"
-                                                    >
-                                                      <img
-                                                        src={
-                                                          user.profile_pic
-                                                            ? "https://rapidcollaborate.in/ccp" +
+                                          {hoveredReplyEmoji &&
+                                            hoveredReplyEmoji == reply.id && (
+                                              <div
+                                                ref={tooltipRef}
+                                                className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                              >
+                                                {loadingReactions ? (
+                                                  <div>Loading...</div>
+                                                ) : (
+                                                  <div className="space-y-1 ios">
+                                                    {reactionUsers.map(
+                                                      (user) => (
+                                                        <div
+                                                          key={user.id}
+                                                          className="flex items-center gap-2"
+                                                        >
+                                                          <img
+                                                            src={
                                                               user.profile_pic
-                                                            : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                                0
-                                                              )}&background=random&color=fff&size=128`
-                                                        }
-                                                        alt={user.name}
-                                                        className="w-5 h-5 rounded-full"
-                                                      />
-                                                      <span>{user.name}</span>
-                                                      <span>{user.emoji}</span>
-                                                    </div>
-                                                  ))}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
+                                                                ? "https://rapidcollaborate.in/ccp" +
+                                                                  user.profile_pic
+                                                                : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                                    0
+                                                                  )}&background=random&color=fff&size=128`
+                                                            }
+                                                            alt={user.name}
+                                                            className="w-5 h-5 rounded-full"
+                                                          />
+                                                          <span>
+                                                            {user.name}
+                                                          </span>
+                                                          <span>
+                                                            {user.emoji}
+                                                          </span>
+                                                        </div>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
 
                                           {Object.entries(reactionMap).map(
                                             ([emoji, count]) => (
@@ -1322,7 +1399,6 @@ const ChatMessages = ({
                                       );
                                     })()}
                                     <div className="text-xs text-gray-500 mt-2 flex items-center">
-                                      
                                       {formatTime(reply.created_at)}
                                     </div>
 
@@ -1435,14 +1511,25 @@ const ChatMessages = ({
                       <div
                         className={`message-time flex items-center text-xs ${
                           isSent ? "justify-end" : "justify-start"
-                        } mt-1.5 ${isSent ? `${theme == "dark" ? "text-gray-100" : "text-gray-600"}` : `${theme == "dark" ? "text-gray-100" : "text-gray-400"}` }`}
+                        } mt-1.5 ${
+                          isSent
+                            ? `${
+                                theme == "dark"
+                                  ? "text-gray-100"
+                                  : "text-gray-600"
+                              }`
+                            : `${
+                                theme == "dark"
+                                  ? "text-gray-100"
+                                  : "text-gray-400"
+                              }`
+                        }`}
                       >
                         {msg.is_edited == 1 && (
                           <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
                             <Pen size={8} className="mr-0.5" /> edited
                           </p>
                         )}{" "}
-                        
                         {formatTime(msg.created_at)}
                       </div>
                       {(() => {
@@ -1470,7 +1557,7 @@ const ChatMessages = ({
 
                         return (
                           <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                            {hoveredEmoji && hoveredEmoji == msg.id &&  (
+                            {hoveredEmoji && hoveredEmoji == msg.id && (
                               <div
                                 ref={tooltipRef}
                                 className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
@@ -1510,7 +1597,12 @@ const ChatMessages = ({
                                 <div
                                   key={emoji}
                                   onMouseEnter={(e) =>
-                                    handleReactionHover(e, emoji, msg, "message")
+                                    handleReactionHover(
+                                      e,
+                                      emoji,
+                                      msg,
+                                      "message"
+                                    )
                                   }
                                   //onMouseLeave={clearHover}
                                   className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
