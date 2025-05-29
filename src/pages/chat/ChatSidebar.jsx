@@ -10,6 +10,7 @@ import {
   AtSign,
   SearchIcon,
   ArrowLeft,
+  MessageCircle,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -122,7 +123,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-vb1k.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -492,6 +493,10 @@ useEffect(() => {
   };
 
 
+  const unreadCount = useMemo(() => {
+    return chats.filter(chat => chat.read_status === 1).length;
+  }, [chats]);
+
   const filteredResult = useMemo(() => {
     if (!chats || chats.length ==0 || !user) return [];
 
@@ -499,7 +504,8 @@ useEffect(() => {
       const matchesTab =
         activeTab === "all" ||
         (activeTab === "direct" && chat.type === "user") ||
-        (activeTab === "group" && chat.type === "group");
+        (activeTab === "group" && chat.type === "group") ||
+        (activeTab === "unread" && chat.read_status === 1);
 
       const matchesSearch = chat.name
         .toLowerCase()
@@ -725,10 +731,14 @@ useEffect(() => {
         </div>
 
         <div className="flex items-center justify-start gap-2 mb-3 px-2">
-          {["all", "direct", "group"].map((tab) => {
+           {["all", "direct", "group", ...(unreadCount > 0 ? ["unread"] : [])].map((tab) => {
             const label = tab.charAt(0).toUpperCase() + tab.slice(1);
             const Icon =
-              tab === "direct" ? User : tab === "group" ? Users2 : Users;
+              tab === "direct" ? User : 
+              tab === "group" ? Users2 : 
+              tab === "unread" ? MessageCircle : Users;
+            
+            const showCount = tab === "unread" && unreadCount > 0;
             return (
               <button
                 key={tab}
@@ -740,7 +750,17 @@ useEffect(() => {
                 }`}
               >
                 <Icon size={12} />
-                {label}
+                <div
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content={label == "Unread" ? 'Unread Messages' : ''}
+                >
+                {label == "Unread" ? null : label}
+                </div>
+                {showCount && (
+                  <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
             );
           })}

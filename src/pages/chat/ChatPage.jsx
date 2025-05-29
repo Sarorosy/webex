@@ -48,7 +48,7 @@ const ChatPage = () => {
   const confirmLeft = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/groups/remove-member",
+        "https://webexback-vb1k.onrender.com/api/groups/remove-member",
         {
           method: "POST",
           headers: {

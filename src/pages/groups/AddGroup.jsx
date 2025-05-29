@@ -6,7 +6,7 @@ import { useAuth } from '../../utils/idb';
 import toast from 'react-hot-toast';
 
 const AddGroup = ({ onClose , finalFunction}) => {
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [memberLimit, setMemberLimit] = useState(10);
@@ -18,7 +18,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/users/getusersforgroup', {
+        const res = await fetch('https://webexback-vb1k.onrender.com/api/users/getusersforgroup', {
           method: "POST",
           headers: {
             "Content-type": "application/json"
@@ -44,7 +44,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
   
     try {
       setCreating(true)
-      const response = await fetch('http://localhost:5000/api/groups/create', {
+      const response = await fetch('https://webexback-vb1k.onrender.com/api/groups/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,10 +99,10 @@ const AddGroup = ({ onClose , finalFunction}) => {
           {avatar ? (
             <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
           ) : (
-            <span>{data.name.charAt(0).toUpperCase()}</span>
+            <span className='text-black'>{data.name.charAt(0).toUpperCase()}</span>
           )}
         </div>
-        <span className={data.isDisabled ? "text-gray-400" : ""}>{data.label}</span>
+        <span className={data.isDisabled ? `${theme == "dark" ? "text-black bg-red-200 cursor-not-allowed" : "bg-red-200 text-gray-900 cursor-not-allowed"}` : " text-gray-900"}>{data.label}</span>
       </div>
     );
   };
@@ -116,14 +116,14 @@ const AddGroup = ({ onClose , finalFunction}) => {
     return (
       <components.MultiValue {...props}>
         <div className="flex items-center">
-          <div className="w-5 h-5 rounded-full bg-gray-300 overflow-hidden mr-1 text-xs flex items-center justify-center">
+          <div className={`w-5 h-5 rounded-full ${theme == "dark" ? "bg-gray-600 "  : "bg-gray-300"} overflow-hidden mr-1 text-xs flex items-center justify-center`}>
             {avatar ? (
               <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
             ) : (
               <span>{data.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
-          <span>{data.label}</span>
+          <span className='text-black'>{data.label}</span>
         </div>
       </components.MultiValue>
     );
@@ -136,7 +136,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white max-w-4xl  rounded-lg">
+      <div className={`${theme == "dark" ? "bg-gray-500 " : "bg-white text-gray-700"}  max-w-4xl  rounded-lg`}>
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
           <h2 className="text-lg font-semibold text-white">Add Group</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-red-500">
@@ -147,7 +147,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
         <form onSubmit={handleSubmit} className=" p-4">
           <div className=' grid grid-cols-1 md:grid-cols-2 gap-3'>
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700  mb-1">
+            <label htmlFor="name" className="block text-sm font-medium   mb-1">
               Group Name
             </label>
             <input
@@ -165,7 +165,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
 
           {user?.user_type != "user" && (
             <div>
-              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="memberLimit" className="block text-sm font-medium  mb-2">
                 Member Limit
               </label>
               <div className="flex items-center space-x-4">
@@ -180,7 +180,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
                 <button
                   type="button"
                   onClick={() => handleMemberLimitChange('increase')}
-                  className="px-2 py-1 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
+                  className="px-2 py-1 bg-gray-200  rounded-full hover:bg-gray-300"
                 >
                   <Plus size={18} />
                 </button>
@@ -189,7 +189,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
           )}
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select Members</label>
+            <label className="block text-sm font-medium  mb-1">Select Members</label>
             <Select
               isMulti
               options={users.map((user) => ({

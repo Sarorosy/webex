@@ -52,6 +52,7 @@
   "dependencies": {
     "@draft-js-plugins/editor": "^4.1.4",
     "@draft-js-plugins/mention": "^5.3.0",
+    "@reduxjs/toolkit": "^2.8.2",
     "@syncfusion/ej2-base": "^29.1.36",
     "@syncfusion/ej2-react-dropdowns": "^29.1.41",
     "@syncfusion/ej2-react-inputs": "^29.1.39",
@@ -77,6 +78,7 @@
     "react-input-emoji": "^5.9.0",
     "react-loading-skeleton": "^3.5.0",
     "react-mentions": "^4.4.10",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.3",
     "react-select": "^5.10.1",
     "react-spinners": "^0.17.0",

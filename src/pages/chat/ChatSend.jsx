@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/groups/members/${userId}`
+        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -168,8 +168,9 @@ const ChatSend = ({
     </div>
   );
 
+  const [isSending, setIsSending] = useState(false);
   const handleSend = async () => {
-    if (!value.trim() && !selectedFile) return;
+    if (isSending || (!value.trim() && !selectedFile)) return;
 
     const urlRegex =
       /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
@@ -183,6 +184,7 @@ const ChatSend = ({
     });
 
     try {
+      setIsSending(true);
       setSubmitBtnDisabled(true);
       setMessageLoading(true);
       setShowEmojiPicker(false)
@@ -210,7 +212,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "http://localhost:5000/api/chats/send",
+        "https://webexback-vb1k.onrender.com/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary
@@ -228,6 +230,7 @@ const ChatSend = ({
     } catch (error) {
       console.error("Send error:", error);
     } finally {
+      setIsSending(false);
       setSubmitBtnDisabled(false);
       setMessageLoading(false);
       setValue("");
@@ -481,7 +484,7 @@ const ChatSend = ({
   return (
     <>
       {isReply && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
+        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
           <div>
             Replying to:{" "}
             <div
@@ -507,7 +510,7 @@ const ChatSend = ({
         </div>
       )}
       {selectedQuoteMessage && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full">
+        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
           <div>
             <div className="flex items-center gap-2">
               <QuoteIcon size={15} className="text-orange-500" />{" "}

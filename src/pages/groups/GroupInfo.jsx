@@ -16,7 +16,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const [members, setMembers] = useState([]);
   const [loadingGroup, setLoadingGroup] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(true);
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
 
   const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [inviteMemberOpen, setInviteMemberOpen] = useState(false);
@@ -36,14 +36,14 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const fetchGroupData = async () => {
     try {
       const groupRes = await fetch(
-        `http://localhost:5000/api/groups/group/${selectedGroup.id}`
+        `https://webexback-vb1k.onrender.com/api/groups/group/${selectedGroup.id}`
       );
       const groupData = await groupRes.json();
       if (groupData.status) setGroup(groupData.group);
       setLoadingGroup(false);
 
       const membersRes = await fetch(
-        `http://localhost:5000/api/groups/members/${selectedGroup.id}`
+        `https://webexback-vb1k.onrender.com/api/groups/members/${selectedGroup.id}`
       );
       const membersData = await membersRes.json();
       if (membersData.status) setMembers(membersData.members);
@@ -64,7 +64,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const confirmDeleteMember = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/groups/remove-member",
+        "https://webexback-vb1k.onrender.com/api/groups/remove-member",
         {
           method: "POST",
           headers: {
@@ -97,7 +97,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const handleSendRequest = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/grouplimit/send",
+        "https://webexback-vb1k.onrender.com/api/grouplimit/send",
         {
           method: "POST",
           headers: {
@@ -128,7 +128,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         animate={{ y: "5%" }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="bg-white rounded-t-3xl w-full max-w-2xl h-[90%] shadow-xl relative"
+        className={`${theme == "dark" ? "bg-gray-500 text-gray-50" : "bg-white"} rounded-t-3xl w-full max-w-2xl h-[90%] shadow-xl relative`}
       >
         {/* Close Button */}
         <button
@@ -143,8 +143,8 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
         {/* Group Info Card */}
         <div className="px-6 -mt-12">
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+          <div className={`${theme == "dark" ? "bg-gray-400 text-gray-50" : "bg-white"} rounded-xl shadow-md p-5`}>
+            <h2 className={`text-lg font-bold ${theme == "dark" ? "text-black" : "text-gray-800"} flex items-center gap-2`}>
               {selectedGroup?.name}
               <button
                 onClick={() => setEditGroupOpen(true)}
@@ -160,16 +160,16 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               </>
             ) : (
               <>
-                <p className="text-gray-600 mt-1 mb-3">{group.description}</p>
-                <div className="flex flex-wrap gap-6 text-sm text-gray-500 items-center">
+                <p className={`${theme == "dark" ? "text-black" : "text-gray-600"}  mt-1 mb-3`}>{group.description}</p>
+                <div className={`flex flex-wrap gap-6 text-sm items-center ${theme == "dark" ? "text-black" : "text-gray-600"}`}>
                   <div>
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium ">
                       Created by:
                     </span>{" "}
                     {group.created_by_username}
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium ">
                       Member Limit:
                     </span>{" "}
                     {group.member_limit}
@@ -219,7 +219,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
         {/* Members Section */}
         <div className="px-6 mt-6 overflow-y-auto h-[470px]">
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Members</h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-900">Members</h3>
 
           {loadingMembers ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -241,7 +241,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               {members.map((member) => (
                 <li
                   key={member.id}
-                  className="flex items-start gap-4 p-3 bg-white rounded shadow hover:shadow-md transition"
+                  className={`flex items-start gap-4 p-3 ${theme == "dark" ? "bg-gray-200" : "bg-white"} rounded shadow hover:shadow-md transition`}
                 >
                   <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
                     {member.profile_pic ? (

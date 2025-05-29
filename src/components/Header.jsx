@@ -94,7 +94,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback-vb1k.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -422,7 +422,7 @@ export default function Header() {
                 <button
                 onClick={() => updateTheme("light")}
                 data-tooltip-id="my-tooltip"
-                data-tooltip-content="Switch to Dark Theme"
+                data-tooltip-content="Switch to Light Theme"
                 className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-3 rounded-full text-gray-500  transition"
               >
                 <Sun size={17} className="" />
@@ -431,7 +431,7 @@ export default function Header() {
                 <button
                 onClick={() => updateTheme("dark")}
                 data-tooltip-id="my-tooltip"
-                data-tooltip-content="Switch to Light Theme"
+                data-tooltip-content="Switch to Dark Theme"
                 className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-3 rounded-full text-gray-500  transition"
               >
                 <MoonIcon size={17} className="" />

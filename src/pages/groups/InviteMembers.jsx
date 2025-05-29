@@ -6,7 +6,7 @@ import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
 
 const InviteMembers = ({ groupId, onClose, members }) => {
-  const { user } = useAuth();
+  const { user ,theme} = useAuth();
   const [users, setUsers] = useState([]);
   const [groupMemberIds, setGroupMemberIds] = useState([]);
   const [inviting, setInviting] = useState(false);
@@ -23,7 +23,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
         // Step 2: Fetch users excluding these IDs
         const userRes = await fetch(
-          "http://localhost:5000/api/users/getusersexcluding",
+          "https://webexback-vb1k.onrender.com/api/users/getusersexcluding",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -63,7 +63,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
     try {
       setInviting(true);
-      const res = await fetch("http://localhost:5000/api/userlimit/send", {
+      const res = await fetch("https://webexback-vb1k.onrender.com/api/userlimit/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -143,7 +143,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-md rounded-lg shadow-lg relative">
+      <div className={`${theme == "dark" ? "bg-gray-400" : "bg-white"} w-full max-w-md rounded-lg shadow-lg relative`}>
        
 
         <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
