@@ -96,10 +96,8 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-white rounded-lg m-2 ml-0 justify-between">
-      <div>
-        <div className="chat-headAmsg">
-          <ChatHeader
+    <div className="w-full bg-white rounded-lg m-2 ml-0 justify-between relative ">
+      <ChatHeader
             selectedUser={selectedUser}
             isTyping={isTyping}
             handleGroupInfoClick={handleGroupInfoClick}
@@ -115,6 +113,9 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
             chatTab={chatTab}
             setChatTab={setChatTab}
           />
+      
+      
+          
 
           {/* Messages */}
           {chatTab == "chats" ? (
@@ -148,10 +149,10 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
               containerRef={containerRef}
             />
           )}
-        </div>
+        
 
         {chatTab == "chats" && (
-          <div className={`chat-text-n mt-2 ${theme == "dark" ? "bg-gray-500" : "bg-white"}`}>
+          <div className={`chat-text-n ${theme == "dark" ? "bg-gray-500" : "bg-white"}`}>
             {/* Message Input */}
             <ChatSend
               userId={selectedUser?.id}
@@ -168,7 +169,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
             />
           </div>
         )}
-      </div>
+      
 
       <AnimatePresence>
         {groupInfoOpen && (

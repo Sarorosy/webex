@@ -103,7 +103,8 @@ div#commentsMention[placeholder]:empty:before {
 
 /* ================= */
 .logo-n {
-    width: 60px;
+    width: 40px;
+    /* margin-right: 10px; */
 }
 .n-btn {
     padding: 3px 7px;
@@ -168,7 +169,7 @@ div#commentsMention[placeholder]:empty:before {
 
 .overflow-y-auto::-webkit-scrollbar
 {
-	width: 8px;
+	width: 6px;
 	background-color: #e85720;
   border-radius: 8px;
 }
@@ -190,7 +191,7 @@ div#commentsMention[placeholder]:empty:before {
 
 .m-list-h::-webkit-scrollbar
 {
-	width: 8px;
+	width: 6px;
 	background-color: #e85720;
   border-radius:8px;
 }
@@ -223,7 +224,7 @@ div#commentsMention[placeholder]:empty:before {
 .down-btn-set{
   position: absolute;
   bottom: 115px;
-  left: 62%;
+  left: 48.5%;
 }
 
 .profile-bg-set{
@@ -262,6 +263,7 @@ div#commentsMention[placeholder]:empty:before {
 
 .chat-headAmsg{
   height: calc(100vh - 95px);
+      padding-top: 90px;
 }
 .chat-text-n{
     height: 95px;
@@ -280,4 +282,9 @@ div#commentsMention[placeholder]:empty:before {
     background: #fff;
     padding: 10px 15px;
 
+}
+
+
+.chat-text-n img {
+    width: 80px;
 }

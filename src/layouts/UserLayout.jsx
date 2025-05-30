@@ -13,7 +13,7 @@ export default function UserLayout() {
       
       {/* Main content should scroll, others stay fixed */}
       <main className="flex-grow">
-        <div className={`${theme == "dark" ? "bg-gray-500" : "bg-white"} rounded shadow-md`}>
+        <div className={`${theme == "dark" ? "bg-gray-500" : "bg-white"}  shadow-md`}>
           <Outlet />
         </div>
       </main>

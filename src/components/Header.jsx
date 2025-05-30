@@ -18,7 +18,7 @@ import {
   MoonIcon,
   Sun,
 } from "lucide-react";
-import logo from "../assets/rc.png";
+import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
 import AddGroup from "../pages/groups/AddGroup.jsx";
 import { useSelectedUser } from "../utils/SelectedUserContext.jsx";
@@ -327,6 +327,15 @@ export default function Header() {
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
+              <div>
+                <span 
+                onClick={() => {
+                  navigate("/chat");
+                }}
+                role="img" aria-label="plate">
+                  <img src={logo} className="logo-n" />
+                </span>
+              </div>
               <button
                 onClick={() => setProfileOpen(true)}
                 data-tooltip-id="my-tooltip"
@@ -417,7 +426,7 @@ export default function Header() {
                 </button>
               )}
             </div>
-            <div className="flex items-center flex-col" ref={dropdownRef}>
+            <div className="flex items-center flex-col gap-3" ref={dropdownRef}>
               {theme == "dark" ? (
                 <button
                 onClick={() => updateTheme("light")}

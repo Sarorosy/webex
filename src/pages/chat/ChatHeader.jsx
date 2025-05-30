@@ -138,9 +138,9 @@ const ChatHeader = ({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="absolute w-full z-[99]">
       {/* HEADER */}
-      <div className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${theme == "dark" ? "chat-header-bg-dark text-white" : "chat-header-bg text-gray-800"} rounded-t-lg shadow-inner`}>
+      <div className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${theme == "dark" ? "chat-header-bg-dark text-white" : "chat-header-bg text-gray-800"}  shadow-inner`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedUser?.profile_pic ? (

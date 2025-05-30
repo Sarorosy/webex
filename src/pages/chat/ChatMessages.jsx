@@ -826,7 +826,7 @@ const ChatMessages = ({
         theme == "dark"
           ? "bg-gray-900"
           : "bg-gradient-to-b from-orange-50 to-white"
-      } chat-messages-container-div overflow-y-auto h-[90%]`}
+      } chat-messages-container-div chat-headAmsg overflow-y-auto`}
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -923,7 +923,7 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper gap-2 rounded-lg py-1 w-full flex ${
+                    className={`message-wrapper gap-2 rounded-lg py-3 w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
@@ -1629,10 +1629,10 @@ const ChatMessages = ({
                         <div className="relative action-button" ref={emojiRef}>
                           <button
                             onClick={() => setShowEmojiPopup((prev) => !prev)}
-                            className="action-button p-2 px-3 text-gray-600 hover:bg-yellow-50 transition-colors"
+                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
                             title="React"
                           >
-                            <Smile size={14} />
+                            <Smile size={13} />
                           </button>
                           {showEmojiPopup && (
                             <EmojiPopup
@@ -1646,7 +1646,7 @@ const ChatMessages = ({
                         {isSent && (
                           <button
                             onClick={() => handleEdit(msg.id, msg.message)}
-                            className="action-button p-2 px-3 text-gray-600 hover:bg-blue-50  transition-colors"
+                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
                             title="Edit message"
                           >
                             <Pen size={13} />
@@ -1655,7 +1655,7 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handleReply(msg.id, msg.message)}
-                          className="action-button p-2 px-3 text-gray-600 hover:bg-green-50  transition-colors"
+                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-green-50  transition-colors"
                           title="Reply"
                         >
                           <Reply size={13} />
@@ -1663,14 +1663,14 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handleReminder(msg.id)}
-                          className="action-button p-2 px-3 text-gray-600 hover:bg-purple-50  transition-colors"
+                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Set reminder"
                         >
                           <BellDot size={13} />
                         </button>
                         <button
                           onClick={() => handleQuote(msg)}
-                          className="action-button p-2 px-3 text-gray-600 hover:bg-purple-50  transition-colors"
+                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Quote message"
                         >
                           <QuoteIcon size={13} />
@@ -1678,7 +1678,7 @@ const ChatMessages = ({
 
                         <button
                           onClick={() => handlePinMsg(msg.id)}
-                          className="action-button p-2 px-3 text-gray-600 hover:bg-orange-50  transition-colors"
+                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
                           title="Pin message"
                         >
                           <Pin size={13} />
@@ -1687,7 +1687,7 @@ const ChatMessages = ({
                         {isSent && (
                           <button
                             onClick={() => handleDeleteMsg(msg.id, "message")}
-                            className="action-button p-2 px-3 text-gray-600 hover:bg-red-50  transition-colors"
+                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-red-50  transition-colors"
                             title="Delete message"
                           >
                             <Trash2 size={13} />

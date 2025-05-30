@@ -11,10 +11,10 @@ const StartConversation = () => {
       <img
         src={messaging} // Replace with your actual image path
         alt="Start a conversation"
-        className="w-48 h-48 mb-1  opacity-80"
+        className="w-80 h-80 mb-1  opacity-80"
         style={{mixBlendMode:"multiply"}}
       />
-      <h2 className={`text-xl font-semibold ${theme == "dark" ? "text-white" : "text-gray-700"} f-11`}>
+      <h2 className={`text-xl font-semibold ${theme == "dark" ? "text-white" : "text-orange-900"} f-11`}>
         Select a conversation or start a new one
       </h2>
     </div>

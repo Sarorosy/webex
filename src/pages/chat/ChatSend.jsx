@@ -570,11 +570,11 @@ const ChatSend = ({
         <div
           className={` ${
             theme == "dark" ? "bg-gray-500 text-white" : "bg-white"
-          } chat-send-container space-x-2 flex items-center justify-between mx-auto ios`}
+          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios pt-2`}
         >
           <div className="flex flex-col items-center gap-2">
-            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
-              <Paperclip size={13} />
+            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition ">
+              <Paperclip size={12} />
               <input
                 type="file"
                 className="hidden"
@@ -613,7 +613,7 @@ const ChatSend = ({
                 id="chatInput"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
+                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -644,7 +644,7 @@ const ChatSend = ({
                 id="chatInputuser"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto p-3 rounded border border-gray-300 focus:outline-none"
+                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}

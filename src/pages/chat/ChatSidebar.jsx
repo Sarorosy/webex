@@ -669,7 +669,7 @@ useEffect(() => {
 
   return (
     <div
-      className={` ${theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}  p-2 px-1 relative select-none rounded-md m-2 ${
+      className={` ${theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}  py-4 px-1 relative select-none  overflow-hidden m-2 ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
       style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '600px' }}
@@ -681,18 +681,11 @@ useEffect(() => {
 
       <div className="px-2  border-b mb-2">
         
-
         <h1
-          className="text-2xl font-bold flex items-center justify-between cursor-pointer mb-2"
+          className="text-2xl font-bold flex items-center justify-between cursor-pointer"
           
         >
-          <span 
-          onClick={() => {
-            navigate("/chat");
-          }}
-          role="img" aria-label="plate">
-            <img src={logo} className="logo-n" />
-          </span>{" "}
+          {" "}
 
           {view_user_name && (
           <div className="flex items-center gap-2  rounded f-11">
@@ -713,13 +706,13 @@ useEffect(() => {
         )}
         </h1>
         
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 w-full">
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Filter Groups, Persons"
-            className="p-2 py-1 border rounded-md w-full"
+            className="p-2 py-1 border rounded-md w-full mb-2"
           />
           
           {view_user_name && (
@@ -733,7 +726,7 @@ useEffect(() => {
           )}
         </div>
 
-        <div className="flex items-center justify-start gap-2 mb-3 px-2">
+        <div className="flex items-center justify-start gap-2 mb-3 mt-2">
            {["all", "direct", "group", ...(unreadCount > 0 ? ["unread"] : [])].map((tab) => {
             const label = tab.charAt(0).toUpperCase() + tab.slice(1);
             const Icon =
@@ -746,13 +739,13 @@ useEffect(() => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1 px-2 py-1 rounded f-13 ${
+                className={`flex items-center ${tab == "unread" ? "" : "gap-1"} px-2 py-1 rounded f-11 relative ${
                   activeTab === tab
                     ? "bg-orange-500 text-white font-semibold border border-orange-500"
                     : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
                 }`}
               >
-                <Icon size={12} />
+                <Icon size={tab == "unread" ? 16 : 12} />
                 <div
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={label == "Unread" ? 'Unread Messages' : ''}
@@ -760,7 +753,7 @@ useEffect(() => {
                 {label == "Unread" ? null : label}
                 </div>
                 {showCount && (
-                  <span className="ml-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -787,7 +780,7 @@ useEffect(() => {
             {activeTab === "all" &&
               filteredData.some((chat) =>
                 JSON.parse(chat.favourites || "[]").includes(user.id)
-              ) && <div className="text-gray-600 mb-2 px-2">Favourites</div>}
+              ) && <div className="text-gray-600 mb-2 px-0">Favourites</div>}
 
             {filteredData.map((chat, idx) => {
               const isFavourite = JSON.parse(chat.favourites || "[]").includes(
@@ -811,7 +804,7 @@ useEffect(() => {
                     });
                     setChats(updatedChats);
                   }}
-                  className={`flex items-center justify-between space-x-2 p-2 rounded-full cursor-pointer hover:bg-gray-200 hover:text-black mb-1 overflow-hidden ${
+                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer hover:bg-gray-200 hover:text-black mb-1 overflow-hidden ${
                     (selectedUser?.id === chat.id && selectedUser?.type == chat.type) ? "bg-gray-300 text-black" : ""
                   } ${chat.read_status === 1 ? "font-bold" : ""}`}
                 >
@@ -853,8 +846,8 @@ useEffect(() => {
                     )}
                   </div>
                   {chat.read_status == 1 && (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full ml-2 flex items-center justify-center f-11 p-1">
+                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-2 rounded-full">
+                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center f-11 p-1">
                         {chat.unread_count ?? 1}
                       </div>
                       {chat.is_mentioned && (
