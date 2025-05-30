@@ -22,7 +22,7 @@ const ChatSend = ({
   setReplyMessage,
   selectedQuoteMessage,
   setSelectedQuoteMessage,
-  scrollToBottom
+  scrollToBottom,
 }) => {
   const [value, setValue] = useState("");
   const mentionRef = useRef(null);
@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/groups/members/${userId}`
+        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -187,7 +187,7 @@ const ChatSend = ({
       setIsSending(true);
       setSubmitBtnDisabled(true);
       setMessageLoading(true);
-      setShowEmojiPicker(false)
+      setShowEmojiPicker(false);
 
       const formData = new FormData();
       formData.append("isReply", isReply);
@@ -198,7 +198,10 @@ const ChatSend = ({
       formData.append("message", linkifiedMessage);
       formData.append("sender_name", user.name);
       formData.append("profile_pic", user.profile_pic);
-      formData.append("selected_quote_message", selectedQuoteMessage ? JSON.stringify(selectedQuoteMessage) : null);
+      formData.append(
+        "selected_quote_message",
+        selectedQuoteMessage ? JSON.stringify(selectedQuoteMessage) : null
+      );
       formData.append("is_file", selectedFile ? "1" : "0");
       let selectedUserIds = [];
 
@@ -212,7 +215,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "http://localhost:5000/api/chats/send",
+        "https://webexback-vb1k.onrender.com/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary
@@ -266,7 +269,7 @@ const ChatSend = ({
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.indexOf("image") !== -1) {
+      if (item.type.indexOf("image") != -1) {
         imageFound = true;
 
         const file = item.getAsFile();
@@ -393,40 +396,39 @@ const ChatSend = ({
   };
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const onEmojiClick = (event, emojiObject) => {
-  const emoji = event.emoji;
+    const emoji = event.emoji;
 
-  console.log("Emoji clicked:", event);
+    console.log("Emoji clicked:", event);
 
-  if (inputRef.current) {
-    inputRef.current.focus();
+    if (inputRef.current) {
+      inputRef.current.focus();
 
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
 
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
 
-    // Create a text node with emoji and insert it
-    const textNode = document.createTextNode(emoji);
-    range.insertNode(textNode);
+      // Create a text node with emoji and insert it
+      const textNode = document.createTextNode(emoji);
+      range.insertNode(textNode);
 
-    // Move the caret immediately after the inserted emoji node
-    range.setStartAfter(textNode);
-    range.setEndAfter(textNode);
+      // Move the caret immediately after the inserted emoji node
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
 
-    // Collapse the range to the end point (so caret is after emoji)
-    sel.removeAllRanges();
-    sel.addRange(range);
+      // Collapse the range to the end point (so caret is after emoji)
+      sel.removeAllRanges();
+      sel.addRange(range);
 
-    // Update the state with new innerHTML of contentEditable div
-    setValue(inputRef.current.innerHTML);
+      // Update the state with new innerHTML of contentEditable div
+      setValue(inputRef.current.innerHTML);
 
-    // Save to localStorage
-    localStorage.setItem(localStorageKey, inputRef.current.innerHTML);
-    setShowEmojiPicker(false);
-  }
-};
-
+      // Save to localStorage
+      localStorage.setItem(localStorageKey, inputRef.current.innerHTML);
+      setShowEmojiPicker(false);
+    }
+  };
 
   useEffect(() => {
     // Create a dummy DOM to parse the HTML value
@@ -514,12 +516,11 @@ const ChatSend = ({
           <div>
             <div className="flex items-center gap-2">
               <QuoteIcon size={15} className="text-orange-500" />{" "}
-            <div
-              dangerouslySetInnerHTML={{
-                __html:selectedQuoteMessage.sender_name
-                  
-              }}
-            />
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: selectedQuoteMessage.sender_name,
+                }}
+              />
             </div>
             <div
               dangerouslySetInnerHTML={{
@@ -548,7 +549,11 @@ const ChatSend = ({
         {/* Show selected file with X */}
         {selectedFile && (
           <div className="flex items-center gap-2">
-            <div className={`flex items-center ${theme == "dark" ? "bg-gray-500" : "bg-gray-200"} rounded px-2 py-1 text-sm chatfile absolute top-[-30px]`}>
+            <div
+              className={`flex items-center ${
+                theme == "dark" ? "bg-gray-500" : "bg-gray-200"
+              } rounded px-2 py-1 text-sm chatfile absolute top-[-30px]`}
+            >
               <span className="mr-2 truncate max-w-[150px]">
                 {selectedFile.name}
               </span>
@@ -562,35 +567,40 @@ const ChatSend = ({
           </div>
         )}
 
-        <div className={` ${theme == "dark" ? "bg-gray-500 text-white" : "bg-white"} chat-send-container space-x-2 flex items-center justify-between mx-auto ios`}>
-          <div className="flex flex-col items-center gap-2">
-            {!isReply && (
-              <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
-                <Paperclip size={13} />
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => setSelectedFile(e.target.files[0])}
-                />
-              </label>
-            )}
-        <button
-          type="button"
-          className=" text-xl"
-          onClick={() => setShowEmojiPicker((val) => !val)}
-          aria-label="Toggle emoji picker"
+        <div
+          className={` ${
+            theme == "dark" ? "bg-gray-500 text-white" : "bg-white"
+          } chat-send-container space-x-2 flex items-center justify-between mx-auto ios`}
         >
-          😊
-        </button>
+          <div className="flex flex-col items-center gap-2">
+            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-2 rounded hover:bg-orange-600 transition ">
+              <Paperclip size={13} />
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+              />
+            </label>
 
-        {/* Emoji picker popup */}
-        {showEmojiPicker && (
-          <div className="absolute bottom-full mb-2 left-0 z-50">
-            <EmojiPicker onEmojiClick={onEmojiClick} lazyLoadEmojis={true} theme="dark" 
-            
-            />
-          </div>
-        )}
+            <button
+              type="button"
+              className=" text-xl"
+              onClick={() => setShowEmojiPicker((val) => !val)}
+              aria-label="Toggle emoji picker"
+            >
+              😊
+            </button>
+
+            {/* Emoji picker popup */}
+            {showEmojiPicker && (
+              <div className="absolute bottom-full mb-2 left-0 z-50">
+                <EmojiPicker
+                  onEmojiClick={onEmojiClick}
+                  lazyLoadEmojis={true}
+                  theme="dark"
+                />
+              </div>
+            )}
           </div>
           {type === "group" ? (
             <div className="relative w-full">

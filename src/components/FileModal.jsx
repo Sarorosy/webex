@@ -4,7 +4,7 @@ import React from "react";
 
 const FileModal = ({ fileUrl, filename, onClose }) => {
   const ext = filename.split(".").pop().toLowerCase();
-  const isImage = ["png", "jpg", "jpeg", "avif", "webp"].includes(ext);
+  const isImage = ["png", "jpg", "jpeg", "avif","svg", "webp"].includes(ext);
 
   return (
     <motion.div

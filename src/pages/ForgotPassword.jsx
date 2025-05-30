@@ -38,7 +38,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await fetch(
-        "http://localhost:5000/api/users/check-user-type",
+        "https://webexback-vb1k.onrender.com/api/users/check-user-type",
         {
           method: "POST",
           headers: {
@@ -53,7 +53,7 @@ export default function ForgotPassword() {
         const type = data.user_type;
         setUserType(type);
         setUserPanel(data.user_panel);
-        if (type === "admin") {
+        if (type === "admin" || email == "accounts@redmarkediting.com") {
           setStep("reset");
         } else {
           setStep("webcode");
@@ -122,7 +122,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        "http://localhost:5000/api/users/update-password",
+        "https://webexback-vb1k.onrender.com/api/users/update-password",
         {
           method: "POST",
           headers: {

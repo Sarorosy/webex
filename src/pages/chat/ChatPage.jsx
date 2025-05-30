@@ -48,7 +48,7 @@ const ChatPage = () => {
   const confirmLeft = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/groups/remove-member",
+        "https://webexback-vb1k.onrender.com/api/groups/remove-member",
         {
           method: "POST",
           headers: {
@@ -103,7 +103,7 @@ const ChatPage = () => {
       <AnimatePresence>
         {leftGroupOpen && (
           <ConfirmationModal
-            title="Are you sure want to left this group?"
+            title="Are you sure want to leave this group?"
             message="This action cannot be undone."
             onYes={confirmLeft}
             onClose={() => setLeftGroupOpen(false)}
