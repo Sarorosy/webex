@@ -5,7 +5,7 @@ import Select , {components} from 'react-select';
 import { useAuth } from '../../utils/idb'; // assuming your custom hook is here
 
 const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
-  const { user } = useAuth();
+  const { user,theme } = useAuth();
   const [users, setUsers] = useState([]);
   const [groupMemberIds, setGroupMemberIds] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -67,7 +67,7 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
             <span>{data.name.charAt(0).toUpperCase()}</span>
           )}
         </div>
-        <span className={data.isDisabled ? "text-gray-400" : ""}>{data.label}</span>
+        <span className={data.isDisabled ? `${theme == "dark" ? "text-black bg-red-200 cursor-not-allowed" : "bg-red-200 text-gray-900 cursor-not-allowed"}` : " text-gray-900"}>{data.label}</span>
       </div>
     );
   };
@@ -81,7 +81,7 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
       return (
         <components.MultiValue {...props}>
           <div className="flex items-center">
-            <div className="w-5 h-5 rounded-full bg-gray-300 overflow-hidden mr-1 text-xs flex items-center justify-center">
+            <div className={`w-5 h-5 rounded-full ${theme == "dark" ? "bg-gray-600 "  : "bg-gray-300"} overflow-hidden mr-1 text-xs flex items-center justify-center`}>
               {avatar ? (
                 <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
               ) : (

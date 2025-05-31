@@ -4,7 +4,7 @@ import axios from "axios"; // Import axios for API calls
 import { useAuth } from "../../utils/idb";
 
 const EditProfile = ({ onClose }) => {
-  const { user, login } = useAuth();
+  const { user, login, theme } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [password, setPassword] = useState("");
   const [pronouns, setPronouns] = useState(user?.pronouns || "");
@@ -83,10 +83,10 @@ const EditProfile = ({ onClose }) => {
   };
 
   return (
-    <div className=" rounded-lg p-2 pb-0 pt-2 w-full relative">
+    <div className={` rounded-lg p-2 pb-0 pt-2 w-full relative`}>
       <div className="">
         <form onSubmit={handleSubmit}>
-          <label className="block text-sm font-medium text-gray-700 mb-4">
+          <label className={`block text-sm font-medium ${theme == "dark" ? "text-black" : "text-gray-700"}  mb-4`}>
             Profile Picture
           </label>
           <div className="flex flex-col items-start mb-4">

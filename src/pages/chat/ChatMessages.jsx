@@ -1561,7 +1561,7 @@ const ChatMessages = ({
                             {hoveredEmoji && hoveredEmoji == msg.id && (
                               <div
                                 ref={tooltipRef}
-                                className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
                               >
                                 {loadingReactions ? (
                                   <div>Loading...</div>
@@ -1570,7 +1570,7 @@ const ChatMessages = ({
                                     {reactionUsers.map((user) => (
                                       <div
                                         key={user.id}
-                                        className="flex items-center gap-2"
+                                        className={` ${theme == "dark"  ? "text-black" : "text-black"} flex items-center gap-2`}
                                       >
                                         <img
                                           src={

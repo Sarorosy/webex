@@ -5,12 +5,13 @@ import { useAuth } from "../../utils/idb";
 import { X } from "lucide-react";
 
 const Profile = ({ onClose }) => {
-  const user = useAuth();
-  const name = user.user.name || "John Doe";
-  const bio = user.user.bio || "Hey There!";
-  const email = user.user.email || "Guest";
-  const pronounces = user.user.pronouns || "He/Him";
-  const profilePic = user.user.profile_pic;
+  const {user} = useAuth();
+  const {theme} = useAuth();
+  const name = user?.name || "John Doe";
+  const bio = user?.bio || "Hey There!";
+  const email = user?.email || "Guest";
+  const pronounces = user?.pronouns || "He/Him";
+  const profilePic = user?.profile_pic;
   const [editOpen, setEditOpen] = useState(false);
 
   return (
@@ -20,10 +21,10 @@ const Profile = ({ onClose }) => {
     animate={{ opacity: 1, scale: 1 }}
     exit={{ opacity: 0, scale: 0.9 }}
     transition={{ duration: 0.2 }}
-    className="relative w-full max-w-3xl max-h-[90vh] bg-white rounded shadow-xl overflow-y-auto "
+    className={`relative w-full max-w-3xl max-h-[90vh] ${theme == "dark" ? "bg-gray-500 text-black" : "bg-white"} rounded shadow-xl overflow-y-auto `}
   >
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0 z-50">
+      <div className={`flex items-center justify-between mb-2 px-4 py-3 bg-gray-300  sticky top-0 z-50`}>
         <h4 className="text-lg font-semibold">Edit Profile</h4>
         <button onClick={onClose} className="text-sm text-white bg-orange-600 px-1 py-1 rounded">
         <X  size={13} />

@@ -1,56 +1,56 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 
-const APP_ID = '2b2b05bb475846e29149a9040dc3542e';
-const TOKEN = '007eJxTYBC83WY361/KbZ8Yjgr+XbJGPBmaMzZOXbcgsJllan/lky8KDEZJRkkGpklJJuamFiZmqUaWhiaWiZYGJgYpycamJkapSTYmGQ2BjAxVqleZGBkgEMTnYShJLS7RTc5IzMtLzWFgAADMwiBx'; // Or null if App Certificate is disabled
-const CHANNEL = 'test-channel';
+const APP_ID = '4ddecc7d3b3143a3bb30fd714b230dc9';
 
-const AgoraCall = () => {
+const AgoraCall = ({callInfo}) => {
   const [client] = useState(() => AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' }));
   const [localAudioTrack, setLocalAudioTrack] = useState(null);
+  const [joined, setJoined] = useState(false);
+
+  const startCall = async () => {
+    try {
+      await client.join(APP_ID, callInfo.channelName, callInfo.token, callInfo.uid);
+      const micTrack = await AgoraRTC.createMicrophoneAudioTrack();
+      await client.publish([micTrack]);
+      setLocalAudioTrack(micTrack);
+      setJoined(true);
+
+      client.on('user-published', async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
+        if (mediaType === 'audio') {
+          user.audioTrack.play();
+        }
+      });
+
+      client.on('user-unpublished', (user) => {
+        console.log(`User ${user.uid} left`);
+      });
+
+    } catch (err) {
+      console.error('Agora join error:', err);
+    }
+  };
 
   useEffect(() => {
-    let isUnmounted = false;
+    const listener = (e) => {
+      startCall(e.detail);
+    };
 
-    async function startCall() {
-      try {
-        await client.join(APP_ID, CHANNEL, TOKEN, null);
-
-        const microphoneTrack = await AgoraRTC.createMicrophoneAudioTrack();
-        setLocalAudioTrack(microphoneTrack);
-
-        await client.publish([microphoneTrack]);
-        console.log('Published local audio track');
-
-        client.on('user-published', async (user, mediaType) => {
-          await client.subscribe(user, mediaType);
-          if (mediaType === 'audio') {
-            user.audioTrack.play();
-            console.log(`Playing remote audio track of user ${user.uid}`);
-          }
-        });
-
-        client.on('user-unpublished', (user) => {
-          console.log(`User ${user.uid} unpublished`);
-        });
-      } catch (error) {
-        console.error('Agora error:', error);
-      }
-    }
-
-    startCall();
-
+    window.addEventListener('start-agora-call', listener);
     return () => {
-      isUnmounted = true;
+      window.removeEventListener('start-agora-call', listener);
       if (localAudioTrack) localAudioTrack.close();
       client.leave();
     };
   }, []);
 
+  if (!joined) return null;
+
   return (
-    <div className="p-4 bg-gray-100 rounded">
-      <h2 className="font-semibold text-lg mb-2">Agora Audio Call</h2>
-      <p>Microphone is active. Keep this page open to stay connected.</p>
+    <div className="p-4 bg-blue-100 rounded mt-4">
+      <h2 className="font-bold">Audio Call Active</h2>
+      <p>Stay on this screen to remain in call.</p>
     </div>
   );
 };

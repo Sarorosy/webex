@@ -77,7 +77,7 @@ const TotalSearch = ({ onClose }) => {
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: -300, opacity: 0 }}
         transition={{ type: "tween", duration: 0.3 }}
-        className={`fixed top-0 left-0 w-[28.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white" : "bg-white"} shadow-xl border-l border-gray-300 z-50 overflow-y-auto`}
+        className={`fixed top-0 left-0 w-[28.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white" : "bg-white"} shadow-xl border-l border-gray-300 z-[100] overflow-y-auto`}
       >
         <div className="p-4 py-2 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center sticky top-0">
           <span>Search Globally</span>

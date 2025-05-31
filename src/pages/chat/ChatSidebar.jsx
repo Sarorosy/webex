@@ -672,7 +672,7 @@ useEffect(() => {
       className={` ${theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}  py-4 px-1 relative select-none  overflow-hidden m-2 ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
-      style={{ width: `${sidebarWidth}px`, minWidth: '200px', maxWidth: '600px' }}
+      style={{ width: `${sidebarWidth}px`, minWidth: '300px', maxWidth: '600px' }}
     >
       <div
     onMouseDown={handleMouseDown}

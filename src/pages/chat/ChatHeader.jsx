@@ -16,6 +16,7 @@ import SearchResults from "./SearchResults";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import AgoraCall from "../../components/AgraCall";
+import axios from "axios";
 
 const ChatHeader = ({
   selectedUser,
@@ -38,6 +39,65 @@ const ChatHeader = ({
 
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
+  const [callInfo,setCallInfo] = useState(null);
+
+  const handleStartCall = async () => {
+    try {
+      const channelName = `chat_${selectedUser?.id}`;
+      const uid = 1; // Or use user ID
+
+      const res = await axios.post('http://localhost:5000/api/agora/generate-token', { channelName, uid });
+      console.log(res.data)
+      
+      const  token  = res.data.token;
+
+      setCallInfo({ token, channelName, uid });
+      setCallAccepted(true);
+    } catch (err) {
+      console.error('Call start error:', err);
+    }
+  };
+
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [callAccepted, setCallAccepted] = useState(false);
+
+  useEffect(() => {
+    connectSocket(user?.id);
+    const socket = getSocket();
+
+    
+    const handlecallcoming = (data) => {
+      console.log("Incoming call", data);
+      if (data.targetUserId == user?.id) {
+        setIncomingCall(data);
+      }
+    };
+    socket.on('call_incoming', handlecallcoming);
+    return () => {
+      socket.off('call_incoming', handlecallcoming);
+    };
+  }, [user?.id, selectedUser]);
+
+  useEffect(() => {
+    connectSocket(user?.id);
+    const socket = getSocket();
+
+    const handleGroupUpdated = (data) => {
+      console.log("groupdata", data);
+      if (selectedUser?.id == data.id && selectedUser?.type == "group") {
+        setSelectedUser((prev) => ({
+          ...prev,
+          name: data.name,
+        }));
+      }
+    };
+
+    socket.on("group_updated", handleGroupUpdated);
+
+    return () => {
+      socket.off("group_updated", handleGroupUpdated);
+    };
+  }, [user?.id, selectedUser]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -114,26 +174,7 @@ const ChatHeader = ({
     setChatTab("chats");
   }, [selectedUser]);
 
-  useEffect(() => {
-    connectSocket(user?.id);
-    const socket = getSocket();
-
-    const handleGroupUpdated = (data) => {
-      console.log("groupdata", data);
-      if (selectedUser?.id == data.id && selectedUser?.type == "group") {
-        setSelectedUser((prev) => ({
-          ...prev,
-          name: data.name,
-        }));
-      }
-    };
-
-    socket.on("group_updated", handleGroupUpdated);
-
-    return () => {
-      socket.off("group_updated", handleGroupUpdated);
-    };
-  }, [user?.id, selectedUser]);
+  
 
   const [showMenu, setShowMenu] = useState(false);
 
@@ -184,6 +225,45 @@ const ChatHeader = ({
             )}
             {/* <AgoraCall /> */}
           </h2>
+          <button
+        onClick={handleStartCall}
+        className="bg-green-500 px-3 py-1 text-white rounded"
+      >
+        Call
+      </button>
+      {callInfo && callAccepted && (
+        <AgoraCall callInfo={callInfo}/>
+      )}
+      
+      {incomingCall && !callAccepted && (
+  <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
+    <div className="bg-white p-4 rounded shadow-lg text-center">
+      <p className="text-lg mb-4">Incoming Call...</p>
+      <button
+        className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+        onClick={() => {
+          setCallAccepted(true);
+          setCallInfo({
+            token: incomingCall.token,
+            channelName: incomingCall.channelName,
+            uid: user?.id
+          });
+        }}
+      >
+        Accept
+      </button>
+      <button
+        className="bg-red-500 text-white px-4 py-2 rounded"
+        onClick={() => {
+          setIncomingCall(null);
+        }}
+      >
+        Decline
+      </button>
+    </div>
+  </div>
+)}
+
 
           {selectedUser?.office_name && selectedUser?.city_name && (
             <p className="flex items-center ml-6">

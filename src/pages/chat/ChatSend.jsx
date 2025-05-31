@@ -161,7 +161,7 @@ const ChatSend = ({
             backgroundColor: data.userColor,
           }}
         >
-          {data.userName?.charAt(0).toUpperCase()}
+          <span className="custom-margin">{data.userName?.charAt(0).toUpperCase()}</span>
         </div>
       )}
       <span>{data.userName}</span>

@@ -93,7 +93,9 @@ div#commentsMention[placeholder]:empty:before {
 .cur-wait{
   cursor: wait !important;
 }
-
+.custom-margin{
+  margin: -2px 0px -4px -5px;
+}
 
 
 
