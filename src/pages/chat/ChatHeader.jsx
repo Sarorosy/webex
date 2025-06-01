@@ -17,6 +17,7 @@ import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import AgoraCall from "../../components/AgraCall";
 import axios from "axios";
+import IncomingCall from "../../components/IncomingCall";
 
 const ChatHeader = ({
   selectedUser,
@@ -39,31 +40,43 @@ const ChatHeader = ({
 
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
+
+  const [callStarted, setCallStarted] = useState(false);
+  const [callStartedInfo, setCallStartedInfo] = useState(false);
   const [callInfo,setCallInfo] = useState(null);
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [callAccepted, setCallAccepted] = useState(false);
 
   const handleStartCall = async () => {
     try {
       const channelName = `chat_${selectedUser?.id}`;
-      const uid = 1; // Or use user ID
+      const targetUserId = selectedUser?.id;
+      const uid = user?.id; 
+      const uname = user?.name || "Anonymous"; // Fallback if name is not available
+      const profile = user?.profile_pic || null; // Fallback profile picture
 
-      const res = await axios.post('http://localhost:5000/api/agora/generate-token', { channelName, uid });
-      console.log(res.data)
+      const res = await axios.post('http://localhost:5000/api/agora/generate-token', { channelName,targetUserId, uid, uname, profile });
       
       const  token  = res.data.token;
 
       setCallInfo({ token, channelName, uid });
-      setCallAccepted(true);
+      setCallStartedInfo(channelName);
+      setCallStarted(true);
     } catch (err) {
       console.error('Call start error:', err);
     }
   };
 
-  const [incomingCall, setIncomingCall] = useState(null);
-  const [callAccepted, setCallAccepted] = useState(false);
+useEffect(()=>{
+  console.log(callInfo)
+},[callInfo])
 
   useEffect(() => {
     connectSocket(user?.id);
     const socket = getSocket();
+    if(socket){
+      console.log("Socket connected", socket.id);
+    }
 
     
     const handlecallcoming = (data) => {
@@ -72,11 +85,73 @@ const ChatHeader = ({
         setIncomingCall(data);
       }
     };
+
+    const handleCallEnded = (data) => {
+    if (data.channelName == callInfo?.channelName) {
+
+      console.log("call ended", callInfo)
+      setCallAccepted(false);
+      setCallInfo(null);
+    }
+  };
+
+  const handleCallAccepted = (data) => {
+    console.log("call accepted", callInfo)
+    if (data.channelName == callInfo?.channelName) {
+      setCallStarted(false);
+    }
+  };
+
+  const handleCallDeclined = (data) => {
+    console.log("Call declined data", callInfo);
+    if (data.channelName == callInfo?.channelName) {
+      console.log("Call declined", data);
+      setCallAccepted(false);
+      setCallInfo(null);
+      setCallStarted(false);
+    }
+  };
+
     socket.on('call_incoming', handlecallcoming);
+    socket.on('call_ended', handleCallEnded);
+    socket.on('call_accepted', handleCallAccepted);
+    socket.on('call_declined_by_user', handleCallDeclined);
     return () => {
       socket.off('call_incoming', handlecallcoming);
+      socket.off('call_ended', handleCallEnded);
+      socket.off('call_accepted', handleCallAccepted);
+      socket.off('call_declined_by_user', handleCallDeclined);
     };
   }, [user?.id, selectedUser]);
+
+  const handleAccept = (data) => {
+    setCallInfo({
+      token: data.token,
+      channelName: data.channelName,
+      uid: user?.id,
+    });
+    setCallAccepted(true);
+    setCallStarted(false)
+    setIncomingCall(null); // remove popup
+
+    connectSocket(user?.id);
+    const socket = getSocket();
+        
+    socket.emit('call_accepted', {
+      channelName: data.channelName,
+    });
+  };
+
+  const handleDecline = () => {
+     connectSocket(user?.id);
+    const socket = getSocket();
+    if (!incomingCall) return;
+    console.log("Declining call", incomingCall.channelName);
+    socket.emit('call_declined', {
+      channelName: incomingCall.channelName,
+    });
+    setIncomingCall(null);
+  };
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -121,7 +196,7 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("https://webexback-vb1k.onrender.com/api/messages/find", {
+        const res = await fetch("http://localhost:5000/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -147,7 +222,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback-vb1k.onrender.com/api/chats/favourite", {
+      const res = await fetch("http://localhost:5000/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,38 +306,17 @@ const ChatHeader = ({
       >
         Call
       </button>
-      {callInfo && callAccepted && (
-        <AgoraCall callInfo={callInfo}/>
+      {callInfo && (
+        <AgoraCall ringing={callStarted} callInfo={callInfo} onLeave={() => setCallInfo(null)}/>
+      )}
+      {incomingCall && (
+        <IncomingCall
+        callData={incomingCall}
+          onAccept={handleAccept}
+          onDecline={handleDecline}
+        />
       )}
       
-      {incomingCall && !callAccepted && (
-  <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
-    <div className="bg-white p-4 rounded shadow-lg text-center">
-      <p className="text-lg mb-4">Incoming Call...</p>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded mr-2"
-        onClick={() => {
-          setCallAccepted(true);
-          setCallInfo({
-            token: incomingCall.token,
-            channelName: incomingCall.channelName,
-            uid: user?.id
-          });
-        }}
-      >
-        Accept
-      </button>
-      <button
-        className="bg-red-500 text-white px-4 py-2 rounded"
-        onClick={() => {
-          setIncomingCall(null);
-        }}
-      >
-        Decline
-      </button>
-    </div>
-  </div>
-)}
 
 
           {selectedUser?.office_name && selectedUser?.city_name && (
