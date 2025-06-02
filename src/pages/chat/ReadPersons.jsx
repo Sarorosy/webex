@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useAuth } from "../../utils/idb";
+import { formatDistanceToNow, format } from "date-fns";
+
 
 const ReadPersons = ({ messageId }) => {
   const [readUsers, setReadUsers] = useState([]);
@@ -48,6 +50,21 @@ const ReadPersons = ({ messageId }) => {
     };
   }, [messageId]);
 
+  const formatReadTime = (readAt) => {
+  if (!readAt) return "";
+
+  const readDate = new Date(readAt);
+  const now = new Date();
+  const diffInSeconds = (now - readDate) / 1000;
+
+  if (diffInSeconds < 60) {
+    return "just now";
+  } else {
+    // Example: Jun 2, 4:58 PM
+    return format(readDate, "MMM d, h:mm a");
+  }
+};
+
   if (loading) return <p className="text-gray-500 text-sm text-center">...</p>;
   const otherUsers = readUsers.filter((u) => u.id !== user?.id);
 
@@ -64,7 +81,9 @@ const ReadPersons = ({ messageId }) => {
               key={user.id}
               className="w-6 h-6 rounded-full overflow-hidden"
               data-tooltip-id="my-tooltip"
-              data-tooltip-content={user.name}
+              data-tooltip-content={
+    `${user.name} . ${formatReadTime(user.read_at)}`
+  }
             >
               {user.profile_pic ? (
                 <img
