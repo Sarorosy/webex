@@ -97,7 +97,9 @@ div#commentsMention[placeholder]:empty:before {
   margin: -2px 0px -4px -5px;
 }
 
-
+.message-wrapper.gap-2.rounded-lg.py-3.w-full.flex.justify-start .ios {
+  right: -140px;
+}
 
 
 

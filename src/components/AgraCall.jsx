@@ -22,15 +22,19 @@ const startCall = async () => {
 
   try {
     setJoined(true);
-    await client.join(APP_ID, callInfo.channelName, callInfo.token, callInfo.uid);
+    await client.join(APP_ID, callInfo.channelName, callInfo.token, null);
     const micTrack = await AgoraRTC.createMicrophoneAudioTrack();
+    console.log("Mic Track Enabled:", micTrack.enabled);
+    console.log('Microphone track created and enabled:', micTrack.enabled);
     await client.publish([micTrack]);
     setLocalAudioTrack(micTrack);
+    console.log('Published local microphone track');
     
 
     client.on('user-published', async (user, mediaType) => {
       await client.subscribe(user, mediaType);
-      if (mediaType === 'audio') user.audioTrack.play();
+      if (mediaType == 'audio') user.audioTrack.play();
+      console.log('Subscribed to user:', user);
     });
 
     client.on('user-unpublished', (user) => {
@@ -62,7 +66,7 @@ const startCall = async () => {
 }, []);
 
 
-  const leaveCall = async () => {
+ const leaveCall = async () => {
   try {
     if (localAudioTrack) {
       localAudioTrack.stop();
@@ -70,21 +74,18 @@ const startCall = async () => {
     }
     await client.leave();
 
-    // Notify the other user
-    connectSocket(user?.id);
     const socket = getSocket();
-
-    socket.emit('call_ended', {
+    socket.emit("call_ended", {
       channelName: callInfo.channelName,
       userId: callInfo.uid,
     });
-
   } catch (err) {
-    console.error('Error leaving call:', err);
+    console.error("Error leaving call:", err);
   } finally {
-    onLeave(); // Notify parent to remove call screen
+    onLeave();
   }
 };
+
 
 
     

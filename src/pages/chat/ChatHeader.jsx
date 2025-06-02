@@ -15,9 +15,7 @@ import toast from "react-hot-toast";
 import SearchResults from "./SearchResults";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import AgoraCall from "../../components/AgraCall";
 import axios from "axios";
-import IncomingCall from "../../components/IncomingCall";
 
 const ChatHeader = ({
   selectedUser,
@@ -41,117 +39,7 @@ const ChatHeader = ({
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
 
-  const [callStarted, setCallStarted] = useState(false);
-  const [callStartedInfo, setCallStartedInfo] = useState(false);
-  const [callInfo,setCallInfo] = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null);
-  const [callAccepted, setCallAccepted] = useState(false);
-
-  const handleStartCall = async () => {
-    try {
-      const channelName = `chat_${selectedUser?.id}`;
-      const targetUserId = selectedUser?.id;
-      const uid = user?.id; 
-      const uname = user?.name || "Anonymous"; // Fallback if name is not available
-      const profile = user?.profile_pic || null; // Fallback profile picture
-
-      const res = await axios.post('http://localhost:5000/api/agora/generate-token', { channelName,targetUserId, uid, uname, profile });
-      
-      const  token  = res.data.token;
-
-      setCallInfo({ token, channelName, uid });
-      setCallStartedInfo(channelName);
-      setCallStarted(true);
-    } catch (err) {
-      console.error('Call start error:', err);
-    }
-  };
-
-useEffect(()=>{
-  console.log(callInfo)
-},[callInfo])
-
-  useEffect(() => {
-    connectSocket(user?.id);
-    const socket = getSocket();
-    if(socket){
-      console.log("Socket connected", socket.id);
-    }
-
-    
-    const handlecallcoming = (data) => {
-      console.log("Incoming call", data);
-      if (data.targetUserId == user?.id) {
-        setIncomingCall(data);
-      }
-    };
-
-    const handleCallEnded = (data) => {
-    if (data.channelName == callInfo?.channelName) {
-
-      console.log("call ended", callInfo)
-      setCallAccepted(false);
-      setCallInfo(null);
-    }
-  };
-
-  const handleCallAccepted = (data) => {
-    console.log("call accepted", callInfo)
-    if (data.channelName == callInfo?.channelName) {
-      setCallStarted(false);
-    }
-  };
-
-  const handleCallDeclined = (data) => {
-    console.log("Call declined data", callInfo);
-    if (data.channelName == callInfo?.channelName) {
-      console.log("Call declined", data);
-      setCallAccepted(false);
-      setCallInfo(null);
-      setCallStarted(false);
-    }
-  };
-
-    socket.on('call_incoming', handlecallcoming);
-    socket.on('call_ended', handleCallEnded);
-    socket.on('call_accepted', handleCallAccepted);
-    socket.on('call_declined_by_user', handleCallDeclined);
-    return () => {
-      socket.off('call_incoming', handlecallcoming);
-      socket.off('call_ended', handleCallEnded);
-      socket.off('call_accepted', handleCallAccepted);
-      socket.off('call_declined_by_user', handleCallDeclined);
-    };
-  }, [user?.id, selectedUser]);
-
-  const handleAccept = (data) => {
-    setCallInfo({
-      token: data.token,
-      channelName: data.channelName,
-      uid: user?.id,
-    });
-    setCallAccepted(true);
-    setCallStarted(false)
-    setIncomingCall(null); // remove popup
-
-    connectSocket(user?.id);
-    const socket = getSocket();
-        
-    socket.emit('call_accepted', {
-      channelName: data.channelName,
-    });
-  };
-
-  const handleDecline = () => {
-     connectSocket(user?.id);
-    const socket = getSocket();
-    if (!incomingCall) return;
-    console.log("Declining call", incomingCall.channelName);
-    socket.emit('call_declined', {
-      channelName: incomingCall.channelName,
-    });
-    setIncomingCall(null);
-  };
+  
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -196,7 +84,7 @@ useEffect(()=>{
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/messages/find", {
+        const res = await fetch("https://webexback-vb1k.onrender.com/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -222,7 +110,7 @@ useEffect(()=>{
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/chats/favourite", {
+      const res = await fetch("https://webexback-vb1k.onrender.com/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -249,14 +137,18 @@ useEffect(()=>{
     setChatTab("chats");
   }, [selectedUser]);
 
-  
-
   const [showMenu, setShowMenu] = useState(false);
 
   return (
     <div className="absolute w-full z-[99]">
       {/* HEADER */}
-      <div className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${theme == "dark" ? "chat-header-bg-dark text-white" : "chat-header-bg text-gray-800"}  shadow-inner`}>
+      <div
+        className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
+          theme == "dark"
+            ? "chat-header-bg-dark text-white"
+            : "chat-header-bg text-gray-800"
+        }  shadow-inner`}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {selectedUser?.profile_pic ? (
@@ -294,30 +186,11 @@ useEffect(()=>{
               </button>
             </span>
             {isTyping && (
-              <div className="typing-indicator italic  f-11">
-                Typing...
-              </div>
+              <div className="typing-indicator italic  f-11">Typing...</div>
             )}
             {/* <AgoraCall /> */}
           </h2>
-          <button
-        onClick={handleStartCall}
-        className="bg-green-500 px-3 py-1 text-white rounded"
-      >
-        Call
-      </button>
-      {callInfo && (
-        <AgoraCall ringing={callStarted} callInfo={callInfo} onLeave={() => setCallInfo(null)}/>
-      )}
-      {incomingCall && (
-        <IncomingCall
-        callData={incomingCall}
-          onAccept={handleAccept}
-          onDecline={handleDecline}
-        />
-      )}
-      
-
+          
 
           {selectedUser?.office_name && selectedUser?.city_name && (
             <p className="flex items-center ml-6">
@@ -337,7 +210,9 @@ useEffect(()=>{
                 onChange={(e) => setQuery(e.target.value)}
                 type="text"
                 placeholder="Search..."
-                className={` ${theme == "dark" ? "text-black" : ""} px-2 py-1 pr-9 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13`}
+                className={` ${
+                  theme == "dark" ? "text-black" : ""
+                } px-2 py-1 pr-9 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 f-13`}
               />
               <button
                 onClick={() => {
@@ -408,29 +283,29 @@ useEffect(()=>{
         </div>
       </div>
       {showMenu && (
-      <div className="py-0.5 px-4 z-50 message-file-selector">
-        <button
-          onClick={() => setChatTab("chats")}
-          className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ${
-            chatTab === "chats"
-              ? "bg-orange-500 text-white  border"
-              : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
-          }`}
-        >
-          Messages
-        </button>
-        <button
-          onClick={() => setChatTab("files")}
-          className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ml-4 ${
-            chatTab === "files"
-              ? "bg-orange-500 text-white  border"
-              : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
-          }`}
-        >
-          Files
-        </button>
-      </div>
-)}
+        <div className="py-0.5 px-4 z-50 message-file-selector">
+          <button
+            onClick={() => setChatTab("chats")}
+            className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ${
+              chatTab === "chats"
+                ? "bg-orange-500 text-white  border"
+                : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
+            }`}
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => setChatTab("files")}
+            className={`px-1 py-0.5 rounded-lg f-11 font-medium transition duration-200 ml-4 ${
+              chatTab === "files"
+                ? "bg-orange-500 text-white  border"
+                : "bg-white text-orange-500 border border-orange-200 hover:bg-orange-100"
+            }`}
+          >
+            Files
+          </button>
+        </div>
+      )}
       {/* FLOATING RESULTS */}
     </div>
   );

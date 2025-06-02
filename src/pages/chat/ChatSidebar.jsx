@@ -123,7 +123,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-vb1k.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -712,7 +712,7 @@ useEffect(() => {
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Filter Groups, Persons"
-            className="p-2 py-1 border rounded-md w-full mb-2"
+            className={`p-2 py-1 border rounded-md w-full mb-2 text-black`}
           />
           
           {view_user_name && (
