@@ -2,7 +2,8 @@ import { useState } from "react";
 import { AnimatePresence ,motion} from "framer-motion";
 import EditProfile from "./EditProfile";
 import { useAuth } from "../../utils/idb";
-import { X } from "lucide-react";
+import { Settings, X } from "lucide-react";
+import ProfileSettings from "./ProfileSettings";
 
 const Profile = ({ onClose }) => {
   const {user} = useAuth();
@@ -13,6 +14,7 @@ const Profile = ({ onClose }) => {
   const pronounces = user?.pronouns || "He/Him";
   const profilePic = user?.profile_pic;
   const [editOpen, setEditOpen] = useState(false);
+  const [tab, setTab] = useState("profile");
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
@@ -25,12 +27,33 @@ const Profile = ({ onClose }) => {
   >
       {/* HEADER */}
       <div className={`flex items-center justify-between mb-2 px-4 py-3 bg-gray-300  sticky top-0 z-50`}>
-        <h4 className="text-lg font-semibold">Edit Profile</h4>
+        <h4 className="text-md  flex gap-2">
+  <button 
+    className={`px-2 py-0.5 rounded-lg transition duration-200 
+                ${tab === "profile" 
+                  ? "bg-orange-600 text-white font-semibold" 
+                  : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"}`}
+    onClick={() => setTab("profile")}
+  >
+    Edit Profile
+  </button>
+  <button 
+    className={`px-2 flex items-center py-0.5 rounded-lg transition duration-200 
+                ${tab === "settings" 
+                  ? "bg-orange-600 text-white font-semibold " 
+                  : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"}`}
+    onClick={() => setTab("settings")}
+  >
+   <Settings size={14} className="mr-2"/> Settings
+  </button>
+</h4>
+
         <button onClick={onClose} className="text-sm text-white bg-orange-600 px-1 py-1 rounded">
         <X  size={13} />
         </button>
       </div>
-      <div className="flex items-start justify-center p-3 gap-2 h-full">
+      {tab == "profile" ? (
+      <div className="flex items-start justify-center p-3 gap-2 h-lg min-h-lg max-h-lg">
         <div className="flex flex-col w-[400px] border h-full">
           <div className="profile-bg-set"></div>
           <div className="bg-white p-8 flex flex-col items-center text-center ">
@@ -67,6 +90,11 @@ const Profile = ({ onClose }) => {
         </div>
         <AnimatePresence></AnimatePresence>
       </div>
+      ) : (
+        <div className="flex items-start justify-center p-3 gap-2 h-lg min-h-lg max-h-lg">
+          <ProfileSettings />
+        </div>
+      )}
       </motion.div>
     </div>
   );

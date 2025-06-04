@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
+        `http://localhost:5000/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -173,15 +173,19 @@ const ChatSend = ({
     if (isSending || (!value.trim() && !selectedFile)) return;
 
     const urlRegex =
-      /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
+    /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
 
-    const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
-      let href = url;
-      if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        href = "https://" + url;
-      }
-      return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
-    });
+  const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
+    // Clean HTML tags from URL portion only
+    const plainUrl = url.replace(/<[^>]+>/g, "");
+
+    let href = plainUrl;
+    if (!plainUrl.startsWith("http://") && !plainUrl.startsWith("https://")) {
+      href = "https://" + plainUrl;
+    }
+
+    return `<a href="${href}" class="messages-a-link" target="_blank">${plainUrl}</a>`;
+  });
 
     try {
       setIsSending(true);
@@ -215,7 +219,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/chats/send",
+        "http://localhost:5000/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary

@@ -36,14 +36,14 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const fetchGroupData = async () => {
     try {
       const groupRes = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/group/${selectedGroup.id}`
+        `http://localhost:5000/api/groups/group/${selectedGroup.id}`
       );
       const groupData = await groupRes.json();
       if (groupData.status) setGroup(groupData.group);
       setLoadingGroup(false);
 
       const membersRes = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/members/${selectedGroup.id}`
+        `http://localhost:5000/api/groups/members/${selectedGroup.id}`
       );
       const membersData = await membersRes.json();
       if (membersData.status) setMembers(membersData.members);
@@ -64,7 +64,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const confirmDeleteMember = async () => {
     try {
       const response = await fetch(
-        "https://webexback-vb1k.onrender.com/api/groups/remove-member",
+        "http://localhost:5000/api/groups/remove-member",
         {
           method: "POST",
           headers: {
@@ -97,7 +97,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const handleSendRequest = async () => {
     try {
       const response = await fetch(
-        "https://webexback-vb1k.onrender.com/api/grouplimit/send",
+        "http://localhost:5000/api/grouplimit/send",
         {
           method: "POST",
           headers: {
@@ -218,8 +218,8 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         </div>
 
         {/* Members Section */}
-        <div className="px-6 mt-6 overflow-y-auto h-[470px]">
-          <h3 className="text-lg font-semibold mb-3 text-gray-900">Members</h3>
+        <div className="px-6 mt-6 overflow-y-auto h-[60%]">
+          <h3 className="text-lg font-semibold mb-3 text-gray-900">Members ({loadingMembers ? "loading..." : members.length})</h3>
 
           {loadingMembers ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

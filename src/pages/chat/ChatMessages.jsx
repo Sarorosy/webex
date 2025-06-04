@@ -18,6 +18,7 @@ import {
   SquareArrowOutUpRightIcon,
   Smile,
   QuoteIcon,
+  Copy,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -74,7 +75,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -111,7 +112,7 @@ const ChatMessages = ({
         });
 
         setLatestMessageId(maxId);
-        setLatestMessage(latestMsg)
+        setLatestMessage(latestMsg);
       }
 
       return reversedData;
@@ -254,11 +255,11 @@ const ChatMessages = ({
     };
   }, [skip, hasMore, isLoading]);
 
-  useEffect(()=>{
-    if(latestMessage){
+  useEffect(() => {
+    if (latestMessage) {
       const socket = getSocket();
       connectSocket(user?.id);
-      console.log("latestmessage" ,latestMessage)
+      console.log("latestmessage", latestMessage);
 
       socket.emit("read_message_socket", {
         user_id: user.id,
@@ -266,9 +267,8 @@ const ChatMessages = ({
         receiver_id: latestMessage.receiver_id,
         user_type: latestMessage.user_type,
       });
-
     }
-  },[latestMessage])
+  }, [latestMessage]);
 
   useEffect(() => {
     let mounted = true;
@@ -486,7 +486,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -556,6 +556,22 @@ const ChatMessages = ({
     setReplyMsgId(null);
     setReplyMessage(null);
   };
+  const handleCopy = (msg) => {
+    if (!msg || !msg.message) return;
+
+    // Remove HTML tags
+    const plainText = msg.message.replace(/<[^>]*>/g, "").trim();
+
+    // Copy to clipboard
+    navigator.clipboard
+      .writeText(plainText)
+      .then(() => {
+        toast("Copied");
+      })
+      .catch((err) => {
+        console.error("Failed to copy message:", err);
+      });
+  };
 
   const [highlightedMessageId, setHighlightedMessageId] = useState(null);
 
@@ -586,7 +602,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -779,7 +795,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -923,7 +939,7 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`message-wrapper gap-2 rounded-lg py-3 w-full flex ${
+                    className={`relative message-wrapper gap-2 rounded-lg py-3 w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
@@ -976,6 +992,11 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
+                      {msg.is_new && msg.is_new == "1" ? (
+                        <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
+                          New Message
+                        </div>
+                      ) : null}
                       <div
                         className={`text-xs  mb-1 font-medium ${
                           isSent
@@ -1235,6 +1256,123 @@ const ChatMessages = ({
                                       clearReplyHover();
                                     }}
                                   >
+                                    {reply.is_new && reply.is_new == "1" ? (
+                                      <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
+                                        New Reply
+                                      </div>
+                                    ) : null}
+                                    {reply.is_file == 1 &&
+                                      reply.filename &&
+                                      (() => {
+                                        const ext = reply.filename
+                                          .split(".")
+                                          .pop()
+                                          .toLowerCase();
+                                        const isImage = [
+                                          "png",
+                                          "jpg",
+                                          "jpeg",
+                                          "avif",
+                                          "svg",
+                                          "webp",
+                                        ].includes(ext);
+                                        const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
+                                        const filenameOnly = reply.filename
+                                          .split("/")
+                                          .pop();
+
+                                        return (
+                                          <div className="w-full mb-3">
+                                            {/* File Info Box */}
+                                            <details
+                                              open
+                                              className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
+                                            >
+                                              <summary className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                                                {isImage ? (
+                                                  <ImageIcon
+                                                    className="text-pink-500"
+                                                    size={15}
+                                                  />
+                                                ) : ext === "mp4" ||
+                                                  ext === "mov" ? (
+                                                  <VideoIcon
+                                                    className="text-purple-600"
+                                                    size={15}
+                                                  />
+                                                ) : [
+                                                    "doc",
+                                                    "docx",
+                                                    "xls",
+                                                    "xlsx",
+                                                  ].includes(ext) ? (
+                                                  <FileSpreadsheet
+                                                    className="text-green-600"
+                                                    size={15}
+                                                  />
+                                                ) : (
+                                                  <FileText
+                                                    className="text-blue-600"
+                                                    size={15}
+                                                  />
+                                                )}
+                                                <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
+                                                  <a
+                                                    href={fileUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="f-11 text-blue-600 hover:underline  flex items-center"
+                                                  >
+                                                    {reply.filename
+                                                      .split("/")
+                                                      .pop()}
+                                                  </a>
+                                                </span>
+                                              </summary>
+
+                                              {/* File Preview */}
+                                              <div className="p-3 border-t border-gray-200">
+                                                {isImage ? (
+                                                  <button
+                                                    onClick={() =>
+                                                      setOpenFileModal({
+                                                        url: `https://rapidcollaborate.in/ccp${reply.filename}`,
+                                                        name: reply.filename
+                                                          .split("/")
+                                                          .pop(),
+                                                      })
+                                                    }
+                                                  >
+                                                    <img
+                                                      src={fileUrl}
+                                                      alt={reply.filename}
+                                                      className="rounded-md shadow max-w-36 h-full object-contain"
+                                                    />
+                                                  </button>
+                                                ) : (
+                                                  <button
+                                                    className="text-sm text-blue-600 hover:underline flex items-center"
+                                                    onClick={() =>
+                                                      setOpenFileModal({
+                                                        url: `https://rapidcollaborate.in/ccp${reply.filename}`,
+                                                        name: reply.filename
+                                                          .split("/")
+                                                          .pop(),
+                                                      })
+                                                    }
+                                                  >
+                                                    open{" "}
+                                                    <SquareArrowOutUpRightIcon
+                                                      size={15}
+                                                      className="ml-1"
+                                                    />
+                                                  </button>
+                                                )}
+                                              </div>
+                                            </details>
+                                          </div>
+                                        );
+                                      })()}
                                     <div
                                       className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}
                                     >
@@ -1435,6 +1573,13 @@ const ChatMessages = ({
                                             />
                                           )}
                                         </div>
+                                        <button
+                                          onClick={() => handleCopy(reply)}
+                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                                          title="Copy"
+                                        >
+                                          <Copy size={11} />
+                                        </button>
                                         {isReplySent && (
                                           <button
                                             onClick={() =>
@@ -1570,7 +1715,11 @@ const ChatMessages = ({
                                     {reactionUsers.map((user) => (
                                       <div
                                         key={user.id}
-                                        className={` ${theme == "dark"  ? "text-black" : "text-black"} flex items-center gap-2`}
+                                        className={` ${
+                                          theme == "dark"
+                                            ? "text-black"
+                                            : "text-black"
+                                        } flex items-center gap-2`}
                                       >
                                         <img
                                           src={
@@ -1643,6 +1792,13 @@ const ChatMessages = ({
                             />
                           )}
                         </div>
+                        <button
+                          onClick={() => handleCopy(msg)}
+                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                          title="Copy"
+                        >
+                          <Copy size={11} />
+                        </button>
                         {isSent && (
                           <button
                             onClick={() => handleEdit(msg.id, msg.message)}

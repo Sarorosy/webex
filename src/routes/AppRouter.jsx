@@ -10,6 +10,7 @@ import ManageGroups from "../pages/groups/ManageGroups";
 import Requests from "../pages/requests/Requests";
 import Profile from "../pages/user/Profile";
 import ForgotPassword from "../pages/ForgotPassword";
+import ScreenSharing from "../components/ScreenSharing";
 
 export default function AppRouter() {
   return (
@@ -30,6 +31,7 @@ export default function AppRouter() {
             
             <Route path="/dashboard" element={<Requests />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/screen" element={<ScreenSharing />} />
           </Route>
         </Route>
 

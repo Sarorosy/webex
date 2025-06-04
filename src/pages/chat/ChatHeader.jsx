@@ -5,6 +5,7 @@ import {
   InfoIcon,
   MoreVertical,
   Pin,
+  ScreenShare,
   Search,
   Star,
   X,
@@ -16,6 +17,7 @@ import SearchResults from "./SearchResults";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import axios from "axios";
+import ScreenSharing from "../../components/ScreenSharing";
 
 const ChatHeader = ({
   selectedUser,
@@ -38,8 +40,6 @@ const ChatHeader = ({
 
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
-
-  
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -84,16 +84,19 @@ const ChatHeader = ({
       }
 
       try {
-        const res = await fetch("https://webexback-vb1k.onrender.com/api/messages/find", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: selectedUser?.type,
-            query,
-            logged_in_userid: user.id,
-            find_in_userid: selectedUser?.id,
-          }),
-        });
+        const res = await fetch(
+          "http://localhost:5000/api/messages/find",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: selectedUser?.type,
+              query,
+              logged_in_userid: user.id,
+              find_in_userid: selectedUser?.id,
+            }),
+          }
+        );
 
         const data = await res.json();
         if (res.ok) {
@@ -110,15 +113,18 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback-vb1k.onrender.com/api/chats/favourite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: selectedUser?.id,
-          user_id: user.id,
-          type: selectedUser?.type,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/chats/favourite",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: selectedUser?.id,
+            user_id: user.id,
+            type: selectedUser?.type,
+          }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -136,6 +142,14 @@ const ChatHeader = ({
     setQuery("");
     setChatTab("chats");
   }, [selectedUser]);
+
+  const sendScreenShareRequest = () => {
+    const socket = getSocket();
+    socket.emit("incoming-screen-share", {
+      from: user,
+      to: selectedUser,
+    });
+  };
 
   const [showMenu, setShowMenu] = useState(false);
 
@@ -190,7 +204,6 @@ const ChatHeader = ({
             )}
             {/* <AgoraCall /> */}
           </h2>
-          
 
           {selectedUser?.office_name && selectedUser?.city_name && (
             <p className="flex items-center ml-6">
@@ -199,6 +212,8 @@ const ChatHeader = ({
               {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}
             </p>
           )}
+          
+          
         </div>
 
         {/* Right Section */}
@@ -254,6 +269,16 @@ const ChatHeader = ({
                 <DoorOpen size={13} />
               </button>
             </div>
+          )}
+          {selectedUser?.type == "user"  && (
+            <button
+              onClick={sendScreenShareRequest}
+              data-tooltip-id="my-tooltip"
+                data-tooltip-content="Share your screen"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+            >
+              <ScreenShare size={14} className="text-white" />
+            </button>
           )}
 
           <button
