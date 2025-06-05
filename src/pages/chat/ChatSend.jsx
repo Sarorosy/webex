@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/groups/members/${userId}`
+        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -129,7 +129,7 @@ const ChatSend = ({
   const { user, theme } = useAuth(); // Get sender_id
 
   useEffect(() => {
-    console.log("selected Users:", selectedUsers);
+   // console.log("selected Users:", selectedUsers);
   }, [selectedUsers]);
 
   useEffect(() => {
@@ -219,7 +219,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "http://localhost:5000/api/chats/send",
+        "https://webexback-vb1k.onrender.com/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary
@@ -339,12 +339,9 @@ const ChatSend = ({
     el.dispatchEvent(event);
   };
 
-  useEffect(() => {
-    console.log("Selected users updated:", selectedUsers);
-  }, [selectedUsers]);
 
   useEffect(() => {
-    console.log("Value updated:", value);
+    //console.log("Value updated:", value);
   }, [value]);
 
   // Select event handler
@@ -396,13 +393,13 @@ const ChatSend = ({
   const handleInputChange = (e) => {
     setValue(e.target.innerHTML);
     localStorage.setItem(localStorageKey, e.target.innerHTML);
-    console.log("Input changed, new value:", e.target.innerHTML);
+    //console.log("Input changed, new value:", e.target.innerHTML);
   };
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const onEmojiClick = (event, emojiObject) => {
     const emoji = event.emoji;
 
-    console.log("Emoji clicked:", event);
+    //console.log("Emoji clicked:", event);
 
     if (inputRef.current) {
       inputRef.current.focus();
@@ -452,7 +449,7 @@ const ChatSend = ({
     // Update state only if changed
     if (updatedSelectedUsers.length !== selectedUsers.length) {
       setSelectedUsers(updatedSelectedUsers);
-      console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+      //console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
     }
   }, [value]);
 
@@ -475,7 +472,7 @@ const ChatSend = ({
       try {
         const saved = localStorage.getItem(localStorageKey);
         if (saved) {
-          console.log("Restoring saved input:", saved);
+          //console.log("Restoring saved input:", saved);
           setValue(saved);
           if (inputRef.current) {
             inputRef.current.innerHTML = saved;

@@ -89,7 +89,6 @@ const ChatSidebar = ({
     };
 
     const handleOnlineUsers = (userIds) => {
-      console.log("Online user IDs received:", userIds);
     setOnlineUserIds(userIds); // userIds is assumed to be an array from server
   };
   
@@ -123,7 +122,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-vb1k.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -403,7 +402,7 @@ useEffect(() => {
           (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
         );
 
-        if (index === -1) {
+        if (index == -1) {
           fetchChats(false);
           return prevChats;
         }

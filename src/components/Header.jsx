@@ -94,7 +94,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback-vb1k.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -163,7 +163,6 @@ export default function Header() {
         } catch (e) {
           console.warn("Notification sound playback failed:", e);
         }
-        console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
         const profilePic = data.profile_pic || null;
@@ -220,7 +219,6 @@ export default function Header() {
           console.warn("Notification sound playback failed:", e);
         }
 
-        console.log(selectedUser, "testt");
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
         const profilePic = data.profile_pic || null;
@@ -288,7 +286,6 @@ export default function Header() {
     const handleUserUpdated = (updatedUser) => {
       console.log("user", updatedUser);
       if (updatedUser?.id == user?.id) {
-        console.log("two");
         login(updatedUser);
       }
     };
@@ -306,7 +303,6 @@ export default function Header() {
     const socket = getSocket();
 
     const handleOnlineUsers = (userIds) => {
-      console.log("Online user IDs received:", userIds);
       setOnlineUserIds(userIds); // userIds is assumed to be an array from server
     };
 

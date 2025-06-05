@@ -3,6 +3,7 @@ import { getSocket, connectSocket } from "../utils/Socket";
 import { useAuth } from "../utils/idb";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { X } from "lucide-react";
 
 const ScreenSharing = () => {
   const [incomingRequest, setIncomingRequest] = useState(null);
@@ -104,9 +105,7 @@ const ScreenSharing = () => {
     socket.on("ice-candidate", async ({ candidate }) => {
       try {
         if (peerRef.current) {
-          await peerRef.current.addIceCandidate(
-            new RTCIceCandidate(candidate)
-          );
+          await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
         }
       } catch (err) {
         console.error("ICE candidate error", err);
@@ -165,13 +164,6 @@ const ScreenSharing = () => {
 
   return (
     <div className="">
-      
-      {waiting && (
-        <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-2">
-          Waiting for receiver to accept screen share...
-        </div>
-      )}
-
       {incomingRequest && (
         <div className="fixed top-4 right-4 bg-white shadow-lg p-4 rounded border z-50">
           <p className="mb-2">
@@ -187,7 +179,6 @@ const ScreenSharing = () => {
         </div>
       )}
 
-
       {role === "viewer" && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -195,25 +186,26 @@ const ScreenSharing = () => {
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center  p-4 relative z-[110]"
         >
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full max-w-screen-lg rounded-lg shadow-xl"
-          />
+          <video ref={videoRef} autoPlay playsInline className="" />
           {role && (
-        <button
-          onClick={() => closeSharing()}
-          className="absolute top-2 right-2 right-0  bg-red-600 text-white px-4 py-2 rounded z-50"
-        >
-          Close
-        </button>
-      )}
+            <button
+              onClick={() => closeSharing()}
+              className="absolute top-2 right-2 right-0  bg-red-600 text-white px-4 py-2 rounded z-50"
+            >
+              <X size={14} className="text-white" />
+            </button>
+          )}
         </motion.div>
       )}
 
-      {role === "sharer" && (
+      {/* {role === "sharer" && (
         <div className="text-sm text-gray-600">Sharing your screen...</div>
+      )} */}
+
+      {waiting && (
+        <div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-2">
+          Waiting for receiver to accept screen share...
+        </div>
       )}
     </div>
   );

@@ -59,7 +59,7 @@ const ChatMessages = ({
   const topSentinelRef = useRef(null);
   const hasMoreRef = useRef(true);
 
-  const limit = 20;
+  const limit = 10;
 
   useEffect(() => {
     setLatestMessageId(null);
@@ -75,7 +75,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messagesnew?sender_id=${
+        `https://webexback-vb1k.onrender.com/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -127,7 +127,7 @@ const ChatMessages = ({
   };
 
   useEffect(() => {
-    console.log("latest msg id", latestMessageId);
+    // console.log("latest msg id", latestMessageId);
   }, [latestMessageId]);
 
   useEffect(() => {
@@ -195,7 +195,6 @@ const ChatMessages = ({
   };
 
   useEffect(() => {
-    console.log("Setting up IntersectionObserver");
 
     const observer = new IntersectionObserver(
       async ([entry]) => {
@@ -241,7 +240,7 @@ const ChatMessages = ({
 
     if (topSentinelRef.current) {
       observer.observe(topSentinelRef.current);
-      console.log("Observer attached to topSentinelRef");
+      // console.log("Observer attached to topSentinelRef");
     } else {
       console.warn("topSentinelRef is not available");
     }
@@ -249,7 +248,7 @@ const ChatMessages = ({
     return () => {
       if (topSentinelRef.current) {
         observer.unobserve(topSentinelRef.current);
-        console.log("Observer detached from topSentinelRef");
+        // console.log("Observer detached from topSentinelRef");
         observer.disconnect();
       }
     };
@@ -283,7 +282,6 @@ const ChatMessages = ({
         if (!mounted) return;
 
         console.log(msg, "msg from socket");
-        console.log("cuurent userId", userId);
 
         const isGroupMessage =
           msg.user_type == "group" &&
@@ -390,6 +388,26 @@ const ChatMessages = ({
   }, [user?.id, userId]);
 
   useEffect(() => {
+  if (!messages.length) return;
+
+  const timer = setTimeout(() => {
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) => ({
+        ...msg,
+        is_new: 0,
+        replies: msg.replies?.map((reply) => ({
+          ...reply,
+          is_new: 0,
+        })) || [],
+      }))
+    );
+  }, 5000);
+
+  return () => clearTimeout(timer);
+}, [messages]);
+
+
+  useEffect(() => {
     const socket = getSocket();
     connectSocket(user.id);
 
@@ -479,14 +497,13 @@ const ChatMessages = ({
   const [reminderModalOpen, setReminderModalOpen] = useState(false);
 
   const handleReminder = (msgId) => {
-    console.log("Forward message:", msgId);
     setSelectedMessageForReminder(msgId);
     setReminderModalOpen(true);
   };
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("http://localhost:5000/api/messages/pin", {
+      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -550,7 +567,6 @@ const ChatMessages = ({
   };
 
   const handleQuote = (msg) => {
-    console.log("Quote message:", msg);
     setSelectedQuoteMessage(msg);
     setIsReply(false);
     setReplyMsgId(null);
@@ -602,7 +618,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "http://localhost:5000/api/chats/messagesnew"
+            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -671,7 +687,6 @@ const ChatMessages = ({
 
           // Set highlighted message
           setHighlightedMessageId(selectedMessage.id);
-          console.log("gonna highlight is", selectedMessage.id);
 
           // Remove highlight after 3 seconds
           setTimeout(() => {
@@ -684,7 +699,7 @@ const ChatMessages = ({
 
   useEffect(() => {
     if (selectedMessage != null) {
-      console.log("selectedMessage", selectedMessage);
+     // console.log("selectedMessage", selectedMessage);
       scrollToMessage(selectedMessage);
     }
   }, [selectedMessage]);
@@ -795,7 +810,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/messages/${msg.id}/reactions`
+        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -927,7 +942,7 @@ const ChatMessages = ({
                       setHoveredMessageId(null);
                       clearHover();
                     }}
-                    onDoubleClick={() => handleReply(msg.id, msg.message)}
+                    //onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
@@ -992,11 +1007,11 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      {msg.is_new && msg.is_new == "1" ? (
+                      {/* {msg.is_new && msg.is_new == "1" ? (
                         <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
                           New Message
                         </div>
-                      ) : null}
+                      ) : null} */}
                       <div
                         className={`text-xs  mb-1 font-medium ${
                           isSent
@@ -1256,11 +1271,11 @@ const ChatMessages = ({
                                       clearReplyHover();
                                     }}
                                   >
-                                    {reply.is_new && reply.is_new == "1" ? (
+                                    {/* {reply.is_new && reply.is_new == "1" ? (
                                       <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
                                         New Reply
                                       </div>
-                                    ) : null}
+                                    ) : null} */}
                                     {reply.is_file == 1 &&
                                       reply.filename &&
                                       (() => {
