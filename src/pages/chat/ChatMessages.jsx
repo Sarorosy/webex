@@ -387,24 +387,7 @@ const ChatMessages = ({
     };
   }, [user?.id, userId]);
 
-  useEffect(() => {
-  if (!messages.length) return;
 
-  const timer = setTimeout(() => {
-    setMessages((prevMessages) =>
-      prevMessages.map((msg) => ({
-        ...msg,
-        is_new: 0,
-        replies: msg.replies?.map((reply) => ({
-          ...reply,
-          is_new: 0,
-        })) || [],
-      }))
-    );
-  }, 5000);
-
-  return () => clearTimeout(timer);
-}, [messages]);
 
 
   useEffect(() => {
