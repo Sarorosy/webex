@@ -122,7 +122,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -395,7 +395,6 @@ useEffect(() => {
         return;
       }
 
-      sendNotification(msg.sender_name ?? "User", msg.message ?? "New Message");
 
       setChats((prevChats) => {
         const index = prevChats.findIndex(

@@ -94,7 +94,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback-vb1k.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -168,7 +168,9 @@ export default function Header() {
         const profilePic = data.profile_pic || null;
         const rawMessage = data.message || "";
 
-        const trimmedMessage = rawMessage.split(" ").slice(0, 7).join(" ");
+        const maxLetters = 40; // adjust as needed
+        const trimmedMessage = rawMessage.replace(/<br\s*\/?>/gi, "").slice(0, maxLetters);
+
         const initial = senderName.charAt(0).toUpperCase();
 
         toast.custom((t) => (
@@ -224,7 +226,9 @@ export default function Header() {
         const profilePic = data.profile_pic || null;
         const rawMessage = data.message || "";
 
-        const trimmedMessage = rawMessage.split(" ").slice(0, 7).join(" ");
+        const maxLetters = 40; // adjust as needed
+        const trimmedMessage = rawMessage.replace(/<br\s*\/?>/gi, "").slice(0, maxLetters);
+
         const initial = senderName.charAt(0).toUpperCase();
 
         toast.custom((t) => (

@@ -8,7 +8,7 @@ import { useAuth } from "../../utils/idb";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { X } from "lucide-react";
 
-const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
+const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) => {
   const [value, setValue] = useState(message);
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -32,7 +32,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
   
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`https://webexback-vb1k.onrender.com/api/groups/members/${userId}`);
+        const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
         const data = await res.json();
   
         if (data.status) {
@@ -104,6 +104,7 @@ const EditModal = ({ msgId,userId, message, type, onClose, onUpdate }) => {
       // Emit 'edit_message' event with the updated message data
       socket.emit("edit_message", {
         msgId,
+        msgType,
         message: value.trim(),
         userId: user.id, // User ID to identify who is editing
       });

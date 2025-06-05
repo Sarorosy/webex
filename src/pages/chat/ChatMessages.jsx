@@ -75,7 +75,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -195,7 +195,6 @@ const ChatMessages = ({
   };
 
   useEffect(() => {
-
     const observer = new IntersectionObserver(
       async ([entry]) => {
         console.log("IntersectionObserver triggered", {
@@ -387,31 +386,50 @@ const ChatMessages = ({
     };
   }, [user?.id, userId]);
 
-
-
-
   useEffect(() => {
     const socket = getSocket();
     connectSocket(user.id);
 
     const handleMessageEdited = (data) => {
-      const { msgId, message, userId } = data;
+      const { msgId, msgType, message, userId } = data;
 
-      setMessages((prevMessages) => {
-        const updatedMessages = prevMessages.map((msg) =>
-          msg.id == msgId ? { ...msg, message, is_edited: 1 } : msg
+      if (msgType === "message") {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === msgId ? { ...msg, message, is_edited: 1 } : msg
+          )
         );
-
-        return updatedMessages;
-      });
+      } else if (msgType === "reply") {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => ({
+            ...msg,
+            replies: msg.replies?.map((reply) =>
+              reply.id === msgId ? { ...reply, message, is_edited: 1 } : reply
+            ),
+          }))
+        );
+      }
     };
 
-    const handleMessageDelete = (msgId) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id == msgId ? { ...msg, is_deleted: 1 } : msg
-        )
-      );
+    const handleMessageDelete = (msgObj) => {
+      const { msgId, type } = msgObj;
+
+      if (type === "message") {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id == msgId ? { ...msg, is_deleted: 1 } : msg
+          )
+        );
+      } else if (type === "reply") {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => ({
+            ...msg,
+            replies: msg.replies?.map((reply) =>
+              reply.id == msgId ? { ...reply, is_deleted: 1 } : reply
+            ),
+          }))
+        );
+      }
     };
 
     socket.on("message_edited", handleMessageEdited);
@@ -459,11 +477,13 @@ const ChatMessages = ({
   const groupedMessages = groupMessagesByDate(messages);
 
   const [editMsgId, setEditMsgId] = useState(false);
+  const [editMsgType, setEditMsgType] = useState(false);
   const [editMessage, setEditMessage] = useState(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
 
-  const handleEdit = (msgId, msg) => {
+  const handleEdit = (msgId, msgType, msg) => {
     setEditMsgId(msgId);
+    setEditMsgType(msgType);
     setEditMessage(msg);
     setEditModalOpen(true);
   };
@@ -486,7 +506,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -601,7 +621,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -682,7 +702,7 @@ const ChatMessages = ({
 
   useEffect(() => {
     if (selectedMessage != null) {
-     // console.log("selectedMessage", selectedMessage);
+      // console.log("selectedMessage", selectedMessage);
       scrollToMessage(selectedMessage);
     }
   }, [selectedMessage]);
@@ -793,7 +813,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -1029,11 +1049,8 @@ const ChatMessages = ({
                           return (
                             <div className="w-full mb-3">
                               {/* File Info Box */}
-                              <details
-                                open
-                                className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
-                              >
-                                <summary className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                              <div className="bg-white/80 border border-gray-300 rounded-lg shadow-sm">
+                                <div className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
                                   {isImage ? (
                                     <ImageIcon
                                       className="text-pink-500"
@@ -1061,17 +1078,18 @@ const ChatMessages = ({
                                     <a
                                       href={fileUrl}
                                       target="_blank"
+                                      download={fileUrl}
                                       rel="noopener noreferrer"
                                       className="f-11 text-blue-600 hover:underline  flex items-center"
                                     >
                                       {msg.filename.split("/").pop()}
                                     </a>
                                   </span>
-                                </summary>
+                                </div>
 
                                 {/* File Preview */}
-                                <div className="p-3 border-t border-gray-200">
-                                  {isImage ? (
+                                <div className="px-3">
+                                  {isImage && (
                                     <button
                                       onClick={() =>
                                         setOpenFileModal({
@@ -1086,25 +1104,9 @@ const ChatMessages = ({
                                         className="rounded-md shadow max-w-36 h-full object-contain"
                                       />
                                     </button>
-                                  ) : (
-                                    <button
-                                      className="text-sm text-blue-600 hover:underline flex items-center"
-                                      onClick={() =>
-                                        setOpenFileModal({
-                                          url: `https://rapidcollaborate.in/ccp${msg.filename}`,
-                                          name: msg.filename.split("/").pop(),
-                                        })
-                                      }
-                                    >
-                                      open{" "}
-                                      <SquareArrowOutUpRightIcon
-                                        size={15}
-                                        className="ml-1"
-                                      />
-                                    </button>
                                   )}
                                 </div>
-                              </details>
+                              </div>
                             </div>
                           );
                         })()}
@@ -1282,11 +1284,11 @@ const ChatMessages = ({
                                         return (
                                           <div className="w-full mb-3">
                                             {/* File Info Box */}
-                                            <details
+                                            <div
                                               open
                                               className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
                                             >
-                                              <summary className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                                              <div className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
                                                 {isImage ? (
                                                   <ImageIcon
                                                     className="text-pink-500"
@@ -1317,6 +1319,7 @@ const ChatMessages = ({
                                                 <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
                                                   <a
                                                     href={fileUrl}
+                                                    download={fileUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="f-11 text-blue-600 hover:underline  flex items-center"
@@ -1326,11 +1329,11 @@ const ChatMessages = ({
                                                       .pop()}
                                                   </a>
                                                 </span>
-                                              </summary>
+                                              </div>
 
                                               {/* File Preview */}
-                                              <div className="p-3 border-t border-gray-200">
-                                                {isImage ? (
+                                              <div className="px-3">
+                                                {isImage && (
                                                   <button
                                                     onClick={() =>
                                                       setOpenFileModal({
@@ -1347,27 +1350,9 @@ const ChatMessages = ({
                                                       className="rounded-md shadow max-w-36 h-full object-contain"
                                                     />
                                                   </button>
-                                                ) : (
-                                                  <button
-                                                    className="text-sm text-blue-600 hover:underline flex items-center"
-                                                    onClick={() =>
-                                                      setOpenFileModal({
-                                                        url: `https://rapidcollaborate.in/ccp${reply.filename}`,
-                                                        name: reply.filename
-                                                          .split("/")
-                                                          .pop(),
-                                                      })
-                                                    }
-                                                  >
-                                                    open{" "}
-                                                    <SquareArrowOutUpRightIcon
-                                                      size={15}
-                                                      className="ml-1"
-                                                    />
-                                                  </button>
                                                 )}
                                               </div>
-                                            </details>
+                                            </div>
                                           </div>
                                         );
                                       })()}
@@ -1583,6 +1568,7 @@ const ChatMessages = ({
                                             onClick={() =>
                                               handleEdit(
                                                 reply.id,
+                                                "reply",
                                                 reply.message
                                               )
                                             }
@@ -1799,7 +1785,9 @@ const ChatMessages = ({
                         </button>
                         {isSent && (
                           <button
-                            onClick={() => handleEdit(msg.id, msg.message)}
+                            onClick={() =>
+                              handleEdit(msg.id, "message", msg.message)
+                            }
                             className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
                             title="Edit message"
                           >
@@ -1878,6 +1866,7 @@ const ChatMessages = ({
           <EditModal
             userId={userId}
             msgId={editMsgId}
+            msgType={editMsgType}
             message={editMessage}
             type={userType}
             onClose={() => {
