@@ -94,7 +94,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback-vb1k.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {

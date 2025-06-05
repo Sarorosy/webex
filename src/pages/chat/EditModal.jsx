@@ -32,7 +32,7 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
   
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/groups/members/${userId}`);
+        const res = await fetch(`https://webexback-vb1k.onrender.com/api/groups/members/${userId}`);
         const data = await res.json();
   
         if (data.status) {
