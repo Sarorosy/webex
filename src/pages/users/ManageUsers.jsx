@@ -73,7 +73,7 @@ const ManageUsers = ({ onClose }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        "https://webexback-vb1k.onrender.com/api/users/fetchallusers"
+        "https://webexback-06cc.onrender.com/api/users/fetchallusers"
       );
       const data = await response.json();
       if (data.status) {
@@ -136,7 +136,7 @@ const ManageUsers = ({ onClose }) => {
     if (!selectedUser) return;
     try {
       const response = await fetch(
-        `https://webexback-vb1k.onrender.com/api/users/delete/${selectedUser}`,
+        `https://webexback-06cc.onrender.com/api/users/delete/${selectedUser}`,
         {
           method: "DELETE",
         }
@@ -190,7 +190,7 @@ const ManageUsers = ({ onClose }) => {
       }
 
       const response = await fetch(
-        `https://webexback-vb1k.onrender.com/api/users/changeUserType`,
+        `https://webexback-06cc.onrender.com/api/users/changeUserType`,
         {
           method: "PUT",
           headers: {

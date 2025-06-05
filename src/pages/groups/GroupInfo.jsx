@@ -36,14 +36,14 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const fetchGroupData = async () => {
     try {
       const groupRes = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/group/${selectedGroup.id}`
+        `https://webexback-06cc.onrender.com/api/groups/group/${selectedGroup.id}`
       );
       const groupData = await groupRes.json();
       if (groupData.status) setGroup(groupData.group);
       setLoadingGroup(false);
 
       const membersRes = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/members/${selectedGroup.id}`
+        `https://webexback-06cc.onrender.com/api/groups/members/${selectedGroup.id}`
       );
       const membersData = await membersRes.json();
       if (membersData.status) setMembers(membersData.members);
@@ -64,7 +64,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const confirmDeleteMember = async () => {
     try {
       const response = await fetch(
-        "https://webexback-vb1k.onrender.com/api/groups/remove-member",
+        "https://webexback-06cc.onrender.com/api/groups/remove-member",
         {
           method: "POST",
           headers: {
@@ -72,6 +72,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
           },
           body: JSON.stringify({
             delete_user_name: selectedMember?.name,
+            post_user_id : user?.id,
             user_id: selectedMember?.id,
             user_name: user?.name,
             own: false,
@@ -97,7 +98,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   const handleSendRequest = async () => {
     try {
       const response = await fetch(
-        "https://webexback-vb1k.onrender.com/api/grouplimit/send",
+        "https://webexback-06cc.onrender.com/api/grouplimit/send",
         {
           method: "POST",
           headers: {

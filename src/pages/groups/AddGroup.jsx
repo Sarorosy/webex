@@ -18,7 +18,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
     // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        const res = await fetch('https://webexback-vb1k.onrender.com/api/users/getusersforgroup', {
+        const res = await fetch('https://webexback-06cc.onrender.com/api/users/getusersforgroup', {
           method: "POST",
           headers: {
             "Content-type": "application/json"
@@ -44,7 +44,7 @@ const AddGroup = ({ onClose , finalFunction}) => {
   
     try {
       setCreating(true)
-      const response = await fetch('https://webexback-vb1k.onrender.com/api/groups/create', {
+      const response = await fetch('https://webexback-06cc.onrender.com/api/groups/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

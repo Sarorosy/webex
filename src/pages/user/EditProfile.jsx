@@ -54,7 +54,7 @@ const EditProfile = ({ onClose }) => {
       }
 
       const response = await axios.put(
-        `https://webexback-vb1k.onrender.com/api/users/update`,
+        `https://webexback-06cc.onrender.com/api/users/update`,
         formData,
         {
           headers: {

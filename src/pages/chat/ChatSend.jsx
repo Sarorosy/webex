@@ -68,7 +68,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/groups/members/${userId}`
+        `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -219,7 +219,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/chats/send",
+        "https://webexback-06cc.onrender.com/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary
@@ -501,7 +501,7 @@ const ChatSend = ({
       return () => {
         socket.off("fetch_group_members", handleFetchMembers);
       };
-    }, [user.id]);
+    }, [userId, type]);
 
   return (
     <>

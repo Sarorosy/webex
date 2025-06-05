@@ -38,7 +38,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/users/check-user-type",
+        "https://webexback-06cc.onrender.com/api/users/check-user-type",
         {
           method: "POST",
           headers: {
@@ -122,7 +122,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/users/update-password",
+        "https://webexback-06cc.onrender.com/api/users/update-password",
         {
           method: "POST",
           headers: {

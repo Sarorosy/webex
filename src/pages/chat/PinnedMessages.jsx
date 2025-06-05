@@ -13,7 +13,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
 
     setLoading(true);
     axios
-      .post("https://webexback-vb1k.onrender.com/api/messages/pinned-messages", {
+      .post("https://webexback-06cc.onrender.com/api/messages/pinned-messages", {
         user_id: userId,
         search_user_id: searchUserId,
         type,

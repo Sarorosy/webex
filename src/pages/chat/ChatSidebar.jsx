@@ -122,7 +122,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback-vb1k.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {

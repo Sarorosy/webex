@@ -74,7 +74,7 @@ const ChatFiles = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/chats/files?sender_id=${
+        `https://webexback-06cc.onrender.com/api/chats/files?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -486,7 +486,7 @@ const ChatFiles = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -586,7 +586,7 @@ const ChatFiles = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
+            "https://webexback-06cc.onrender.com/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -779,7 +779,7 @@ const ChatFiles = ({
 
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
+        `https://webexback-06cc.onrender.com/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);

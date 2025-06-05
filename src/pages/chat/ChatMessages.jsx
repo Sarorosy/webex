@@ -75,7 +75,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/chats/messagesnew?sender_id=${
+        `https://webexback-06cc.onrender.com/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -396,7 +396,7 @@ const ChatMessages = ({
       if (msgType === "message") {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id === msgId ? { ...msg, message, is_edited: 1 } : msg
+            msg.id == msgId ? { ...msg, message, is_edited: 1 } : msg
           )
         );
       } else if (msgType === "reply") {
@@ -404,7 +404,7 @@ const ChatMessages = ({
           prevMessages.map((msg) => ({
             ...msg,
             replies: msg.replies?.map((reply) =>
-              reply.id === msgId ? { ...reply, message, is_edited: 1 } : reply
+              reply.id == msgId ? { ...reply, message, is_edited: 1 } : reply
             ),
           }))
         );
@@ -413,14 +413,17 @@ const ChatMessages = ({
 
     const handleMessageDelete = (msgObj) => {
       const { msgId, type } = msgObj;
+      console.log(msgObj)
 
       if (type === "message") {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id == msgId ? { ...msg, is_deleted: 1 } : msg
+            msg.id == msgId ? { ...msg, is_deleted: 1 , is_reply : 0} : msg
           )
         );
-      } else if (type === "reply") {
+      } 
+      
+      if (type === "reply") {
         setMessages((prevMessages) =>
           prevMessages.map((msg) => ({
             ...msg,
@@ -506,7 +509,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-vb1k.onrender.com/api/messages/pin", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -537,35 +540,13 @@ const ChatMessages = ({
 
   const handleDeleteMsg = (msgId, type) => {
     try {
-      // Emit the 'delete_message' event to the server
       const socket = getSocket(); // Assuming you have a socket connection
+      connectSocket(user?.id);
       socket.emit("delete_message", { msgId, type });
 
-      // Mark the message as deleted (set is_deleted = 1) in the state
-      if (type == "message") {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) =>
-            msg.id === msgId ? { ...msg, is_deleted: 1 } : msg
-          )
-        );
-      } else if (type == "reply") {
-        setMessages((prevMessages) =>
-          prevMessages.map((msg) => {
-            if (!Array.isArray(msg.replies)) return msg;
 
-            const updatedReplies = msg.replies.map((rep) =>
-              rep.id === msgId ? { ...rep, is_deleted: 1 } : rep
-            );
-
-            return { ...msg, replies: updatedReplies };
-          })
-        );
-      }
-
-      console.log(`Message with ID ${msgId} marked as deleted`);
     } catch (error) {
       console.error("Error deleting message:", error);
-      toast.error("Failed to delete message");
     }
   };
 
@@ -621,7 +602,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-vb1k.onrender.com/api/chats/messagesnew"
+            "https://webexback-06cc.onrender.com/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -813,7 +794,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `https://webexback-vb1k.onrender.com/api/messages/${msg.id}/reactions`
+        `https://webexback-06cc.onrender.com/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
