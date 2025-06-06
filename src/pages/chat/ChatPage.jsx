@@ -47,7 +47,6 @@ const ChatPage = () => {
   const [notificationClickUser, setNotificationClickUser] = useState(null);
   useEffect(() => {
     const handleMsg = (event) => {
-      console.log("Hellooooo")
       if (event.data?.type === "open_chat") {
         const data = event.data.payload;
         console.log(data)

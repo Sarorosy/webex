@@ -158,12 +158,12 @@ export default function Header() {
         payload.data.user_type == "group" &&
         payload.data.receiver_id != currentSelectedUser?.id
       ) {
-        try {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
-        } catch (e) {
-          console.warn("Notification sound playback failed:", e);
-        }
+        // try {
+        //   audioRef.current.currentTime = 0;
+        //   audioRef.current.play();
+        // } catch (e) {
+        //   console.warn("Notification sound playback failed:", e);
+        // }
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
         const profilePic = data.profile_pic || null;

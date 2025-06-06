@@ -49,6 +49,7 @@ const ChatMessages = ({
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [emojiPopupLocked, setEmojiPopupLocked] = useState(false);
   const [hoveredReplyMessageId, setHoveredReplyMessageId] = useState(null);
   const [latestMessageId, setLatestMessageId] = useState(null);
   const [latestMessage, setLatestMessage] = useState(null);
@@ -713,6 +714,7 @@ const ChatMessages = ({
     const handleClickOutside = (e) => {
       if (emojiRef.current && !emojiRef.current.contains(e.target)) {
         setShowEmojiPopup(false);
+        setEmojiPopupLocked(false);
       }
       if (replyemojiRef.current && !replyemojiRef.current.contains(e.target)) {
         setShowReplyEmojiPopup(false);
@@ -921,11 +923,16 @@ const ChatMessages = ({
                   <div
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
-                    onMouseEnter={() => setHoveredMessageId(msg.id)}
-                    onMouseLeave={() => {
-                      setHoveredMessageId(null);
-                      clearHover();
-                    }}
+                    onMouseEnter={() => {
+                        if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                      }}
+                      onMouseLeave={() => {
+                        if (!emojiPopupLocked) {
+                          setHoveredMessageId(null);
+                          clearHover();
+                        }
+                      }}
+
                     //onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
@@ -1561,8 +1568,8 @@ const ChatMessages = ({
                                     {hoveredReplyMessageId ==
                                       `reply-${reply.id}` && (
                                       <div className={` ${
-                              isSent ? "-left-2" : "-right-2"
-                            } chat-funt-set message-actions absolute -top-7  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}>
+                              isSent ? "-left-20" : "-right-2"
+                            } chat-funt-set message-actions absolute -top-6  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}>
                                         <div
                                           className="relative action-button"
                                           ref={emojiRef}
@@ -1751,7 +1758,7 @@ const ChatMessages = ({
                                     )
                                   }
                                   //onMouseLeave={clearHover}
-                                  className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
+                                  className="bg-gray-100 flex ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
                                 >
                                   <span className="mr-1">{emoji}</span>
                                   <span className="text-[10px] font-medium">
@@ -1774,7 +1781,12 @@ const ChatMessages = ({
                       >
                         <div className="relative action-button" ref={emojiRef}>
                           <button
-                            onClick={() => setShowEmojiPopup((prev) => !prev)}
+                            onClick={() => 
+                             {
+                               setShowEmojiPopup((prev) => !prev);
+                               setEmojiPopupLocked(true);
+                             }
+                            }
                             className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
                             title="React"
                           >
