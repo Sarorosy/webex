@@ -335,7 +335,7 @@ export default function Header() {
   return (
     <header
       className={`${
-        theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]"
+        theme == "dark" ? "bg-gray-900 text-white" : "bg-white text-[#092e46]"
       } shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}

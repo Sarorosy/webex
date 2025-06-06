@@ -79,7 +79,7 @@ const ReadPersons = ({ messageId }) => {
           .map((user) => (
             <div
               key={user.id}
-              className="w-6 h-6 rounded-full overflow-hidden"
+              className="w-6 h-6 rounded-full overflow-hidden border border-gray-900"
               data-tooltip-id="my-tooltip"
               data-tooltip-content={
     `${user.name} . ${formatReadTime(user.read_at)}`

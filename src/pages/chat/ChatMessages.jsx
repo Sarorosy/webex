@@ -973,7 +973,7 @@ const ChatMessages = ({
                           src={
                             "https://rapidcollaborate.in/ccp" + msg.profile_pic
                           }
-                          className="h-7 w-7 rounded-full object-cover border-2 border-white shadow-sm"
+                          className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
                         />
                       ) : (
                         <div className="flex justify-center items-center h-7 w-7 f-14 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
@@ -1410,7 +1410,7 @@ const ChatMessages = ({
                                             "https://rapidcollaborate.in/ccp" +
                                             reply.profile_pic
                                           }
-                                          className="h-6 w-6 rounded-full object-cover border-2 border-white shadow-sm"
+                                          className="h-6 w-6 rounded-full object-cover border-2 border-gray shadow-sm"
                                         />
                                       ) : (
                                         <div className="flex justify-center items-center h-6 w-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">

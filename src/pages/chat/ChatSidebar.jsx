@@ -800,7 +800,7 @@ useEffect(() => {
 
   return (
     <div
-      className={` ${theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"}  py-4 px-1 relative select-none  overflow-hidden m-2 ${
+      className={` ${theme == "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-black"}  py-4 px-1 relative select-none  overflow-hidden m-2 ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
       style={{ width: `${sidebarWidth}px`, minWidth: '300px', maxWidth: '600px' }}
@@ -935,11 +935,17 @@ useEffect(() => {
                     });
                     setChats(updatedChats);
                   }}
-                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer hover:bg-gray-200 hover:text-black mb-1 overflow-hidden ${
+                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer   mb-1 overflow-hidden ${
                     (selectedUser?.id === chat.id && selectedUser?.type == chat.type) ? "bg-gray-300 text-black" : ""
-                  } ${chat.read_status === 1 ? "font-bold" : ""}`}
+                  } ${chat.read_status === 1 ? "font-bold" : ""}
+                  ${
+                    theme == "dark"
+                      ? "hover:bg-gray-600 hover:text-gray-100"
+                      : "hover:bg-gray-300 hover:text-black"
+                  }
+                  `}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 overflow-hidden">
                     <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                       {chat.profile_pic ? (
                         <img
@@ -955,7 +961,7 @@ useEffect(() => {
                       )}
                     </div>
                     <span
-                      className={`truncate text-clip text-ellipsis w-100 ${
+                      className={`truncate  w-100 ${
                         chat.logged_in_status === true ||
                         chat.logged_in_status === null
                           ? ""

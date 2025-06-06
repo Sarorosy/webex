@@ -38,18 +38,18 @@ const ProfileSettings = () => {
   };
 
   return (
-    <div className="flex w-full min-h-xl py-6 px-2">
+    <div className="flex w-full min-h-xl py-3 px-2">
       {/* Sidebar */}
       <div
         className={`w-64 ${
           theme == "dark" ? "bg-gray-200 " : "bg-white"
-        } rounded-lg shadow p-4`}
+        } rounded-lg shadow p-4 border`}
       >
         <h2 className="text-xl font-semibold mb-4">Settings</h2>
         <ul className="space-y-2">
           <li>
             <button
-              className={`w-full flex items-center text-left px-3 py-2 rounded-md ${
+              className={`w-full flex items-center text-left px-3 py-1  rounded-md ${
                 selectedTab === "notifications"
                   ? "bg-orange-600 text-white"
                   : "hover:bg-gray-200 text-gray-800"
@@ -67,7 +67,7 @@ const ProfileSettings = () => {
       <div
         className={`flex-1 ml-6 ${
           theme == "dark" ? "bg-gray-200 " : "bg-white"
-        } rounded-lg shadow p-6`}
+        } rounded-lg shadow p-6 border`}
       >
         {selectedTab === "notifications" && (
           <div>
@@ -90,9 +90,9 @@ const ProfileSettings = () => {
                       All Notifications
                     </span>
                   </div>
-                  <small className="ml-7 text-gray-500">
+                  <div className="ml-7 text-gray-500 f-11">
                     Get notified for all activity including messages, mentions.
-                  </small>
+                  </div>
                 </label>
 
                 <label className="block">
@@ -109,20 +109,22 @@ const ProfileSettings = () => {
                       Direct and @ Mentions Only
                     </span>
                   </div>
-                  <small className="ml-7 text-gray-500">
+                  <div className="ml-7 text-gray-500 f-11">
                     Only receive notifications for direct messages and when
                     you're specifically mentioned in groups.
-                  </small>
+                  </div>
                 </label>
               </div>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="mt-6 px-5 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition"
-            >
-              {saving ? "Saving..." : "Save Settings"}
-            </button>
+            <div className="flex justify-end gap-2 mt-7">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-black text-white px-2 py-1 rounded-md f-13 hover:bg-gray-600"
+              >
+                {saving ? "Saving..." : "Save Settings"}
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence ,motion} from "framer-motion";
 import EditProfile from "./EditProfile";
 import { useAuth } from "../../utils/idb";
-import { Settings, X } from "lucide-react";
+import { Edit, Settings, X } from "lucide-react";
 import ProfileSettings from "./ProfileSettings";
 
 const Profile = ({ onClose }) => {
@@ -29,16 +29,16 @@ const Profile = ({ onClose }) => {
       <div className={`flex items-center justify-between mb-2 px-4 py-3 bg-gray-300  sticky top-0 z-50`}>
         <h4 className="text-md  flex gap-2">
   <button 
-    className={`px-2 py-0.5 rounded-lg transition duration-200 
+    className={`px-2 flex items-center py-1 rounded-lg transition duration-200 
                 ${tab === "profile" 
                   ? "bg-orange-600 text-white font-semibold" 
                   : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"}`}
     onClick={() => setTab("profile")}
   >
-    Edit Profile
+    <Edit size={14} className="mr-2"/> Edit Profile
   </button>
   <button 
-    className={`px-2 flex items-center py-0.5 rounded-lg transition duration-200 
+    className={`px-2 flex items-center py-1 rounded-lg transition duration-200 
                 ${tab === "settings" 
                   ? "bg-orange-600 text-white font-semibold " 
                   : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"}`}
@@ -56,7 +56,7 @@ const Profile = ({ onClose }) => {
       <div className="flex items-start justify-center p-3 gap-2 h-lg min-h-lg max-h-lg">
         <div className="flex flex-col w-[400px] border h-full">
           <div className="profile-bg-set"></div>
-          <div className="bg-white p-8 flex flex-col items-center text-center ">
+          <div className="bg-white p-6 pb-4 flex flex-col items-center text-center ">
             <div className="profile-content-set flex flex-col items-center gap-1">
               {/* Profile Picture */}
               {profilePic ? (
