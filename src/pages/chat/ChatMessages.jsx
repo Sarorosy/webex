@@ -952,12 +952,12 @@ const ChatMessages = ({
                         ? "animate-pulse-highlight bg-gray-300"
                         : ""
                     }  relative ${
-                      theme == "dark" ? "" : ""
+                      theme == "dark" ? "mw-dark" : "mw"
                     }  msg-number-${
                       msg.id
                     } ${isSent ? "" : ""} ${
                       isReply && replyMsgId == msg.id
-                        ? "ring-2 ring-blue-400 bg-blue-50 "
+                        ? "ring-2 p-2 ring-blue-400 bg-blue-50 "
                         : ""
                     }`}
                   >
@@ -1236,7 +1236,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2 max-w-80">
+                            <div className="mt-2 space-y-2 max-w-80 w-full">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
@@ -1749,13 +1749,16 @@ const ChatMessages = ({
                               ([emoji, count]) => (
                                 <div
                                   key={emoji}
-                                  onMouseEnter={(e) =>
+                                  onMouseEnter={(e) => {
+                                    if (!emojiPopupLocked) {
                                     handleReactionHover(
                                       e,
                                       emoji,
                                       msg,
                                       "message"
-                                    )
+                                    )}
+
+                                  }
                                   }
                                   //onMouseLeave={clearHover}
                                   className="bg-gray-100 flex ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"

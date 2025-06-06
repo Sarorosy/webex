@@ -301,8 +301,12 @@ div#commentsMention[placeholder]:empty:before {
 
 
 
-.message-wrapper:hover .message {
+.mw:hover .message {
     background: #ddd;
+}
+
+.mw-dark:hover .message {
+    background: #939599;
 }
 
 .messages-a-link {

@@ -385,7 +385,7 @@ useEffect(() => {
     connectSocket(user?.id);
     const socket = getSocket();
 
-    const handleIncoming = (msgOrReply, isReply = false) => {
+    const handleIncomingold = (msgOrReply, isReply = false) => {
       if (!msgOrReply) return;
       if (!chatsLoaded) return;
 
@@ -475,12 +475,103 @@ useEffect(() => {
         return updatedChats;
       });
     };
+    const handleIncoming = (msgOrReply, isReply = false) => {
+      if (!msgOrReply) return;
+      if (!chatsLoaded) return;
+
+      const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
+
+      if (!msg || !msg.sender_id || !msg.receiver_id) {
+        console.warn("Malformed message or reply:", msgOrReply);
+        return;
+      }
+
+      
+        const otherUserId = msg.user_type === "group" ? msg.receiver_id : 
+  (msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id);
+  const otherChatType = msg.user_type === "group" ? "group" : "user";
+
+
+
+        
+
+      console.log("otherUserId", otherUserId);
+
+      const isRelevant =
+        msg.user_type === "group"
+          ? (() => {
+              console.log("Checking group message:", msg);
+
+              console.log("Available chats:", chats);
+
+              const matchingChat = chats.find(
+                (chat) => chat.id == otherUserId && chat.type === otherChatType
+              );
+
+              console.log("Matched group chat:", matchingChat);
+
+              return !!matchingChat;
+            })()
+          : msg.sender_id == user?.id || msg.receiver_id == user?.id;
+
+      console.log("isRelevant", isRelevant);
+
+      if (!isRelevant) {
+        return;
+      }
+
+      
+        
+      setChats((prevChats) => {
+        const index = prevChats.findIndex(
+          (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
+        );
+
+        if (index == -1) {
+          fetchChats(false);
+          return prevChats;
+        }
+
+        const isSameAsSelected =
+    selectedUser &&
+    selectedUser.id == otherUserId &&
+    selectedUser.type == msg.user_type;
+
+    if(msg.sender_id != user?.id){
+      try {
+        console.log("music Playing")
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        } catch (e) {
+          console.warn("Notification sound playback failed:", e);
+        }
+    }
+
+        const updatedChats = [...prevChats];
+        updatedChats[index] = {
+          ...updatedChats[index],
+          last_interacted_time: new Date().toISOString(),
+          read_status:
+            msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
+              ? 1
+              : 0,
+          unread_count: isSameAsSelected
+      ? updatedChats[index]?.unread_count || 0 
+      : (updatedChats[index]?.unread_count || 0) + 1,
+          is_mentioned:
+            Array.isArray(msg.mentioned_users) &&
+            msg.mentioned_users.includes(user?.id),
+        };
+
+        const updated = updatedChats.splice(index, 1)[0];
+        updatedChats.unshift(updated);
+
+        return updatedChats;
+      });
+    };
 
     const handleNewMessageSidebar = (msg) => handleIncoming(msg, false);
-    const handleNewReplySidebar = (reply) => {
-      console.log("Incoming reply from socket:", reply);
-      handleIncoming(reply, true);
-    };
+    
 
     socket.off("new_message", handleNewMessageSidebar);
     socket.on("new_message", handleNewMessageSidebar);
@@ -859,7 +950,7 @@ useEffect(() => {
                       ) : (
                         chat.name[0]
                       )}
-                      {onlineUserIds.includes(chat.id) && (
+                      {onlineUserIds.includes(chat.id) && chat.type == "user" &&  (
                         <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
                       )}
                     </div>
