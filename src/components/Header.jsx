@@ -17,6 +17,7 @@ import {
   Group,
   MoonIcon,
   Sun,
+  X,
 } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
@@ -94,7 +95,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback-06cc.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -168,27 +169,34 @@ export default function Header() {
         const profilePic = data.profile_pic || null;
         const rawMessage = data.message || "";
 
-        const maxLetters = 40; // adjust as needed
-        const trimmedMessage = rawMessage.replace(/<br\s*\/?>/gi, "").slice(0, maxLetters);
+        const maxLetters = 40;
+        const cleanedMessage = rawMessage.replace(/<br\s*\/?>/gi, "");
+
+        const trimmedMessage =
+          cleanedMessage.length > maxLetters
+            ? cleanedMessage.slice(0, maxLetters) + "..."
+            : cleanedMessage;
 
         const initial = senderName.charAt(0).toUpperCase();
 
         toast.custom((t) => (
           <div
-            onClick={() => {
-              toast.dismiss(t.id),
-                setSelectedUser({
-                  id: data.receiver_id,
-                  name: data.sender_name,
-                  profile_pic: null,
-                  type: "group",
-                });
-            }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
             } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
           >
-            <div className="flex-1 w-0 p-4">
+            <div
+              onClick={() => {
+                toast.dismiss(t.id),
+                  setSelectedUser({
+                    id: data.receiver_id,
+                    name: data.sender_name,
+                    profile_pic: null,
+                    type: "group",
+                  });
+              }}
+              className="flex-1 w-0 p-4 cursor-pointer"
+            >
               <div className="flex items-start">
                 <div className="flex-shrink-0 pt-0.5">
                   <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
@@ -208,7 +216,7 @@ export default function Header() {
                 onClick={() => toast.dismiss(t.id)}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                Close
+                <X size={14} />
               </button>
             </div>
           </div>
@@ -226,27 +234,34 @@ export default function Header() {
         const profilePic = data.profile_pic || null;
         const rawMessage = data.message || "";
 
-        const maxLetters = 40; // adjust as needed
-        const trimmedMessage = rawMessage.replace(/<br\s*\/?>/gi, "").slice(0, maxLetters);
+        const maxLetters = 40;
+        const cleanedMessage = rawMessage.replace(/<br\s*\/?>/gi, "");
+
+        const trimmedMessage =
+          cleanedMessage.length > maxLetters
+            ? cleanedMessage.slice(0, maxLetters) + "..."
+            : cleanedMessage;
 
         const initial = senderName.charAt(0).toUpperCase();
 
         toast.custom((t) => (
           <div
-            onClick={() => {
-              toast.dismiss(t.id),
-                setSelectedUser({
-                  id: data.sender_id,
-                  name: data.sender_name,
-                  profile_pic: data.profile_pic ?? null,
-                  type: "user",
-                });
-            }}
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
             } cursor-pointer max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
           >
-            <div className="flex-1 w-0 p-4">
+            <div
+              onClick={() => {
+                toast.dismiss(t.id),
+                  setSelectedUser({
+                    id: data.sender_id,
+                    name: data.sender_name,
+                    profile_pic: data.profile_pic ?? null,
+                    type: "user",
+                  });
+              }}
+              className="flex-1 w-0 p-4 cursor-pointer"
+            >
               <div className="flex items-start">
                 <div className="flex-shrink-0 pt-0.5">
                   {profilePic ? (
@@ -274,7 +289,7 @@ export default function Header() {
                 onClick={() => toast.dismiss(t.id)}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                Close
+                <X size={14} />
               </button>
             </div>
           </div>
@@ -319,7 +334,9 @@ export default function Header() {
 
   return (
     <header
-      className={`${theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]" } shadow-md ${
+      className={`${
+        theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]"
+      } shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
@@ -328,11 +345,13 @@ export default function Header() {
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
               <div>
-                <span 
-                onClick={() => {
-                  navigate("/chat");
-                }}
-                role="img" aria-label="plate">
+                <span
+                  onClick={() => {
+                    navigate("/chat");
+                  }}
+                  role="img"
+                  aria-label="plate"
+                >
                   <img src={logo} className="logo-n" />
                 </span>
               </div>
@@ -354,8 +373,8 @@ export default function Header() {
                   </div>
                 )}
                 {onlineUserIds.includes(user?.id) && (
-                        <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
-                      )}
+                  <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
+                )}
               </button>
 
               <button
@@ -364,7 +383,11 @@ export default function Header() {
                 }}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Search Globally"
-                className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
+                className={`flex items-center p-2 f-13 rounded-full ${
+                  theme == "dark"
+                    ? "text-white"
+                    : "text-gray-800 hover:text-gray-900"
+                } hover:bg-orange-500  transition`}
               >
                 <Search size={17} className="" />
                 {/* Chat */}
@@ -386,18 +409,26 @@ export default function Header() {
                   onClick={() => setRequestsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Admin Requests"
-                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
                 >
                   <LayoutDashboard size={17} className="" />
                   {/* Requests */}
                 </button>
               )}
-              {(user.user_type == "admin") ? (
+              {user.user_type == "admin" ? (
                 <button
                   onClick={() => setGroupsOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage groups"
-                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
                 >
                   <Group size={17} className="" />
                   {/* Groups */}
@@ -407,7 +438,11 @@ export default function Header() {
                   onClick={() => setCreateNewSpace(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Create New Group"
-                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
                 >
                   <Group size={17} className="" />
                   {/* New Space */}
@@ -419,7 +454,11 @@ export default function Header() {
                   onClick={() => setUsersOpen(true)}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Manage Users"
-                  className={`flex items-center p-2 f-13 rounded-full ${theme == "dark" ? "text-white" : "text-gray-800 hover:text-gray-900"} hover:bg-orange-500  transition`}
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
                 >
                   <Users size={17} className="" />
                   {/* Manage Users */}
@@ -429,22 +468,22 @@ export default function Header() {
             <div className="flex items-center flex-col gap-3" ref={dropdownRef}>
               {theme == "dark" ? (
                 <button
-                onClick={() => updateTheme("light")}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Switch to Light Theme"
-                className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-3 rounded-full text-gray-500  transition"
-              >
-                <Sun size={17} className="" />
-              </button>
+                  onClick={() => updateTheme("light")}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Switch to Light Theme"
+                  className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-3 rounded-full text-gray-500  transition"
+                >
+                  <Sun size={17} className="" />
+                </button>
               ) : (
                 <button
-                onClick={() => updateTheme("dark")}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Switch to Dark Theme"
-                className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-3 rounded-full text-gray-500  transition"
-              >
-                <MoonIcon size={17} className="" />
-              </button>
+                  onClick={() => updateTheme("dark")}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Switch to Dark Theme"
+                  className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-3 rounded-full text-gray-500  transition"
+                >
+                  <MoonIcon size={17} className="" />
+                </button>
               )}
               <button
                 // onClick={logout}

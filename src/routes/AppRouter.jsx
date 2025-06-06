@@ -26,12 +26,12 @@ export default function AppRouter() {
           <Route element={<UserLayout />}>
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/chat/:view_user_id/:view_user_name" element={<ChatPage />} />
+            <Route path="/chat/go/:gouser/:gotype" element={<ChatPage />} />
             <Route path="/manage-groups" element={<ManageGroups />} />
 
             
             <Route path="/dashboard" element={<Requests />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/screen" element={<ScreenSharing />} />
           </Route>
         </Route>
 

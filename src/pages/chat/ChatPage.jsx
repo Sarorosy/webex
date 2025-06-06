@@ -16,6 +16,7 @@ const ChatPage = () => {
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { user, theme } = useAuth();
   let { view_user_id, view_user_name } = useParams();
+  let { gouser, gotype } = useParams();
   const location = useLocation();
   const passedState = location.state;
 
@@ -43,13 +44,35 @@ const ChatPage = () => {
     }
   }, [passedState]); // ✅ Only run when passedState changes
 
+  const [notificationClickUser, setNotificationClickUser] = useState(null);
+  useEffect(() => {
+    const handleMsg = (event) => {
+      console.log("Hellooooo")
+      if (event.data?.type === "open_chat") {
+        const data = event.data.payload;
+        console.log(data)
+        setNotificationClickUser({
+          id: data.receiver_id || data.sender_id,
+          type: data.receiver_id ? "group" : "user",
+        });
+        console.log(notificationClickUser);
+      }
+    };
+
+    navigator.serviceWorker?.addEventListener("message", handleMsg);
+
+    return () => {
+      navigator.serviceWorker?.removeEventListener("message", handleMsg);
+    };
+  }, []);
+
 
   const [leftGroupOpen, setLeftGroupOpen] = useState(false);
 
   const confirmLeft = async () => {
     try {
       const response = await fetch(
-        "https://webexback-06cc.onrender.com/api/groups/remove-member",
+        "http://localhost:5000/api/groups/remove-member",
         {
           method: "POST",
           headers: {
@@ -85,6 +108,8 @@ const ChatPage = () => {
           view_user_name={view_user_name}
           selectedUser={selectedUser}
           onSelect={setSelectedUser}
+          notificationClickUser={notificationClickUser}
+          setNotificationClickUser={setNotificationClickUser}
         />
         {selectedUser ? (
           <ChatArea

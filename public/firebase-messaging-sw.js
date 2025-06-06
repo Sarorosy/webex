@@ -41,22 +41,25 @@ self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 
   const data = event.notification.data;
-  console.log("Notification clickeddd:", event.notification);
 
-  const targetUrl = 'https://rapidcollaborate.in/ccp/chat';
+  const targetUrl = `https://rapidcollaborate.in/ccp/chat`;
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        // If there's already a tab open with the target URL, focus it
-        if (client.url == targetUrl && 'focus' in client) {
+        if (client.url.includes('/ccp/chat') && 'focus' in client) {
+          client.postMessage({ type: 'open_chat', payload: data });
           return client.focus();
         }
       }
-      // If not open, open a new tab
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
+
+      return clients.openWindow(targetUrl).then((newClient) => {
+        // wait a little for React to load
+        setTimeout(() => {
+          newClient?.postMessage({ type: 'open_chat', payload: data });
+        }, 500);
+      });
     })
   );
 });
+
