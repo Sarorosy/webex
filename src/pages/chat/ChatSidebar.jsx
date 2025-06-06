@@ -911,7 +911,12 @@ useEffect(() => {
             {activeTab === "all" &&
               filteredData.some((chat) =>
                 JSON.parse(chat.favourites || "[]").includes(user.id)
-              ) && <div className="text-gray-600 mb-2 px-0">Favourites</div>}
+              ) && <div className="text-gray-600 mb-2 px-0 flex items-center">Favourites 
+              <Star
+                        size={13}
+                        className="fill-yellow-500 text-yellow-500 ml-1"
+                      />
+              </div>}
 
             {filteredData.map((chat, idx) => {
               const isFavourite = JSON.parse(chat.favourites || "[]").includes(
@@ -970,12 +975,7 @@ useEffect(() => {
                     >
                       {(chat.id == user?.id && chat.type == "user") ? chat.name+ " (You)" : chat.name}
                     </span>
-                    {isFavourite && (
-                      <Star
-                        size={13}
-                        className="fill-yellow-500 text-yellow-500"
-                      />
-                    )}
+                    
                     {chat.draft && (
                       <span className="text-xs text-gray-500 italic">
                         Draft

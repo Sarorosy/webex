@@ -7,7 +7,7 @@ import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import { Paperclip, QuoteIcon, Send, X } from "lucide-react";
+import { File, Paperclip, QuoteIcon, Send, X } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
 import EmojiPicker from "emoji-picker-react";
 
@@ -566,35 +566,16 @@ const ChatSend = ({
       <div>
         {/* Paperclip icon (file input trigger) */}
 
-        {/* Show selected file with X */}
-        {selectedFile && (
-          <div className="flex items-center gap-2">
-            <div
-              className={`flex items-center ${
-                theme == "dark" ? "bg-gray-500" : "bg-gray-200"
-              } rounded px-2 py-1 text-sm chatfile absolute top-[-30px]`}
-            >
-              <span className="mr-2 truncate max-w-[150px]">
-                {selectedFile.name}
-              </span>
-              <button
-                onClick={() => setSelectedFile(null)}
-                className="text-gray-500 hover:text-red-500"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          </div>
-        )}
+        
 
         <div
           className={` ${
             theme == "dark" ? "bg-gray-500 text-white" : "bg-white"
           } chat-send-container space-x-2 flex items-end justify-between mx-auto ios pt-2`}
         >
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 h-fill">
             <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition ">
-              <Paperclip size={12} />
+              <Paperclip size={14} />
               <input
                 type="file"
                 className="hidden"
@@ -622,6 +603,31 @@ const ChatSend = ({
               </div>
             )}
           </div>
+          {/* Show selected file with X */}
+          {selectedFile && (
+            <div className="">
+              <div
+                className={` ${
+                  theme == "dark" ? "bg-gray-500" : "bg-gray-200"
+                } rounded chatfile text-[9px] flex flex-col justify-center items-center relative p-3 gap-2`}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content={selectedFile.name}
+              >
+                <div>
+                  <File />
+                </div>
+                <div className="truncate max-w-[150px] w-[60px]">
+                  {selectedFile.name}
+                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className="text-gray-500 hover:text-red-500 absolute top-0 right-0 p-1" 
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          )}
           {type === "group" ? (
             <div className="relative w-full">
               {value.trim() === "" && (

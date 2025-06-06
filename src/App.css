@@ -319,4 +319,5 @@ div#commentsMention[placeholder]:empty:before {
 }
 .prose.prose-sm img {
     width: 350px;
+    cursor: pointer;
 }
