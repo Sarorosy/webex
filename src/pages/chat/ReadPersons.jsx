@@ -13,7 +13,7 @@ const ReadPersons = ({ messageId }) => {
     try {
       setLoading(load);
       const res = await axios.get(
-        `http://localhost:5000/api/chats/read-persons/${messageId}`
+        `https://webexback-06cc.onrender.com/api/chats/read-persons/${messageId}`
       );
       if (res.data.status) {
         setReadUsers(res.data.data);
@@ -79,7 +79,7 @@ const ReadPersons = ({ messageId }) => {
           .map((user) => (
             <div
               key={user.id}
-              className="w-6 h-6 rounded-full overflow-hidden"
+              className="w-6 h-6 rounded-full overflow-hidden border border-gray-900"
               data-tooltip-id="my-tooltip"
               data-tooltip-content={
     `${user.name} . ${formatReadTime(user.read_at)}`

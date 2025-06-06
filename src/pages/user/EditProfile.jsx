@@ -54,7 +54,7 @@ const EditProfile = ({ onClose }) => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/users/update`,
+        `https://webexback-06cc.onrender.com/api/users/update`,
         formData,
         {
           headers: {
@@ -108,7 +108,7 @@ const EditProfile = ({ onClose }) => {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col gap-2 justify-center">
+              <div className="flex flex-col gap-2 justify-center f-11">
                 {profilePic && (
                   <button
                     onClick={removeProfilePic}
@@ -130,28 +130,28 @@ const EditProfile = ({ onClose }) => {
           </div>
 
           {/* Form Fields */}
-          <div className=" flex items-center">
+          <div className=" flex items-center gap-4">
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 ">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Display name *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border p-2 rounded-md"
+                className="w-full border py-1 px-2 rounded-md"
                 placeholder="Enter your name"
               />
             </div>
             <div className="w-full">
-              <label className="block text-sm font-medium text-gray-700 ">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password *
               </label>
               <input
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border p-2 rounded-md"
+                className="w-full border py-1 px-2 rounded-md"
                 placeholder="Enter password"
               />
             </div>
@@ -189,7 +189,7 @@ const EditProfile = ({ onClose }) => {
             {/* Save Button */}
             <button
               onClick={handleSubmit}
-              className="bg-black text-white px-2 py-1 rounded-md f-13"
+              className="bg-black text-white px-2 py-1 rounded-md f-13 hover:bg-gray-600"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

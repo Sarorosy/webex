@@ -95,7 +95,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback-06cc.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -347,7 +347,7 @@ export default function Header() {
   return (
     <header
       className={`${
-        theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]"
+        theme == "dark" ? "bg-gray-900 text-white" : "bg-white text-[#092e46]"
       } shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
