@@ -28,6 +28,8 @@ const ChatSidebar = ({
   view_user_name,
   selectedUser,
   onSelect,
+  notificationClickUser,
+  setNotificationClickUser
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [activeTab, setActiveTab] = useState("all");
@@ -117,12 +119,39 @@ const ChatSidebar = ({
     }
   }, [view_user_id, user]);
 
+  useEffect(() => {
+  if (notificationClickUser?.id && notificationClickUser?.type && chats.length > 0) {
+    const matchedChat = chats.find(
+      (chat) => chat.id == notificationClickUser.id && chat.type == notificationClickUser.type
+    );
+
+    if (matchedChat) {
+      onSelect(matchedChat); // simulate click
+
+      const updatedChats = chats.map((c) => {
+        if (c.id == matchedChat.id && c.type == matchedChat.type) {
+          return {
+            ...c,
+            read_status: 0,
+            unread_count: 0,
+            is_mentioned: false,
+          };
+        }
+        return c;
+      });
+
+      setChats(updatedChats);
+      setNotificationClickUser(null);
+    }
+  }
+}, [notificationClickUser,setNotificationClickUser, chats]);
+
   const [sideBarLoading, setSideBarLoading] = useState(false);
   const fetchChats = async (load = true) => {
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
