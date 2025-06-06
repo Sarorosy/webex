@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 let socket;
 let socketInitialized = false;
 
-const SOCKET_URL = "https://webexback-06cc.onrender.com";
+const SOCKET_URL = "http://localhost:5000";
 
 export const getSocket = () => {
   if (!socket) {
