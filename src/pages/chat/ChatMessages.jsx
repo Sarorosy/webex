@@ -692,7 +692,7 @@ const ChatMessages = ({
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
   const EmojiPopup = ({ onSelect }) => (
-    <div className="ios absolute bottom-6 flex gap-1 px-2 py-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
+    <div className="ios absolute bottom-7 flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
@@ -867,7 +867,7 @@ const ChatMessages = ({
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
-            <div key={date} className="space-y-4">
+            <div key={date} className="space-y-5">
               <div className="date-separator flex items-center text-center text-xs">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
@@ -900,7 +900,7 @@ const ChatMessages = ({
                       key={`${msg.id}-${msg.created_at}`}
                       className="w-full flex justify-center my-2"
                     >
-                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1.5 rounded-full text-center flex items-center space-x-2 shadow-sm">
+                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1 rounded-full text-center flex items-center space-x-2 shadow-sm">
                         <Trash2 size={10} className="text-gray-500 mr-1" />
                         <div>
                           {msg.sender_name ?? ""} deleted their own message
@@ -938,15 +938,15 @@ const ChatMessages = ({
                       transition:
                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                     }}
-                    className={`relative message-wrapper gap-2 rounded-lg py-3 w-full flex ${
+                    className={`relative message-wrapper gap-2 rounded-lg w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
                         ? "animate-pulse-highlight bg-gray-300"
                         : ""
                     }  relative ${
-                      theme == "dark" ? "hover:bg-gray-400" : "hover:bg-gray-50"
-                    } border border-transparent hover:border-gray-200 msg-number-${
+                      theme == "dark" ? "" : ""
+                    }  msg-number-${
                       msg.id
                     } ${isSent ? "pr-2" : "pl-2"} ${
                       isReply && replyMsgId == msg.id
@@ -987,7 +987,7 @@ const ChatMessages = ({
                                 ? "bg-gray-500 text-gray-50 border border-gray-400"
                                 : "bg-gray-100 text-gray-900 border border-gray-200"
                             } `
-                      } rounded-2xl px-4 py-3 shadow-sm ${
+                      } rounded-lg px-3 py-2 shadow-sm ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
@@ -1005,9 +1005,43 @@ const ChatMessages = ({
                               }`
                         }`}
                       >
-                        {isSent && !view_user_id
-                          ? "You"
-                          : msg.sender_name ?? "Unknown User"}
+                        <div className={`flex gap-2 items-end f-11 ${
+                              isSent ? "flex-row-reverse" : ""
+                            }`}>
+                          <div>
+                          {isSent && !view_user_id
+                            ? "You"
+                            : msg.sender_name ?? "Unknown User"}
+                          </div>
+                          <div
+                            className={`message-time flex items-center text-xs f-11 ${
+                              isSent ? "justify-end" : "justify-start"
+                            }  ${
+                              isSent
+                                ? `${
+                                    theme == "dark"
+                                      ? "text-gray-100"
+                                      : "text-gray-400"
+                                  }`
+                                : `${
+                                    theme == "dark"
+                                      ? "text-gray-100"
+                                      : "text-gray-400"
+                                  }`
+                            }`}
+                          >
+                            <div>
+                              {msg.is_edited == 1 && (
+                                <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
+                                  <Pen size={8} className="mr-0.5" /> edited
+                                </p>
+                              )}{" "}
+                              {formatTime(msg.created_at)}
+                            </div>
+                          </div>
+                        </div>
+
+                          
                       </div>
                       {msg.is_file == 1 &&
                         msg.filename &&
@@ -1092,7 +1126,7 @@ const ChatMessages = ({
                           );
                         })()}
 
-                      <div className="message-content">
+                      <div className={`message-content `}>
                         {msg.is_quoted == 1 &&
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
@@ -1131,8 +1165,10 @@ const ChatMessages = ({
                               ></div>
                             </div>
                           )}
-
-                        <div
+                        <div className={`flex ${
+                            isSent ? "justify-end" : "justify-start"
+                          }`}>
+                            <div
                           className={`prose prose-sm ${
                             isSent ? "text-start" : "text-start"
                           } max-w-none ${
@@ -1141,7 +1177,11 @@ const ChatMessages = ({
                               : "text-[13px]"
                           }`}
                           dangerouslySetInnerHTML={{ __html: msg.message }}
-                        ></div>
+                        >
+
+                        </div>
+                        </div>
+                        
                         {(() => {
                           let pinned = [];
 
@@ -1184,7 +1224,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-3 space-y-2.5 min-w-80">
+                            <div className="mt-2 space-y-2 min-w-80">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
@@ -1195,7 +1235,7 @@ const ChatMessages = ({
                                       key={`${reply.id}-${reply.created_at}`}
                                       className={`w-full flex justify-center my-2 `}
                                     >
-                                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1.5 rounded-full text-center flex items-center space-x-2 shadow-sm">
+                                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1 rounded-full text-center flex items-center space-x-2 shadow-sm">
                                         <Trash2
                                           size={10}
                                           className="text-gray-500 mr-1"
@@ -1226,7 +1266,9 @@ const ChatMessages = ({
                                       highlightedMessageId == reply.id
                                         ? " bg-gray-300"
                                         : " bg-gray-50"
-                                    } border-l-2 border-blue-400 p-2 rounded text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow relative`}
+                                    } ${
+                              isSent ? "border-r-2 flex flex-col justify-end items-end me-4" : "border-l-2 ms-4"
+                            }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
                                     onMouseEnter={() =>
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
@@ -1338,14 +1380,16 @@ const ChatMessages = ({
                                         );
                                       })()}
                                     <div
-                                      className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}
+                                      className={`font-semibold text-gray-700 flex items-end ${
+                                        isSent ? "flex-row-reverse" : ""
+                                      } gap-2 mb-1 `}
                                     >
-                                      <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                      {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                                         <Reply
                                           size={10}
                                           className="text-blue-600"
                                         />
-                                      </div>
+                                      </div> */}
                                       {reply.profile_pic &&
                                       reply.profile_pic != "null" &&
                                       reply.profile_pic != "" ? (
@@ -1367,6 +1411,9 @@ const ChatMessages = ({
                                       !view_user_id
                                         ? "You"
                                         : reply.sender_name || "User"}
+                                        <div className="font-normal text-xs f-11 text-gray-400 flex items-center">
+                                          {formatTime(reply.created_at)}
+                                        </div>
                                     </div>
                                     <div
                                       className="prose prose-sm max-w-none"
@@ -1501,14 +1548,16 @@ const ChatMessages = ({
                                         </div>
                                       );
                                     })()}
-                                    <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                    {/* <div className="text-xs text-gray-500 mt-2 flex items-center">
                                       {formatTime(reply.created_at)}
-                                    </div>
+                                    </div> */}
 
                                     {/* Reply Actions */}
                                     {hoveredReplyMessageId ==
                                       `reply-${reply.id}` && (
-                                      <div className="chat-funt-set message-actions absolute -top-5 -right-2 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md">
+                                      <div className={` ${
+                              isSent ? "-left-2" : "-right-2"
+                            } chat-funt-set message-actions absolute -top-7  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}>
                                         <div
                                           className="relative action-button"
                                           ref={emojiRef}
@@ -1619,30 +1668,7 @@ const ChatMessages = ({
                           ) : null;
                         })()}
                       </div>
-                      <div
-                        className={`message-time flex items-center text-xs ${
-                          isSent ? "justify-end" : "justify-start"
-                        } mt-1.5 ${
-                          isSent
-                            ? `${
-                                theme == "dark"
-                                  ? "text-gray-100"
-                                  : "text-gray-600"
-                              }`
-                            : `${
-                                theme == "dark"
-                                  ? "text-gray-100"
-                                  : "text-gray-400"
-                              }`
-                        }`}
-                      >
-                        {msg.is_edited == 1 && (
-                          <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
-                            <Pen size={8} className="mr-0.5" /> edited
-                          </p>
-                        )}{" "}
-                        {formatTime(msg.created_at)}
-                      </div>
+                      
                       {(() => {
                         let reactions = [];
 
@@ -1734,8 +1760,9 @@ const ChatMessages = ({
                       })()}
                     </div>
                     {hoveredMessageId === msg.id && (
+                      <div className="flex items-end">
                       <div
-                        className="chat-funt-set message-actions absolute -top-5 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                        className="chat-funt-set message-actions  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
                         style={{
                           [isSent ? "left" : "right"]: "2%",
                         }}
@@ -1816,6 +1843,7 @@ const ChatMessages = ({
                             <Trash2 size={13} />
                           </button>
                         )}
+                      </div>
                       </div>
                     )}
                   </div>
