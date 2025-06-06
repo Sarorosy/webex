@@ -309,6 +309,8 @@ div#commentsMention[placeholder]:empty:before {
     background: #939599;
 }
 
+
+
 .messages-a-link {
     color: #4482f3;
     text-decoration: none;
@@ -317,6 +319,11 @@ div#commentsMention[placeholder]:empty:before {
     color: #000;
     /* text-decoration: underline; */
 }
+.mw-dark .messages-a-link {
+    color: #5869c5;
+}
+
+
 .prose.prose-sm img {
     width: 350px;
     cursor: pointer;

@@ -380,7 +380,7 @@ export default function Header() {
                     className="w-8 h-8 rounded-full mx-auto object-cover border"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full mx-auto object-cover border">
+                  <div className="w-8 h-8 rounded-full mx-auto object-cover border bg-blue-600 text-white flex items-center justify-center">
                     {user.name[0]}
                   </div>
                 )}

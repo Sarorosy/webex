@@ -1252,7 +1252,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2 max-w-80 w-full">
+                            <div className="mt-2 space-y-2  w-full">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
