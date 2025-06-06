@@ -41,6 +41,8 @@ const ChatSidebar = ({
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
+  const audioRef = useRef(new Audio(notificationsound));
+
   useEffect(() => {
     connectSocket(user?.id);
     const socket = getSocket();
@@ -424,7 +426,8 @@ useEffect(() => {
         return;
       }
 
-
+      
+        
       setChats((prevChats) => {
         const index = prevChats.findIndex(
           (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
@@ -439,6 +442,16 @@ useEffect(() => {
     selectedUser &&
     selectedUser.id == otherUserId &&
     selectedUser.type == msg.user_type;
+
+    if(msg.sender_id != user?.id){
+      try {
+        console.log("music Playing")
+          audioRef.current.currentTime = 0;
+          audioRef.current.play();
+        } catch (e) {
+          console.warn("Notification sound playback failed:", e);
+        }
+    }
 
         const updatedChats = [...prevChats];
         updatedChats[index] = {
