@@ -838,13 +838,13 @@ useEffect(() => {
         </h1>
         
         <div className="flex items-center gap-2 mb-3 w-full">
-          <input
+          {/* <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Filter Groups, Persons"
             className={`p-2 py-1 border rounded-md w-full mb-2 text-black`}
-          />
+          /> */}
           
           {view_user_name && (
             <button 

@@ -211,23 +211,29 @@ export default function Header() {
                 </div>
               </div>
             </div>
-            <div className="flex border-l border-gray-200">
+            <div className=" border-l border-gray-200">
               <button
                 onClick={() => toast.dismiss(t.id)}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <X size={14} />
               </button>
+              <button
+        onClick={() => toast.dismiss()}
+        className="text-xs text-red-500 hover:underline px-2 pb-2"
+      >
+        Clear All
+      </button>
             </div>
           </div>
         ));
       } else if (payload.data.sender_id != currentSelectedUser?.id) {
-        try {
-          audioRef.current.currentTime = 0;
-          audioRef.current.play();
-        } catch (e) {
-          console.warn("Notification sound playback failed:", e);
-        }
+        // try {
+        //   audioRef.current.currentTime = 0;
+        //   audioRef.current.play();
+        // } catch (e) {
+        //   console.warn("Notification sound playback failed:", e);
+        // }
 
         const data = payload.data || {};
         const senderName = data.sender_name || "Unknown";
@@ -284,13 +290,19 @@ export default function Header() {
                 </div>
               </div>
             </div>
-            <div className="flex border-l border-gray-200">
+            <div className=" border-l border-gray-200">
               <button
                 onClick={() => toast.dismiss(t.id)}
                 className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <X size={14} />
               </button>
+              <button
+        onClick={() => toast.dismiss()}
+        className="text-xs text-red-500 hover:underline px-2 pb-2"
+      >
+        Clear All
+      </button>
             </div>
           </div>
         ));
