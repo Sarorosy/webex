@@ -16,7 +16,7 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
       // Fetch users from the API
       const fetchInfo = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/groups/group/${selectedGroup.group_id}`);
+          const res = await fetch(`https://webexback-06cc.onrender.com/api/groups/group/${selectedGroup.group_id}`);
           const data = await res.json();
           if(data.status){
             setName(data.group.name);
@@ -35,7 +35,7 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
   
     try {
       setCreating(true)
-      const response = await fetch('http://localhost:5000/api/groups/update', {
+      const response = await fetch('https://webexback-06cc.onrender.com/api/groups/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

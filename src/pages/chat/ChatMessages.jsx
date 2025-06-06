@@ -75,7 +75,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/chats/messagesnew?sender_id=${
+        `https://webexback-06cc.onrender.com/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -509,7 +509,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("http://localhost:5000/api/messages/pin", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -602,7 +602,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "http://localhost:5000/api/chats/messagesnew"
+            "https://webexback-06cc.onrender.com/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -794,7 +794,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/messages/${msg.id}/reactions`
+        `https://webexback-06cc.onrender.com/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -948,7 +948,7 @@ const ChatMessages = ({
                       theme == "dark" ? "" : ""
                     }  msg-number-${
                       msg.id
-                    } ${isSent ? "pr-2" : "pl-2"} ${
+                    } ${isSent ? "" : ""} ${
                       isReply && replyMsgId == msg.id
                         ? "ring-2 ring-blue-400 bg-blue-50 "
                         : ""
@@ -1126,7 +1126,9 @@ const ChatMessages = ({
                           );
                         })()}
 
-                      <div className={`message-content `}>
+                      <div className={`message-content flex flex-col justify-start  ${
+                            isSent ? "items-end" : "items-start"
+                          }`}>
                         {msg.is_quoted == 1 &&
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
@@ -1224,7 +1226,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2 min-w-80">
+                            <div className="mt-2 space-y-2 max-w-80">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
@@ -1380,7 +1382,7 @@ const ChatMessages = ({
                                         );
                                       })()}
                                     <div
-                                      className={`font-semibold text-gray-700 flex items-end ${
+                                      className={`font-semibold f-11 text-gray-700 flex items-end ${
                                         isSent ? "flex-row-reverse" : ""
                                       } gap-2 mb-1 `}
                                     >
@@ -1416,7 +1418,7 @@ const ChatMessages = ({
                                         </div>
                                     </div>
                                     <div
-                                      className="prose prose-sm max-w-none"
+                                      className="prose prose-sm max-w-none f-13"
                                       dangerouslySetInnerHTML={{
                                         __html: reply.message,
                                       }}
@@ -1760,20 +1762,20 @@ const ChatMessages = ({
                       })()}
                     </div>
                     {hoveredMessageId === msg.id && (
-                      <div className="flex items-end">
+                      <div className="flex items-start relative">
                       <div
-                        className="chat-funt-set message-actions  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                        className="chat-funt-set message-actions absolute -top-3 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
                         style={{
-                          [isSent ? "left" : "right"]: "2%",
+                          [isSent ? "right" : "left"]: "-50px",
                         }}
                       >
                         <div className="relative action-button" ref={emojiRef}>
                           <button
                             onClick={() => setShowEmojiPopup((prev) => !prev)}
-                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
                             title="React"
                           >
-                            <Smile size={13} />
+                            <Smile size={11} />
                           </button>
                           {showEmojiPopup && (
                             <EmojiPopup
@@ -1786,7 +1788,7 @@ const ChatMessages = ({
                         </div>
                         <button
                           onClick={() => handleCopy(msg)}
-                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                          className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
                           title="Copy"
                         >
                           <Copy size={11} />
@@ -1796,51 +1798,51 @@ const ChatMessages = ({
                             onClick={() =>
                               handleEdit(msg.id, "message", msg.message)
                             }
-                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
                             title="Edit message"
                           >
-                            <Pen size={13} />
+                            <Pen size={11} />
                           </button>
                         )}
 
                         <button
                           onClick={() => handleReply(msg.id, msg.message)}
-                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-green-50  transition-colors"
+                          className="action-button py-1 px-2 text-gray-600 hover:bg-green-50  transition-colors"
                           title="Reply"
                         >
-                          <Reply size={13} />
+                          <Reply size={11} />
                         </button>
 
                         <button
                           onClick={() => handleReminder(msg.id)}
-                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Set reminder"
                         >
-                          <BellDot size={13} />
+                          <BellDot size={11} />
                         </button>
                         <button
                           onClick={() => handleQuote(msg)}
-                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
                           title="Quote message"
                         >
-                          <QuoteIcon size={13} />
+                          <QuoteIcon size={11} />
                         </button>
 
                         <button
                           onClick={() => handlePinMsg(msg.id)}
-                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
+                          className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
                           title="Pin message"
                         >
-                          <Pin size={13} />
+                          <Pin size={11} />
                         </button>
 
                         {isSent && (
                           <button
                             onClick={() => handleDeleteMsg(msg.id, "message")}
-                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-red-50  transition-colors"
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-red-50  transition-colors"
                             title="Delete message"
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={11} />
                           </button>
                         )}
                       </div>
