@@ -132,6 +132,37 @@ const ChatMessages = ({
   }, [latestMessageId]);
 
   useEffect(() => {
+  const handleImageClick = (e) => {
+    console.log(e)
+    const img = e.target;
+    if (img.tagName === "IMG") {
+      const src = img.getAttribute("src");
+      const isBase64 = src.startsWith("data:");
+
+      setOpenFileModal({
+        url: src,
+        name: isBase64 ? "noname" : src.split("/").pop(),
+      });
+    }
+  };
+
+  // Target container
+  const proseDiv = document.querySelector(".prose");
+  if (proseDiv) {
+    const images = proseDiv.querySelectorAll("img");
+    console.log(images)
+    images.forEach((img) => img.addEventListener("click", handleImageClick));
+
+    // Cleanup
+    return () => {
+      images.forEach((img) => img.removeEventListener("click", handleImageClick));
+    };
+  }else{
+    console.warn("No Prose div found")
+  }
+}, []);
+
+  useEffect(() => {
     const loadInitialMessages = async () => {
       const initialMessages = await fetchMessages(0);
       setMessages(initialMessages);
@@ -836,6 +867,10 @@ const ChatMessages = ({
   };
 
   const [openFileModal, setOpenFileModal] = useState(null);
+
+
+
+
   return (
     <div
       ref={containerRef}
