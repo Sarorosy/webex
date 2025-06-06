@@ -33,6 +33,7 @@ body{
   padding: 1px 5px !important;
   cursor: pointer !important;
   border-radius: 4px !important;
+  font-size: 12px;
 }
 #mention_default .e-input-group,
 #mention_default .e-input-group.e-control-wrapper {
@@ -300,8 +301,12 @@ div#commentsMention[placeholder]:empty:before {
 
 
 
-.message-wrapper:hover .message {
+.mw:hover .message {
     background: #ddd;
+}
+
+.mw-dark:hover .message {
+    background: #939599;
 }
 
 .messages-a-link {
@@ -314,4 +319,5 @@ div#commentsMention[placeholder]:empty:before {
 }
 .prose.prose-sm img {
     width: 350px;
+    cursor: pointer;
 }

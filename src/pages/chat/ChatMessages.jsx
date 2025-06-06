@@ -131,36 +131,25 @@ const ChatMessages = ({
     // console.log("latest msg id", latestMessageId);
   }, [latestMessageId]);
 
+  const [openFileModal, setOpenFileModal] = useState(null);
+  const proseRef = useRef(null); // your container
+
   useEffect(() => {
-  const handleImageClick = (e) => {
-    console.log(e)
-    const img = e.target;
-    if (img.tagName === "IMG") {
-      const src = img.getAttribute("src");
-      const isBase64 = src.startsWith("data:");
-
-      setOpenFileModal({
-        url: src,
-        name: isBase64 ? "noname" : src.split("/").pop(),
-      });
-    }
-  };
-
-  // Target container
-  const proseDiv = document.querySelector(".prose");
-  if (proseDiv) {
-    const images = proseDiv.querySelectorAll("img");
-    console.log(images)
-    images.forEach((img) => img.addEventListener("click", handleImageClick));
-
-    // Cleanup
-    return () => {
-      images.forEach((img) => img.removeEventListener("click", handleImageClick));
+    const handleGlobalClick = (event) => {
+      if (event.target.tagName === "IMG" && event.target.closest(".prose")) {
+        setOpenFileModal({
+          url: event.target.src,
+          name: "no-name.png",
+        });
+      }
     };
-  }else{
-    console.warn("No Prose div found")
-  }
-}, []);
+
+    document.addEventListener("click", handleGlobalClick);
+
+    return () => {
+      document.removeEventListener("click", handleGlobalClick);
+    };
+  }, []);
 
   useEffect(() => {
     const loadInitialMessages = async () => {
@@ -445,16 +434,16 @@ const ChatMessages = ({
 
     const handleMessageDelete = (msgObj) => {
       const { msgId, type } = msgObj;
-      console.log(msgObj)
+      console.log(msgObj);
 
       if (type === "message") {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id == msgId ? { ...msg, is_deleted: 1 , is_reply : 0} : msg
+            msg.id == msgId ? { ...msg, is_deleted: 1, is_reply: 0 } : msg
           )
         );
-      } 
-      
+      }
+
       if (type === "reply") {
         setMessages((prevMessages) =>
           prevMessages.map((msg) => ({
@@ -575,8 +564,6 @@ const ChatMessages = ({
       const socket = getSocket(); // Assuming you have a socket connection
       connectSocket(user?.id);
       socket.emit("delete_message", { msgId, type });
-
-
     } catch (error) {
       console.error("Error deleting message:", error);
     }
@@ -866,11 +853,6 @@ const ChatMessages = ({
     return emojiRegex.test(text);
   };
 
-  const [openFileModal, setOpenFileModal] = useState(null);
-
-
-
-
   return (
     <div
       ref={containerRef}
@@ -959,15 +941,14 @@ const ChatMessages = ({
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
                     onMouseEnter={() => {
-                        if (!emojiPopupLocked) setHoveredMessageId(msg.id);
-                      }}
-                      onMouseLeave={() => {
-                        if (!emojiPopupLocked) {
-                          setHoveredMessageId(null);
-                          clearHover();
-                        }
-                      }}
-
+                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                    }}
+                    onMouseLeave={() => {
+                      if (!emojiPopupLocked) {
+                        setHoveredMessageId(null);
+                        clearHover();
+                      }
+                    }}
                     //onDoubleClick={() => handleReply(msg.id, msg.message)}
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
@@ -987,12 +968,10 @@ const ChatMessages = ({
                         ? "animate-pulse-highlight bg-gray-300"
                         : ""
                     }  relative ${
-                      theme == "dark" ? "" : ""
-                    }  msg-number-${
-                      msg.id
-                    } ${isSent ? "" : ""} ${
+                      theme == "dark" ? "mw-dark" : "mw"
+                    }  msg-number-${msg.id} ${isSent ? "" : ""} ${
                       isReply && replyMsgId == msg.id
-                        ? "ring-2 ring-blue-400 bg-blue-50 "
+                        ? "ring-2 p-2 ring-blue-400 bg-blue-50 "
                         : ""
                     }`}
                   >
@@ -1008,10 +987,10 @@ const ChatMessages = ({
                           src={
                             "https://rapidcollaborate.in/ccp" + msg.profile_pic
                           }
-                          className="h-8 w-8 rounded-full object-cover border-2 border-white shadow-sm"
+                          className="h-7 w-7 rounded-full object-cover border-2 border-white shadow-sm"
                         />
                       ) : (
-                        <div className="flex justify-center items-center h-8 w-8 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
+                        <div className="flex justify-center items-center h-7 w-7 f-14 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
                           {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
                         </div>
                       )}
@@ -1047,13 +1026,15 @@ const ChatMessages = ({
                               }`
                         }`}
                       >
-                        <div className={`flex gap-2 items-end f-11 ${
-                              isSent ? "flex-row-reverse" : ""
-                            }`}>
+                        <div
+                          className={`flex gap-2 items-end f-11 ${
+                            isSent ? "flex-row-reverse" : ""
+                          }`}
+                        >
                           <div>
-                          {isSent && !view_user_id
-                            ? "You"
-                            : msg.sender_name ?? "Unknown User"}
+                            {isSent && !view_user_id
+                              ? "You"
+                              : msg.sender_name ?? "Unknown User"}
                           </div>
                           <div
                             className={`message-time flex items-center text-xs f-11 ${
@@ -1071,19 +1052,19 @@ const ChatMessages = ({
                                       : "text-gray-400"
                                   }`
                             }`}
+                            data-tooltip-id="my-tooltip"
+                            data-tooltip-content={msg.created_at}
                           >
-                            <div>
-                              {msg.is_edited == 1 && (
-                                <p className="text-[9px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full mr-2 font-medium flex items-center">
-                                  <Pen size={8} className="mr-0.5" /> edited
-                                </p>
-                              )}{" "}
-                              {formatTime(msg.created_at)}
-                            </div>
+                            <div> {formatTime(msg.created_at)}</div>
+                          </div>
+                          <div>
+                            {msg.is_edited == 1 && (
+                              <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
+                                Edited
+                              </p>
+                            )}
                           </div>
                         </div>
-
-                          
                       </div>
                       {msg.is_file == 1 &&
                         msg.filename &&
@@ -1168,9 +1149,11 @@ const ChatMessages = ({
                           );
                         })()}
 
-                      <div className={`message-content flex flex-col justify-start  ${
-                            isSent ? "items-end" : "items-start"
-                          }`}>
+                      <div
+                        className={`message-content flex flex-col justify-start  ${
+                          isSent ? "items-end" : "items-start"
+                        }`}
+                      >
                         {msg.is_quoted == 1 &&
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
@@ -1209,23 +1192,24 @@ const ChatMessages = ({
                               ></div>
                             </div>
                           )}
-                        <div className={`flex ${
+                        <div
+                          className={`flex ${
                             isSent ? "justify-end" : "justify-start"
-                          }`}>
-                            <div
-                          className={`prose prose-sm ${
-                            isSent ? "text-start" : "text-start"
-                          } max-w-none ${
-                            isSingleEmoji(msg.message)
-                              ? "text-[26px]"
-                              : "text-[13px]"
                           }`}
-                          dangerouslySetInnerHTML={{ __html: msg.message }}
                         >
+                          <div
+                            ref={proseRef}
+                            className={`prose prose-sm ${
+                              isSent ? "text-start" : "text-start"
+                            } max-w-none ${
+                              isSingleEmoji(msg.message)
+                                ? "text-[26px]"
+                                : "text-[13px]"
+                            }`}
+                            dangerouslySetInnerHTML={{ __html: msg.message }}
+                          ></div>
+                        </div>
 
-                        </div>
-                        </div>
-                        
                         {(() => {
                           let pinned = [];
 
@@ -1268,7 +1252,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2 max-w-80">
+                            <div className="mt-2 space-y-2 max-w-80 w-full">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
@@ -1311,8 +1295,10 @@ const ChatMessages = ({
                                         ? " bg-gray-300"
                                         : " bg-gray-50"
                                     } ${
-                              isSent ? "border-r-2 flex flex-col justify-end items-end me-4" : "border-l-2 ms-4"
-                            }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
+                                      isSent
+                                        ? "border-r-2 flex flex-col justify-end items-end me-4"
+                                        : "border-l-2 ms-4"
+                                    }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
                                     onMouseEnter={() =>
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
@@ -1455,9 +1441,9 @@ const ChatMessages = ({
                                       !view_user_id
                                         ? "You"
                                         : reply.sender_name || "User"}
-                                        <div className="font-normal text-xs f-11 text-gray-400 flex items-center">
-                                          {formatTime(reply.created_at)}
-                                        </div>
+                                      <div className="font-normal text-xs f-11 text-gray-400 flex items-center">
+                                        {formatTime(reply.created_at)}
+                                      </div>
                                     </div>
                                     <div
                                       className="prose prose-sm max-w-none f-13"
@@ -1599,9 +1585,11 @@ const ChatMessages = ({
                                     {/* Reply Actions */}
                                     {hoveredReplyMessageId ==
                                       `reply-${reply.id}` && (
-                                      <div className={` ${
-                              isSent ? "-left-2" : "-right-2"
-                            } chat-funt-set message-actions absolute -top-7  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}>
+                                      <div
+                                        className={` ${
+                                          isSent ? "-left-20" : "-right-2"
+                                        } chat-funt-set message-actions absolute -top-6  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
+                                      >
                                         <div
                                           className="relative action-button"
                                           ref={emojiRef}
@@ -1712,7 +1700,7 @@ const ChatMessages = ({
                           ) : null;
                         })()}
                       </div>
-                      
+
                       {(() => {
                         let reactions = [];
 
@@ -1783,17 +1771,16 @@ const ChatMessages = ({
                                   key={emoji}
                                   onMouseEnter={(e) => {
                                     if (!emojiPopupLocked) {
-                                    handleReactionHover(
-                                      e,
-                                      emoji,
-                                      msg,
-                                      "message"
-                                    )}
-
-                                  }
-                                  }
+                                      handleReactionHover(
+                                        e,
+                                        emoji,
+                                        msg,
+                                        "message"
+                                      );
+                                    }
+                                  }}
                                   //onMouseLeave={clearHover}
-                                  className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
+                                  className="bg-gray-100 flex ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
                                 >
                                   <span className="mr-1">{emoji}</span>
                                   <span className="text-[10px] font-medium">
@@ -1808,94 +1795,95 @@ const ChatMessages = ({
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div className="flex items-start relative">
-                      <div
-                        className="chat-funt-set message-actions absolute -top-3 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
-                        style={{
-                          [isSent ? "right" : "left"]: "-50px",
-                        }}
-                      >
-                        <div className="relative action-button" ref={emojiRef}>
-                          <button
-                            onClick={() => 
-                             {
-                               setShowEmojiPopup((prev) => !prev);
-                               setEmojiPopupLocked(true);
-                             }
-                            }
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
-                            title="React"
+                        <div
+                          className="chat-funt-set message-actions absolute -top-3 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                          style={{
+                            [isSent ? "right" : "left"]: "-50px",
+                          }}
+                        >
+                          <div
+                            className="relative action-button"
+                            ref={emojiRef}
                           >
-                            <Smile size={11} />
-                          </button>
-                          {showEmojiPopup && (
-                            <EmojiPopup
-                              onSelect={(emoji) => {
-                                handleReact(msg.id, emoji, "message");
-                                setShowEmojiPopup(false);
+                            <button
+                              onClick={() => {
+                                setShowEmojiPopup((prev) => !prev);
+                                setEmojiPopupLocked(true);
                               }}
-                            />
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
+                              title="React"
+                            >
+                              <Smile size={11} />
+                            </button>
+                            {showEmojiPopup && (
+                              <EmojiPopup
+                                onSelect={(emoji) => {
+                                  handleReact(msg.id, emoji, "message");
+                                  setShowEmojiPopup(false);
+                                }}
+                              />
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleCopy(msg)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                            title="Copy"
+                          >
+                            <Copy size={11} />
+                          </button>
+                          {isSent && (
+                            <button
+                              onClick={() =>
+                                handleEdit(msg.id, "message", msg.message)
+                              }
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
+                              title="Edit message"
+                            >
+                              <Pen size={11} />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleReply(msg.id, msg.message)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-green-50  transition-colors"
+                            title="Reply"
+                          >
+                            <Reply size={11} />
+                          </button>
+
+                          <button
+                            onClick={() => handleReminder(msg.id)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                            title="Set reminder"
+                          >
+                            <BellDot size={11} />
+                          </button>
+                          <button
+                            onClick={() => handleQuote(msg)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                            title="Quote message"
+                          >
+                            <QuoteIcon size={11} />
+                          </button>
+
+                          <button
+                            onClick={() => handlePinMsg(msg.id)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
+                            title="Pin message"
+                          >
+                            <Pin size={11} />
+                          </button>
+
+                          {isSent && (
+                            <button
+                              onClick={() => handleDeleteMsg(msg.id, "message")}
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-red-50  transition-colors"
+                              title="Delete message"
+                            >
+                              <Trash2 size={11} />
+                            </button>
                           )}
                         </div>
-                        <button
-                          onClick={() => handleCopy(msg)}
-                          className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                          title="Copy"
-                        >
-                          <Copy size={11} />
-                        </button>
-                        {isSent && (
-                          <button
-                            onClick={() =>
-                              handleEdit(msg.id, "message", msg.message)
-                            }
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50  transition-colors"
-                            title="Edit message"
-                          >
-                            <Pen size={11} />
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleReply(msg.id, msg.message)}
-                          className="action-button py-1 px-2 text-gray-600 hover:bg-green-50  transition-colors"
-                          title="Reply"
-                        >
-                          <Reply size={11} />
-                        </button>
-
-                        <button
-                          onClick={() => handleReminder(msg.id)}
-                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
-                          title="Set reminder"
-                        >
-                          <BellDot size={11} />
-                        </button>
-                        <button
-                          onClick={() => handleQuote(msg)}
-                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
-                          title="Quote message"
-                        >
-                          <QuoteIcon size={11} />
-                        </button>
-
-                        <button
-                          onClick={() => handlePinMsg(msg.id)}
-                          className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
-                          title="Pin message"
-                        >
-                          <Pin size={11} />
-                        </button>
-
-                        {isSent && (
-                          <button
-                            onClick={() => handleDeleteMsg(msg.id, "message")}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-red-50  transition-colors"
-                            title="Delete message"
-                          >
-                            <Trash2 size={11} />
-                          </button>
-                        )}
-                      </div>
                       </div>
                     )}
                   </div>
