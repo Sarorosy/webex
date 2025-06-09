@@ -789,6 +789,8 @@ const ChatSidebar = ({
         width: `${sidebarWidth}px`,
         minWidth: "300px",
         maxWidth: "600px",
+        display:"flex",
+        flexDirection:"column"
       }}
     >
       <div
