@@ -129,7 +129,7 @@ const ChatSend = ({
   const { user, theme } = useAuth(); // Get sender_id
 
   useEffect(() => {
-   // console.log("selected Users:", selectedUsers);
+    // console.log("selected Users:", selectedUsers);
   }, [selectedUsers]);
 
   useEffect(() => {
@@ -161,7 +161,9 @@ const ChatSend = ({
             backgroundColor: data.userColor,
           }}
         >
-          <span className="custom-margin">{data.userName?.charAt(0).toUpperCase()}</span>
+          <span className="custom-margin">
+            {data.userName?.charAt(0).toUpperCase()}
+          </span>
         </div>
       )}
       <span>{data.userName}</span>
@@ -173,19 +175,19 @@ const ChatSend = ({
     if (isSending || (!value.trim() && !selectedFile)) return;
 
     const urlRegex =
-    /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
+      /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
 
-  const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
-    // Clean HTML tags from URL portion only
-    const plainUrl = url.replace(/<[^>]+>/g, "");
+    const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
+      // Clean HTML tags from URL portion only
+      const plainUrl = url.replace(/<[^>]+>/g, "");
 
-    let href = plainUrl;
-    if (!plainUrl.startsWith("http://") && !plainUrl.startsWith("https://")) {
-      href = "https://" + plainUrl;
-    }
+      let href = plainUrl;
+      if (!plainUrl.startsWith("http://") && !plainUrl.startsWith("https://")) {
+        href = "https://" + plainUrl;
+      }
 
-    return `<a href="${href}" class="messages-a-link" target="_blank">${plainUrl}</a>`;
-  });
+      return `<a href="${href}" class="messages-a-link" target="_blank">${plainUrl}</a>`;
+    });
 
     try {
       setIsSending(true);
@@ -265,70 +267,53 @@ const ChatSend = ({
   };
 
   const handlePaste = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const clipboardData = e.clipboardData;
-    const items = clipboardData.items;
-    let imageFound = false;
+  const clipboardData = e.clipboardData;
+  const items = clipboardData.items;
+  let imageFound = false;
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.indexOf("image") != -1) {
-        imageFound = true;
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type.indexOf("image") !== -1) {
+      imageFound = true;
+      const file = item.getAsFile();
 
-        const file = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const img = document.createElement("img");
+        img.src = event.target.result;
 
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const img = document.createElement("img");
-          img.src = event.target.result;
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
 
-          const selection = window.getSelection();
-          if (!selection.rangeCount) return;
+        const range = selection.getRangeAt(0);
+        range.insertNode(img);
 
-          const range = selection.getRangeAt(0);
-          range.insertNode(img);
+        // Optional: If you want a line break after the image
+        const br = document.createElement("br");
+        range.setStartAfter(img);
+        range.insertNode(br);
 
-          const p = document.createElement("p");
-          p.innerHTML = "<br>";
-          range.setStartAfter(img);
-          range.insertNode(p);
+        range.setStartAfter(br);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
 
-          range.setStartAfter(p);
-          range.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(range);
-
-          // 🔥 Manually trigger input event to notify React
-          triggerInputEvent(e.target);
-        };
-        reader.readAsDataURL(file);
-
-        break;
-      }
+        triggerInputEvent(e.target);
+      };
+      reader.readAsDataURL(file);
+      break;
     }
+  }
 
-    if (!imageFound) {
-      const text = clipboardData.getData("text/plain");
-      document.execCommand("insertText", false, text);
+  if (!imageFound) {
+    const text = clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+    triggerInputEvent(e.target);
+  }
+};
 
-      const selection = window.getSelection();
-      if (!selection.rangeCount) return;
-
-      const range = selection.getRangeAt(0);
-      const p = document.createElement("p");
-      p.innerHTML = "<br>";
-      range.insertNode(p);
-
-      range.setStartAfter(p);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-      // 🔥 Manually trigger input event to notify React
-      triggerInputEvent(e.target);
-    }
-  };
 
   // 🔁 Helper to dispatch an input event manually
   const triggerInputEvent = (el) => {
@@ -339,9 +324,8 @@ const ChatSend = ({
     el.dispatchEvent(event);
   };
 
-
   useEffect(() => {
-    //console.log("Value updated:", value);
+    console.log("Value updated:", value);
   }, [value]);
 
   // Select event handler
@@ -485,23 +469,22 @@ const ChatSend = ({
   }, [localStorageKey, userId, type]);
 
   useEffect(() => {
-      const socket = getSocket();
-      connectSocket(user.id);
-  
-      const handleFetchMembers = (data) => {
-        const { group_id } = data;
-        if(group_id == userId && type == "group"){
-          fetchUsers()
-        }
-      };
-  
-  
-      socket.on("fetch_group_members", handleFetchMembers);
-  
-      return () => {
-        socket.off("fetch_group_members", handleFetchMembers);
-      };
-    }, [userId, type]);
+    const socket = getSocket();
+    connectSocket(user.id);
+
+    const handleFetchMembers = (data) => {
+      const { group_id } = data;
+      if (group_id == userId && type == "group") {
+        fetchUsers();
+      }
+    };
+
+    socket.on("fetch_group_members", handleFetchMembers);
+
+    return () => {
+      socket.off("fetch_group_members", handleFetchMembers);
+    };
+  }, [userId, type]);
 
   return (
     <>
@@ -566,8 +549,6 @@ const ChatSend = ({
       <div>
         {/* Paperclip icon (file input trigger) */}
 
-        
-
         <div
           className={` ${
             theme == "dark" ? "bg-gray-500 text-white" : "bg-white"
@@ -621,7 +602,7 @@ const ChatSend = ({
                 </div>
                 <button
                   onClick={() => setSelectedFile(null)}
-                  className="text-gray-500 hover:text-red-500 absolute top-0 right-0 p-1" 
+                  className="text-gray-500 hover:text-red-500 absolute top-0 right-0 p-1"
                 >
                   <X size={14} />
                 </button>

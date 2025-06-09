@@ -112,8 +112,10 @@ const ChatMessages = ({
           }
         });
 
-        setLatestMessageId(maxId);
-        setLatestMessage(latestMsg);
+        if (maxId > latestMessageId) {
+          setLatestMessageId(maxId);
+          setLatestMessage(latestMsg);
+        }
       }
 
       return reversedData;
