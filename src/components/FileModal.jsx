@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { X, Download } from "lucide-react";
 import React from "react";
 
-const FileModal = ({ fileUrl, filename, onClose }) => {
+const FileModal = ({ fileUrl, filename,senderName, time, onClose }) => {
   const ext = filename.split(".").pop().toLowerCase();
   const isImage = ["png", "jpg", "jpeg", "avif","svg", "webp"].includes(ext);
+
+  const formattedTime = time ? new Date(time).toLocaleString() : "unknown time";
 
   return (
     <motion.div
@@ -17,10 +19,13 @@ const FileModal = ({ fileUrl, filename, onClose }) => {
       <div className="relative w-full h-full  overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
+          {senderName && time && (
+
           <div>
-            Shared by Deva .K<br/>
-            At 06/06/2025, 12:34 PM
+            Shared by {senderName ?? "Unknown"}<br/>
+            At {formattedTime ?? "unknown time"}
           </div>
+          )}
           <span className="text-base font-medium truncate">{filename}</span>
           <div className="flex items-center gap-2">
             

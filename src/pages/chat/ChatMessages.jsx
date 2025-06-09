@@ -111,9 +111,10 @@ const ChatMessages = ({
             });
           }
         });
-
-        setLatestMessageId(maxId);
-        setLatestMessage(latestMsg);
+        if (maxId > latestMessageId) {
+          setLatestMessageId(maxId);
+          setLatestMessage(latestMsg);
+        }
       }
 
       return reversedData;
@@ -1129,11 +1130,17 @@ const ChatMessages = ({
                                 <div className="px-3">
                                   {isImage && (
                                     <button
-                                      onClick={() =>
+                                      onClick={() =>{
                                         setOpenFileModal({
                                           url: `https://rapidcollaborate.in/ccp${msg.filename}`,
                                           name: msg.filename.split("/").pop(),
+                                          sender_name: msg.sender_name,
+                                          time:msg.created_at
                                         })
+                                        console.log(msg)
+
+                                      }
+                                        
                                       }
                                     >
                                       <img
@@ -1395,6 +1402,8 @@ const ChatMessages = ({
                                                         name: reply.filename
                                                           .split("/")
                                                           .pop(),
+                                                        sender_name: reply.sender_name,
+                                                        time:reply.created_at
                                                       })
                                                     }
                                                   >
@@ -1938,6 +1947,8 @@ const ChatMessages = ({
           <FileModal
             fileUrl={openFileModal.url}
             filename={openFileModal.name}
+            senderName={openFileModal.sender_name}
+            time={openFileModal.time}
             onClose={() => setOpenFileModal(null)}
           />
         )}
