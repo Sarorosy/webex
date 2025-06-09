@@ -640,7 +640,7 @@ const ChatMessages = ({
             "created_at",
             selmsg.created_at
           );
-          fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
+          fetchAroundMessageUrl.searchParams.append("limit", "13"); // Fetch a reasonable number of messages
 
           const response = await fetch(fetchAroundMessageUrl.toString());
 

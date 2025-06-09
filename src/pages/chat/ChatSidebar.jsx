@@ -417,7 +417,6 @@ const ChatSidebar = ({
       const isRelevant =
         msg.user_type === "group"
           ? (() => {
-              console.log("Checking group message:", msg);
 
               console.log("Available chats:", chats);
 
