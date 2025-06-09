@@ -9,6 +9,7 @@ export const SelectedUserProvider = ({ children }) => {
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [messageLoading, setMessageLoading] = useState(false);
   const [searchOpen,setSearchOpen] = useState(false);
+  const [globalSearchOpen, setGlobalSearchOpen]= useState(false);
 
   return (
     <SelectedUserContext.Provider value={{
@@ -19,7 +20,9 @@ export const SelectedUserProvider = ({ children }) => {
       messageLoading,
       setMessageLoading,
       searchOpen,
-      setSearchOpen
+      setSearchOpen,
+      globalSearchOpen,
+      setGlobalSearchOpen
     }}>
       {children}
     </SelectedUserContext.Provider>

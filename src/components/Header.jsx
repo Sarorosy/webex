@@ -219,11 +219,11 @@ export default function Header() {
                 <X size={14} />
               </button>
               <button
-        onClick={() => toast.dismiss()}
-        className="text-xs text-red-500 hover:underline px-2 pb-2"
-      >
-        Clear All
-      </button>
+                onClick={() => toast.dismiss()}
+                className="text-xs text-red-500 hover:underline px-2 pb-2"
+              >
+                Clear All
+              </button>
             </div>
           </div>
         ));
@@ -298,11 +298,11 @@ export default function Header() {
                 <X size={14} />
               </button>
               <button
-        onClick={() => toast.dismiss()}
-        className="text-xs text-red-500 hover:underline px-2 pb-2"
-      >
-        Clear All
-      </button>
+                onClick={() => toast.dismiss()}
+                className="text-xs text-red-500 hover:underline px-2 pb-2"
+              >
+                Clear All
+              </button>
             </div>
           </div>
         ));
@@ -389,21 +389,6 @@ export default function Header() {
                 )}
               </button>
 
-              <button
-                onClick={() => {
-                  setSearchOpen(true);
-                }}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content="Search Globally"
-                className={`flex items-center p-2 f-13 rounded-full ${
-                  theme == "dark"
-                    ? "text-white"
-                    : "text-gray-800 hover:text-gray-900"
-                } hover:bg-orange-500  transition`}
-              >
-                <Search size={17} className="" />
-                {/* Chat */}
-              </button>
               {/* <button
                 onClick={() => navigate("/chat")}
                 data-tooltip-id="my-tooltip"
@@ -559,14 +544,14 @@ export default function Header() {
             }}
           />
         )}
-        {searchOpen && (
+        {/* {searchOpen && (
           <TotalSearch
             onClose={() => {
               setSearchOpen(false);
             }}
             searchResults={[]}
           />
-        )}
+        )} */}
         <ReminderPopup />
       </AnimatePresence>
     </header>

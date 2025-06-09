@@ -11,6 +11,7 @@ import {
   SearchIcon,
   ArrowLeft,
   MessageCircle,
+  X,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -22,6 +23,7 @@ import logo from "../../assets/ccp-logo.png";
 import isEqual from "lodash.isequal";
 import faviconimg from "../../assets/ccp-fav.png"; // Path to your favicon image
 import notificationsound from "../../assets/notification-sound.mp3";
+import TotalSearch from "./TotalSearch";
 
 const ChatSidebar = ({
   view_user_id,
@@ -32,6 +34,7 @@ const ChatSidebar = ({
   setNotificationClickUser,
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { searchOpen, setSearchOpen } = useSelectedUser();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [chats, setChats] = useState([]);
@@ -81,13 +84,14 @@ const ChatSidebar = ({
     };
 
     const handleGroupDeleted = (data) => {
+      console.log(data)
       setChats((prevChats) =>
         prevChats.filter(
-          (chat) => !(chat.id == data.id && chat.type === "group")
+          (chat) => !(chat.id == data.group_id && chat.type === "group")
         )
       );
 
-      if (selectedUser?.id == data.id && selectedUser?.type === "group") {
+      if (selectedUser?.id == data.group_id && selectedUser?.type === "group") {
         onSelect(null);
       }
     };
@@ -385,92 +389,6 @@ const ChatSidebar = ({
     connectSocket(user?.id);
     const socket = getSocket();
 
-    const handleIncomingold = (msgOrReply, isReply = false) => {
-      if (!msgOrReply) return;
-      if (!chatsLoaded) return;
-
-      const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
-
-      if (!msg || !msg.sender_id || !msg.receiver_id) {
-        console.warn("Malformed message or reply:", msgOrReply);
-        return;
-      }
-
-      const otherUserId =
-        msg.sender_id == user?.id ? msg.receiver_id : msg.sender_id;
-
-      console.log("otherUserId", otherUserId);
-
-      const isRelevant =
-        msg.user_type === "group"
-          ? (() => {
-              console.log("Checking group message:", msg);
-
-              console.log("Available chats:", chats);
-
-              const matchingChat = chats.find(
-                (chat) => chat.id == msg.receiver_id && chat.type === "group"
-              );
-
-              console.log("Matched group chat:", matchingChat);
-
-              return !!matchingChat;
-            })()
-          : msg.sender_id == user?.id || msg.receiver_id == user?.id;
-
-      console.log("isRelevant", isRelevant);
-
-      if (!isRelevant) {
-        return;
-      }
-
-      setChats((prevChats) => {
-        const index = prevChats.findIndex(
-          (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
-        );
-
-        if (index == -1) {
-          fetchChats(false);
-          return prevChats;
-        }
-
-        const isSameAsSelected =
-          selectedUser &&
-          selectedUser.id == otherUserId &&
-          selectedUser.type == msg.user_type;
-
-        if (msg.sender_id != user?.id) {
-          try {
-            console.log("music Playing");
-            audioRef.current.currentTime = 0;
-            audioRef.current.play();
-          } catch (e) {
-            console.warn("Notification sound playback failed:", e);
-          }
-        }
-
-        const updatedChats = [...prevChats];
-        updatedChats[index] = {
-          ...updatedChats[index],
-          last_interacted_time: new Date().toISOString(),
-          read_status:
-            msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
-              ? 1
-              : 0,
-          unread_count: isSameAsSelected
-            ? updatedChats[index]?.unread_count || 0
-            : (updatedChats[index]?.unread_count || 0) + 1,
-          is_mentioned:
-            Array.isArray(msg.mentioned_users) &&
-            msg.mentioned_users.includes(user?.id),
-        };
-
-        const updated = updatedChats.splice(index, 1)[0];
-        updatedChats.unshift(updated);
-
-        return updatedChats;
-      });
-    };
     const handleIncoming = (msgOrReply, isReply = false) => {
       if (!msgOrReply) return;
       if (!chatsLoaded) return;
@@ -481,6 +399,10 @@ const ChatSidebar = ({
         console.warn("Malformed message or reply:", msgOrReply);
         return;
       }
+      if (msg.is_history == 1) {
+        return;
+      }
+
 
       const otherUserId =
         msg.user_type === "group"
@@ -782,15 +704,15 @@ const ChatSidebar = ({
     <div
       className={` ${
         theme == "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
-      }  py-2 px-1 relative select-none  overflow-hidden m-2 ${
+      }  py-2 px-1 relative select-none  overflow-hidden  ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
       style={{
         width: `${sidebarWidth}px`,
         minWidth: "300px",
         maxWidth: "600px",
-        display:"flex",
-        flexDirection:"column"
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div
@@ -831,74 +753,83 @@ const ChatSidebar = ({
           )}
         </h1>
 
-        {/* <div className="flex items-center gap-2 mb-3 w-full"> */}
-        {/* <input
+        <div className="flex items-center gap-2 mb-3 w-full relative">
+          <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
-            placeholder="Filter Groups, Persons"
-            className={`p-2 py-1 border rounded-md w-full mb-2 text-black`}
-          /> */}
-
-        {/* {view_user_name && (
-            <button 
-            data-tooltip-id="my-tooltip"
-            data-tooltip-content="back"
-            onClick={()=>{navigate('/chat')}}
-            className="flex items-center bg-red-400 text-white p-1 rounded hover:bg-red-500">
-            <ArrowLeft size={13} />
-          </button>
-          )} */}
-        {/* </div> */}
-
-        <div className="flex items-center justify-start gap-2 mb-3 mt-2">
-          {[
-            "all",
-            "direct",
-            "group",
-            ...(unreadCount > 0 ? ["unread"] : []),
-          ].map((tab) => {
-            const label = tab.charAt(0).toUpperCase() + tab.slice(1);
-            const Icon =
-              tab === "direct"
-                ? User
-                : tab === "group"
-                ? Users2
-                : tab === "unread"
-                ? MessageCircle
-                : Users;
-
-            const showCount = tab === "unread" && unreadCount > 0;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex items-center ${
-                  tab == "unread" ? "" : "gap-1"
-                } px-2 py-1 rounded f-11 relative ${
-                  activeTab === tab
-                    ? "bg-orange-500 text-white font-semibold border border-orange-500"
-                    : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
-                }`}
-              >
-                <Icon size={tab == "unread" ? 16 : 12} />
-                <div
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content={
-                    label == "Unread" ? "Unread Messages" : ""
-                  }
-                >
-                  {label == "Unread" ? null : label}
-                </div>
-                {showCount && (
-                  <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+            placeholder="Find Groups, Persons, Messages"
+            className={`p-2 py-1 rounded-md w-full text-black focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent border border-gray-300`}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+              }}
+              className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
+            >
+              <X size={13} />
+            </button>
+          )}
         </div>
+        {searchQuery ? (
+          <TotalSearch
+            onClose={() => {
+              setSearchOpen(false);
+            }}
+            query={searchQuery}
+            setQuery={setSearchQuery}
+          />
+        ) : (
+          <div className="flex items-center justify-start gap-2 mb-3 mt-2">
+            {[
+              "all",
+              "direct",
+              "group",
+              ...(unreadCount > 0 ? ["unread"] : []),
+            ].map((tab) => {
+              const label = tab.charAt(0).toUpperCase() + tab.slice(1);
+              const Icon =
+                tab === "direct"
+                  ? User
+                  : tab === "group"
+                  ? Users2
+                  : tab === "unread"
+                  ? MessageCircle
+                  : Users;
+
+              const showCount = tab === "unread" && unreadCount > 0;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center ${
+                    tab == "unread" ? "" : "gap-1"
+                  } px-2 py-1 rounded f-11 relative ${
+                    activeTab === tab
+                      ? "bg-orange-500 text-white font-semibold border border-orange-500"
+                      : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
+                  }`}
+                >
+                  <Icon size={tab == "unread" ? 16 : 12} />
+                  <div
+                    data-tooltip-id="my-tooltip"
+                    data-tooltip-content={
+                      label == "Unread" ? "Unread Messages" : ""
+                    }
+                  >
+                    {label == "Unread" ? null : label}
+                  </div>
+                  {showCount && (
+                    <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="px-2 m-list-h overflow-y-hidden">
