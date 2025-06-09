@@ -112,10 +112,8 @@ const ChatMessages = ({
           }
         });
 
-        if (maxId > latestMessageId) {
-          setLatestMessageId(maxId);
-          setLatestMessage(latestMsg);
-        }
+        setLatestMessageId(maxId);
+        setLatestMessage(latestMsg);
       }
 
       return reversedData;
@@ -1208,6 +1206,7 @@ const ChatMessages = ({
                                 ? "text-[26px]"
                                 : "text-[13px]"
                             }`}
+                            style={{lineBreak:"auto"}}
                             dangerouslySetInnerHTML={{ __html: msg.message }}
                           ></div>
                         </div>
@@ -1452,6 +1451,7 @@ const ChatMessages = ({
                                       dangerouslySetInnerHTML={{
                                         __html: reply.message,
                                       }}
+                                      style={{lineBreak:"auto"}}
                                     ></div>
                                     {(() => {
                                       let pinned = [];

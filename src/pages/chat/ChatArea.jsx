@@ -96,7 +96,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   };
 
   return (
-    <div className="w-full bg-white rounded-lg m-2 ml-0 justify-between relative ">
+    <div className="w-full bg-white rounded-lg m-2  justify-between relative ">
       <ChatHeader
             selectedUser={selectedUser}
             isTyping={isTyping}
