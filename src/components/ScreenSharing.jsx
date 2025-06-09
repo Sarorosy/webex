@@ -165,14 +165,14 @@ const ScreenSharing = () => {
   return (
     <div className="">
       {incomingRequest && (
-        <div className="fixed top-4 right-4 bg-white shadow-lg p-4 rounded border z-50">
+        <div className="fixed top-4 right-4 bg-white shadow-lg p-4 rounded border z-[100]">
           <p className="mb-2">
             <strong>{incomingRequest.name}</strong> wants to share their screen
             with you.
           </p>
           <button
             onClick={acceptShare}
-            className="bg-green-500 text-white px-4 py-1 rounded"
+            className="bg-green-500 text-white px-4 py-1 rounded hover:bg-green-700"
           >
             Accept
           </button>
