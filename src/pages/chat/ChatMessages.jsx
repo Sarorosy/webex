@@ -45,7 +45,7 @@ const ChatMessages = ({
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const [messages, setMessages] = useState([]);
-  const [skip, setSkip] = useState(0);
+  const [skip, setSkip] = useState(messages.length);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState(null);
@@ -53,6 +53,8 @@ const ChatMessages = ({
   const [hoveredReplyMessageId, setHoveredReplyMessageId] = useState(null);
   const [latestMessageId, setLatestMessageId] = useState(null);
   const [latestMessage, setLatestMessage] = useState(null);
+  const [hasFetchedInitially, setHasFetchedInitially] = useState(false);
+
 
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
@@ -63,10 +65,21 @@ const ChatMessages = ({
   const limit = 10;
 
   useEffect(() => {
+    setMessages([]);
     setLatestMessageId(null);
-  }, [view_user_id, userId]);
+  }, [view_user_id, userId, userType]);
+
+  useEffect(()=>{
+    console.log("mes length", messages.length);
+    if(messages.length  > 0){
+
+      setMessages([])
+    }
+  },[userId, userType, user?.id])
+ 
 
   const fetchMessages = async (skipCount = 0) => {
+    console.log("Fetching with skip:", skipCount);
     if (isFetchingRef.current) return [];
     // if(!hasMore) return [];
 
@@ -76,7 +89,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-06cc.onrender.com/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -153,14 +166,26 @@ const ChatMessages = ({
   }, []);
 
   useEffect(() => {
+     let isMounted = true;
     const loadInitialMessages = async () => {
-      const initialMessages = await fetchMessages(0);
-      setMessages(initialMessages);
+       if (!isMounted || messages.length > 0) return;
+        console.log("Clearing old messages");
+        setMessages([]);
+      const initialMessages = await fetchMessages(messages.length);
+      // setMessages(initialMessages);
+      setMessages(prev => {
+        // Filter out any initial messages that already exist
+        const newMessages = initialMessages.filter(
+          initialMsg => !prev.some(existingMsg => existingMsg.id === initialMsg.id)
+        );
+        return [...newMessages, ...prev];
+      });
       setSkip(initialMessages.length);
 
       // Check if there are more messages to load based on skip or total message count
       const totalMessages = 0; // Fetch total message count from the API
       setHasMore(initialMessages.length < totalMessages); // Check if more messages exist
+      setHasFetchedInitially(true);
     };
 
     if (userId && user?.id) {
@@ -168,8 +193,9 @@ const ChatMessages = ({
     }
 
     return () => {
+      isMounted = false;
       setMessages([]);
-      setSkip(0);
+       setSkip(0);
       setHasMore(true);
     };
   }, [userId, userType, user?.id]);
@@ -194,12 +220,21 @@ const ChatMessages = ({
       // here set to 100
       const prevScrollHeight = container.scrollHeight;
 
-      const olderMessages = await fetchMessages(skip);
+      const olderMessages = await fetchMessages(messages.length);
       //const olderMessages = [];
 
       if (olderMessages.length > 0) {
-        setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
-        setSkip(skip + olderMessages.length);
+        // setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
+        setMessages(prevMessages => {
+        const existingIds = new Set(prevMessages.map(msg => msg.id));
+        const filteredNewMessages = olderMessages.filter(
+          msg => !existingIds.has(msg.id)
+        );
+        
+        return [...filteredNewMessages, ...prevMessages];
+      });
+        // setSkip(skip + olderMessages.length);
+        setSkip(prevSkip => prevSkip + olderMessages.length);
 
         const moreAvailable = olderMessages.length == limit;
         setHasMore(moreAvailable);
@@ -227,6 +262,7 @@ const ChatMessages = ({
 
         if (
           entry.isIntersecting &&
+           hasFetchedInitially &&
           !isLoading &&
           !isFetchingRef.current &&
           hasMoreRef.current &&
@@ -234,7 +270,7 @@ const ChatMessages = ({
         ) {
           const prevScrollHeight = containerRef.current.scrollHeight;
 
-          const olderMessages = await fetchMessages(skip);
+          const olderMessages = await fetchMessages(messages.length);
 
           if (olderMessages.length > 0) {
             setMessages((prev) => [...olderMessages, ...prev]);
@@ -531,7 +567,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -622,7 +658,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-06cc.onrender.com/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -669,7 +705,6 @@ const ChatMessages = ({
           // Find the specific message
           existingMessage = mergedMessages.find((msg) => msg.id == selmsg.id);
 
-          console.log("existingMessage", existingMessage);
         } catch (error) {
           console.error("Error fetching messages:", error);
           return;
@@ -815,7 +850,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `https://webexback-06cc.onrender.com/api/messages/${msg.id}/reactions`
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);

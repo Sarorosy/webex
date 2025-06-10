@@ -32,13 +32,12 @@ const ChatPage = () => {
 
   useEffect(() => {
     if (passedState) {
-      if (passedState.type === "user") {
+      if (passedState.type == "user") {
         setSelectedUser(passedState.data);
         setSelectedMessage(null); // clear message if needed
-      } else if (passedState.type === "message") {
+      } else if (passedState.type == "message") {
         const msg = passedState.data;
         setSelectedUser(msg.user);
-
         setSelectedMessage(msg);
       }
     }
@@ -71,7 +70,7 @@ const ChatPage = () => {
   const confirmLeft = async () => {
     try {
       const response = await fetch(
-        "https://webexback-06cc.onrender.com/api/groups/remove-member",
+        "http://localhost:5000/api/groups/remove-member",
         {
           method: "POST",
           headers: {

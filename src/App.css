@@ -306,7 +306,7 @@ div#commentsMention[placeholder]:empty:before {
     /* background: #f3f3f3; */
 }
 
- .mbox:hover {
+.mw .mbox:hover {
     background: #ddd;
 }
 

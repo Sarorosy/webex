@@ -26,14 +26,13 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       setResults([]);
       return;
     }
-    console.log(query);
 
     const controller = new AbortController();
     const fetchResults = async () => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "https://webexback-06cc.onrender.com/api/messages/totalfind",
+          "http://localhost:5000/api/messages/totalfind",
           {
             method: "POST",
             headers: {
@@ -200,7 +199,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                             navigate("/chat", {
                               state: { type: "message", data: msg },
                             });
-                            setSelectedMessage(msg);
+                            // setSelectedUser(msg.user)
+                            // setSelectedMessage(msg);
                           }}
                         >
                           <div className="flex items-center gap-2">
