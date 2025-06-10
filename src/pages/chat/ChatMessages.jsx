@@ -941,9 +941,9 @@ const ChatMessages = ({
                   <div
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
-                    onMouseEnter={() => {
-                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
-                    }}
+                    // onMouseEnter={() => {
+                    //   if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                    // }}
                     onMouseLeave={() => {
                       if (!emojiPopupLocked) {
                         setHoveredMessageId(null);
@@ -997,76 +997,16 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative max-w-[60%] min-w-[20%] ${
-                        isSent
-                          ? `${
-                              theme == "dark"
-                                ? "bg-gray-500 text-gray-50"
-                                : "bg-gray-100 text-gray-900"
-                            }`
-                          : `${
-                              theme == "dark"
-                                ? "bg-gray-500 text-gray-50 border border-gray-400"
-                                : "bg-gray-100 text-gray-900 border border-gray-200"
-                            } `
-                      } rounded-lg px-3 py-2 shadow-sm ${
+                      className={`message relative max-w-[60%] min-w-[20%]  rounded-lg  shadow-sm ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      {/* {msg.is_new && msg.is_new == "1" ? (
-                        <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
-                          New Message
+                      {msg.is_new && msg.is_new == "1" && msg.mentioned_users && msg.mentioned_users.includes(user?.id) ? (
+                        <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse">
+                          
                         </div>
-                      ) : null} */}
-                      <div
-                        className={`text-xs  mb-1 font-medium ${
-                          isSent
-                            ? "text-white-600 text-right"
-                            : `${
-                                theme == "dark" ? "text-white" : "text-gray-600"
-                              }`
-                        }`}
-                      >
-                        <div
-                          className={`flex gap-2 items-end f-11 ${
-                            isSent ? "flex-row-reverse" : ""
-                          }`}
-                        >
-                          <div>
-                            {isSent && !view_user_id
-                              ? "You"
-                              : msg.sender_name ?? "Unknown User"}
-                          </div>
-                          <div
-                            className={`message-time flex items-center text-xs f-11 ${
-                              isSent ? "justify-end" : "justify-start"
-                            }  ${
-                              isSent
-                                ? `${
-                                    theme == "dark"
-                                      ? "text-gray-100"
-                                      : "text-gray-400"
-                                  }`
-                                : `${
-                                    theme == "dark"
-                                      ? "text-gray-100"
-                                      : "text-gray-400"
-                                  }`
-                            }`}
-                            data-tooltip-id="my-tooltip"
-                            data-tooltip-content={msg.created_at}
-                          >
-                            <div> {formatTime(msg.created_at)}</div>
-                          </div>
-                          <div>
-                            {msg.is_edited == 1 && (
-                              <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
-                                Edited
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      ) : null}
+                      
                       {msg.is_file == 1 &&
                         msg.filename &&
                         (() => {
@@ -1161,6 +1101,79 @@ const ChatMessages = ({
                           isSent ? "items-end" : "items-start"
                         }`}
                       >
+                        <div
+                        className={`mbox px-3 py-2 w-full ${
+                        isSent
+                          ? `${
+                              theme == "dark"
+                                ? "bg-gray-500 text-gray-50"
+                                : "bg-gray-100 text-gray-900"
+                            }`
+                          : `${
+                              theme == "dark"
+                                ? "bg-gray-500 text-gray-50 border border-gray-400"
+                                : "bg-gray-100 text-gray-900 border border-gray-200"
+                            } `
+                      }`}
+                        onMouseEnter={() => {
+                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                    }}
+                    // onMouseLeave={() => {
+                    //   if (!emojiPopupLocked) {
+                    //     setHoveredMessageId(null);
+                    //     clearHover();
+                    //   }
+                    // }}
+                        >
+                        <div
+                        className={`text-xs  mb-1 font-medium ${
+                          isSent
+                            ? "text-white-600 text-right"
+                            : `${
+                                theme == "dark" ? "text-white" : "text-gray-600"
+                              }`
+                        }`}
+                      >
+                        <div
+                          className={`flex gap-2 items-end f-11 ${
+                            isSent ? "flex-row-reverse" : ""
+                          }`}
+                        >
+                          <div>
+                            {isSent && !view_user_id
+                              ? "You"
+                              : msg.sender_name ?? "Unknown User"}
+                          </div>
+                          <div
+                            className={`message-time flex items-center text-xs f-11 ${
+                              isSent ? "justify-end" : "justify-start"
+                            }  ${
+                              isSent
+                                ? `${
+                                    theme == "dark"
+                                      ? "text-gray-100"
+                                      : "text-gray-400"
+                                  }`
+                                : `${
+                                    theme == "dark"
+                                      ? "text-gray-100"
+                                      : "text-gray-400"
+                                  }`
+                            }`}
+                            data-tooltip-id="my-tooltip"
+                            data-tooltip-content={msg.created_at}
+                          >
+                            <div> {formatTime(msg.created_at)}</div>
+                          </div>
+                          <div>
+                            {msg.is_edited == 1 && (
+                              <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
+                                Edited
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                         {msg.is_quoted == 1 &&
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
@@ -1200,7 +1213,7 @@ const ChatMessages = ({
                             </div>
                           )}
                         <div
-                          className={`flex ${
+                          className={` pb-2 flex ${
                             isSent ? "justify-end" : "justify-start"
                           }`}
                         >
@@ -1217,7 +1230,7 @@ const ChatMessages = ({
                             dangerouslySetInnerHTML={{ __html: msg.message }}
                           ></div>
                         </div>
-
+                      </div>
                         {(() => {
                           let pinned = [];
 
@@ -1307,21 +1320,26 @@ const ChatMessages = ({
                                         ? "border-r-2 flex flex-col justify-end items-end me-4"
                                         : "border-l-2 ms-4"
                                     }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
-                                    onMouseEnter={() =>
+                                    onMouseEnter={() =>{
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
                                       )
-                                    }
+                                      if (!emojiPopupLocked) {
+                                        setHoveredMessageId(null);
+                                        clearHover();
+                                      }
+                                    }}
                                     onMouseLeave={() => {
                                       setHoveredReplyMessageId(null);
                                       clearReplyHover();
+                                      
                                     }}
                                   >
-                                    {/* {reply.is_new && reply.is_new == "1" ? (
-                                      <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
-                                        New Reply
+                                    {reply.is_new && reply.is_new == "1" && reply.mentioned_users && reply.mentioned_users.includes(user?.id) ? (
+                                      <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse">
+                                        
                                       </div>
-                                    ) : null} */}
+                                    ) : null}
                                     {reply.is_file == 1 &&
                                       reply.filename &&
                                       (() => {

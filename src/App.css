@@ -302,12 +302,12 @@ div#commentsMention[placeholder]:empty:before {
 
 
 
-.mw:hover .message {
-    background: #ddd;
+ .mbox {
+    /* background: #f3f3f3; */
 }
 
-.mw-dark:hover .message {
-    background: #939599;
+ .mbox:hover {
+    background: #ddd;
 }
 
 
