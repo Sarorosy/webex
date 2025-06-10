@@ -16,7 +16,7 @@ const ProfileSettings = () => {
     try {
       setSaving(true);
       const res = await axios.post(
-        "http://localhost:5000/api/users/updateusersettings",
+        "https://webexback-06cc.onrender.com/api/users/updateusersettings",
         {
             userId: user?.id,
             notifications: notificationSetting,
