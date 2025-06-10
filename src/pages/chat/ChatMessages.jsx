@@ -966,7 +966,7 @@ const ChatMessages = ({
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
                       highlightedMessageId === msg.id
-                        ? "animate-pulse-highlight bg-gray-300"
+                        ? "animate-pulse-highlight bg-gray-300 p-2"
                         : ""
                     }  relative ${
                       theme == "dark" ? "mw-dark" : "mw"
