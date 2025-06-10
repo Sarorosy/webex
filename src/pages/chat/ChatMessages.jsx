@@ -640,7 +640,7 @@ const ChatMessages = ({
             "created_at",
             selmsg.created_at
           );
-          fetchAroundMessageUrl.searchParams.append("limit", "50"); // Fetch a reasonable number of messages
+          fetchAroundMessageUrl.searchParams.append("limit", "13"); // Fetch a reasonable number of messages
 
           const response = await fetch(fetchAroundMessageUrl.toString());
 
@@ -712,7 +712,7 @@ const ChatMessages = ({
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
   const EmojiPopup = ({ onSelect }) => (
-    <div className="ios absolute bottom-7 flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
+    <div className="ios absolute bottom-5 flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
@@ -941,9 +941,9 @@ const ChatMessages = ({
                   <div
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
-                    onMouseEnter={() => {
-                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
-                    }}
+                    // onMouseEnter={() => {
+                    //   if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                    // }}
                     onMouseLeave={() => {
                       if (!emojiPopupLocked) {
                         setHoveredMessageId(null);
@@ -951,30 +951,16 @@ const ChatMessages = ({
                       }
                     }}
                     //onDoubleClick={() => handleReply(msg.id, msg.message)}
-                    style={{
-                      opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
-                      filter:
-                        isReply && replyMsgId !== msg.id ? "blur(3px)" : "none",
-                      boxShadow:
-                        isReply && replyMsgId === msg.id
-                          ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
-                          : "none",
-                      transition:
-                        "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
-                    }}
+                    
                     className={`relative message-wrapper gap-2 rounded-lg w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
-                      highlightedMessageId === msg.id
+                      highlightedMessageId == msg.id
                         ? "animate-pulse-highlight bg-gray-300 p-2"
                         : ""
                     }  relative ${
                       theme == "dark" ? "mw-dark" : "mw"
-                    }  msg-number-${msg.id} ${isSent ? "" : ""} ${
-                      isReply && replyMsgId == msg.id
-                        ? "ring-2 p-2 ring-blue-400 bg-blue-50 "
-                        : ""
-                    }`}
+                    }  msg-number-${msg.id} ${isSent ? "" : ""} `}
                   >
                     <div
                       className={`flex flex-col ${
@@ -997,7 +983,34 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative max-w-[60%] min-w-[20%] ${
+                      className={`message relative  max-w-[60%] min-w-[20%] ${
+                        isSent ? "rounded-tr-sm" : "rounded-tl-sm"
+                      }`}
+                    >
+                      {msg.is_new && msg.is_new == "1" && msg.mentioned_users && msg.mentioned_users.includes(user?.id) ? (
+                        <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
+                      ) : null}
+                      
+                      
+
+                      <div
+                        className={`message-content flex flex-col justify-start w-full ${
+                          isSent ? "items-end" : "items-start"
+                        }`}
+                      >
+                        <div
+                        style={{
+                          opacity: isReply && replyMsgId != msg.id ? "0.3" : "1",
+                          filter:
+                            isReply && replyMsgId != msg.id ? "blur(3px)" : "none",
+                          boxShadow:
+                            isReply && replyMsgId == msg.id
+                              ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
+                              : "none",
+                          transition:
+                            "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
+                        }}
+                        className={`mbox px-3 py-2 w-full ${
                         isSent
                           ? `${
                               theme == "dark"
@@ -1009,16 +1022,24 @@ const ChatMessages = ({
                                 ? "bg-gray-500 text-gray-50 border border-gray-400"
                                 : "bg-gray-100 text-gray-900 border border-gray-200"
                             } `
-                      } rounded-lg px-3 py-2 shadow-sm ${
-                        isSent ? "rounded-tr-sm" : "rounded-tl-sm"
-                      }`}
-                    >
-                      {/* {msg.is_new && msg.is_new == "1" ? (
-                        <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
-                          New Message
-                        </div>
-                      ) : null} */}
-                      <div
+                      }
+                      ${
+                        isReply && replyMsgId == msg.id
+                          ? "ring-2 p-2 ring-blue-400 bg-blue-50 "
+                          : ""
+                      }
+                      `}
+                        onMouseEnter={() => {
+                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
+                    }}
+                    // onMouseLeave={() => {
+                    //   if (!emojiPopupLocked) {
+                    //     setHoveredMessageId(null);
+                    //     clearHover();
+                    //   }
+                    // }}
+                        >
+                        <div
                         className={`text-xs  mb-1 font-medium ${
                           isSent
                             ? "text-white-600 text-right"
@@ -1086,10 +1107,10 @@ const ChatMessages = ({
                           const filenameOnly = msg.filename.split("/").pop();
 
                           return (
-                            <div className="w-full mb-3">
+                            <div className="w-full mb-1">
                               {/* File Info Box */}
-                              <div className="bg-white/80 border border-gray-300 rounded-lg shadow-sm">
-                                <div className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                              <div className="bg-white/80 border border-gray-300 rounded shadow-sm">
+                                <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
                                   {isImage ? (
                                     <ImageIcon
                                       className="text-pink-500"
@@ -1155,12 +1176,6 @@ const ChatMessages = ({
                             </div>
                           );
                         })()}
-
-                      <div
-                        className={`message-content flex flex-col justify-start  ${
-                          isSent ? "items-end" : "items-start"
-                        }`}
-                      >
                         {msg.is_quoted == 1 &&
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
@@ -1200,7 +1215,7 @@ const ChatMessages = ({
                             </div>
                           )}
                         <div
-                          className={`flex ${
+                          className={` flex ${
                             isSent ? "justify-end" : "justify-start"
                           }`}
                         >
@@ -1217,7 +1232,102 @@ const ChatMessages = ({
                             dangerouslySetInnerHTML={{ __html: msg.message }}
                           ></div>
                         </div>
+                        {(() => {
+                        let reactions = [];
 
+                        try {
+                          const parsed =
+                            typeof msg.reactions === "string"
+                              ? JSON.parse(msg.reactions)
+                              : msg.reactions;
+
+                          if (Array.isArray(parsed)) {
+                            reactions = parsed;
+                          }
+                        } catch {
+                          reactions = [];
+                        }
+
+                        if (reactions.length === 0) return null;
+
+                        const reactionMap = reactions.reduce((acc, r) => {
+                          acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                          return acc;
+                        }, {});
+
+                        return (
+                          <div className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
+                            ${
+                              isSent ? "justify-end" : "justify-start"
+                            }
+                          `}>
+                            {hoveredEmoji && hoveredEmoji == msg.id && (
+                              <div
+                                ref={tooltipRef}
+                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                              >
+                                {loadingReactions ? (
+                                  <div>Loading...</div>
+                                ) : (
+                                  <div className="space-y-1 ios flex items-center">
+                                    {reactionUsers.map((user) => (
+                                      <div
+                                        key={user.id}
+                                        className={` ${
+                                          theme == "dark"
+                                            ? "text-black"
+                                            : "text-black"
+                                        } flex items-center gap-2`}
+                                      >
+                                        <img
+                                          src={
+                                            user.profile_pic
+                                              ? "https://rapidcollaborate.in/ccp" +
+                                                user.profile_pic
+                                              : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                  0
+                                                )}&background=random&color=fff&size=128`
+                                          }
+                                          alt={user.name}
+                                          className="w-5 h-5 rounded-full"
+                                        />
+                                        <span className="f-11">{user.name}</span>
+                                        <span>{user.emoji}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {Object.entries(reactionMap).map(
+                              ([emoji, count]) => (
+                                <div
+                                  key={emoji}
+                                  onMouseEnter={(e) => {
+                                    if (!emojiPopupLocked) {
+                                      handleReactionHover(
+                                        e,
+                                        emoji,
+                                        msg,
+                                        "message"
+                                      );
+                                    }
+                                  }}
+                                  //onMouseLeave={clearHover}
+                                  className="bg-gray-100 flex ios border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs flex items-center"
+                                >
+                                  <span className="mr-1">{emoji}</span>
+                                  <span className="text-[10px] font-medium">
+                                    {count}
+                                  </span>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        );
+                      })()}
+                      </div>
                         {(() => {
                           let pinned = [];
 
@@ -1235,10 +1345,18 @@ const ChatMessages = ({
                             pinned.includes(
                               isValidViewUserId ? view_user_id : user?.id
                             ) ? (
-                            <span className="absolute top-[-8px] right-[-3px] animate-pulse">
+                            <span className={`absolute top-[-8px]  animate-pulse
+                              ${
+                                isSent ? "left-[-3px]" : "right-[-3px]"
+                              }
+                            `}>
                               <Pin
                                 size={18}
-                                className="text-orange-500 fill-orange-500 rotate-45"
+                                className={`text-orange-500 fill-orange-500 
+                                  ${
+                                    isSent ? "rotate-[-45deg]" : "rotate-45"
+                                  }
+                                `}
                               />
                             </span>
                           ) : null;
@@ -1293,35 +1411,64 @@ const ChatMessages = ({
                                   : reply.sender_id == user.id;
 
                                 return (
+                                  <div className={`flex gap-2
+                                    ${
+                                      isSent ? "flex-row-reverse" : ""
+                                    }
+                                  `}>
+                                    <div>
+                                      {reply.profile_pic &&
+                                      reply.profile_pic != "null" &&
+                                      reply.profile_pic != "" ? (
+                                        <img
+                                          src={
+                                            "https://rapidcollaborate.in/ccp" +
+                                            reply.profile_pic
+                                          }
+                                          className="h-6 w-6 rounded-full object-cover border-2 border-gray shadow-sm"
+                                        />
+                                      ) : (
+                                        <div className="flex justify-center items-center h-6 w-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
+                                          {reply.sender_name
+                                            ? reply.sender_name.charAt(0)
+                                            : "U"}
+                                        </div>
+                                      )}
+                                    </div>
                                   <div
                                     key={`${reply.id}-${reply.created_at}`}
                                     ref={(el) =>
                                       (messageRefs.current[reply.id] = el)
                                     }
-                                    className={`reply-box  ${
+                                    className={`reply-box w-full ${
                                       highlightedMessageId == reply.id
                                         ? " bg-gray-300"
-                                        : " bg-gray-50"
+                                        : " bg-gray-100"
                                     } ${
                                       isSent
-                                        ? "border-r-2 flex flex-col justify-end items-end me-4"
-                                        : "border-l-2 ms-4"
+                                        ? "border-r-2 flex flex-col justify-end items-end "
+                                        : "border-l-2"
                                     }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
-                                    onMouseEnter={() =>
+                                    onMouseEnter={() =>{
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
                                       )
-                                    }
+                                      if (!emojiPopupLocked) {
+                                        setHoveredMessageId(null);
+                                        clearHover();
+                                      }
+                                    }}
                                     onMouseLeave={() => {
                                       setHoveredReplyMessageId(null);
                                       clearReplyHover();
+                                      
                                     }}
                                   >
-                                    {/* {reply.is_new && reply.is_new == "1" ? (
-                                      <div className="absolute -top-2 right-0 text-white bg-blue-500 p-0.5 f-11">
-                                        New Reply
+                                    {reply.is_new && reply.is_new == "1" && reply.mentioned_users && reply.mentioned_users.includes(user?.id) ? (
+                                      <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse">
+                                        
                                       </div>
-                                    ) : null} */}
+                                    ) : null}
                                     {reply.is_file == 1 &&
                                       reply.filename &&
                                       (() => {
@@ -1430,23 +1577,7 @@ const ChatMessages = ({
                                           className="text-blue-600"
                                         />
                                       </div> */}
-                                      {reply.profile_pic &&
-                                      reply.profile_pic != "null" &&
-                                      reply.profile_pic != "" ? (
-                                        <img
-                                          src={
-                                            "https://rapidcollaborate.in/ccp" +
-                                            reply.profile_pic
-                                          }
-                                          className="h-6 w-6 rounded-full object-cover border-2 border-gray shadow-sm"
-                                        />
-                                      ) : (
-                                        <div className="flex justify-center items-center h-6 w-6 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
-                                          {reply.sender_name
-                                            ? reply.sender_name.charAt(0)
-                                            : "U"}
-                                        </div>
-                                      )}
+                                      
                                       {reply.sender_id == user?.id &&
                                       !view_user_id
                                         ? "You"
@@ -1524,7 +1655,11 @@ const ChatMessages = ({
                                             hoveredReplyEmoji == reply.id && (
                                               <div
                                                 ref={tooltipRef}
-                                                className="absolute top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                                className={`absolute top-[30px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs
+                                                  ${
+                                                    isSent ? "-left-[150px]" : "-right-[30px]"
+                                                  }  
+                                                `}
                                               >
                                                 {loadingReactions ? (
                                                   <div>Loading...</div>
@@ -1598,8 +1733,8 @@ const ChatMessages = ({
                                       `reply-${reply.id}` && (
                                       <div
                                         className={` ${
-                                          isSent ? "-left-20" : "-right-2"
-                                        } chat-funt-set message-actions absolute -top-6  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
+                                          isSent ? "left-[-150px]" : "right-[-150px]"
+                                        } chat-funt-set message-actions absolute -top-0  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
                                       >
                                         <div
                                           className="relative action-button"
@@ -1611,10 +1746,10 @@ const ChatMessages = ({
                                                 (prev) => !prev
                                               )
                                             }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
                                             title="React"
                                           >
-                                            <Smile size={12} />
+                                            <Smile size={11} />
                                           </button>
                                           {showReplyEmojiPopup && (
                                             <EmojiPopup
@@ -1631,7 +1766,7 @@ const ChatMessages = ({
                                         </div>
                                         <button
                                           onClick={() => handleCopy(reply)}
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                                          className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
                                           title="Copy"
                                         >
                                           <Copy size={11} />
@@ -1645,7 +1780,7 @@ const ChatMessages = ({
                                                 reply.message
                                               )
                                             }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
                                             title="Edit reply"
                                           >
                                             <Pen size={11} />
@@ -1659,7 +1794,7 @@ const ChatMessages = ({
                                               reply.message
                                             )
                                           }
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-green-50 transition-colors"
+                                          className="action-button py-1 px-2 text-gray-600 hover:bg-green-50 transition-colors"
                                           title="Reply to reply"
                                         >
                                           <Reply size={11} />
@@ -1669,7 +1804,7 @@ const ChatMessages = ({
                                           onClick={() =>
                                             handleReminder(reply.id)
                                           }
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
                                           title="Set reminder"
                                         >
                                           <BellDot size={11} />
@@ -1677,7 +1812,7 @@ const ChatMessages = ({
 
                                         <button
                                           onClick={() => handleQuote(reply)}
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
                                           title="Quote reply"
                                         >
                                           <QuoteIcon size={11} />
@@ -1685,7 +1820,7 @@ const ChatMessages = ({
 
                                         <button
                                           onClick={() => handlePinMsg(reply.id)}
-                                          className="action-button p-1.5 px-2 text-gray-600 hover:bg-orange-50 transition-colors"
+                                          className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50 transition-colors"
                                           title="Pin reply"
                                         >
                                           <Pin size={11} />
@@ -1696,7 +1831,7 @@ const ChatMessages = ({
                                             onClick={() =>
                                               handleDeleteMsg(reply.id, "reply")
                                             }
-                                            className="action-button p-1.5 px-2 text-gray-600 hover:bg-red-50 transition-colors"
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-red-50 transition-colors"
                                             title="Delete reply"
                                           >
                                             <Trash2 size={11} />
@@ -1705,6 +1840,7 @@ const ChatMessages = ({
                                       </div>
                                     )}
                                   </div>
+                                  </div>
                                 );
                               })}
                             </div>
@@ -1712,104 +1848,14 @@ const ChatMessages = ({
                         })()}
                       </div>
 
-                      {(() => {
-                        let reactions = [];
-
-                        try {
-                          const parsed =
-                            typeof msg.reactions === "string"
-                              ? JSON.parse(msg.reactions)
-                              : msg.reactions;
-
-                          if (Array.isArray(parsed)) {
-                            reactions = parsed;
-                          }
-                        } catch {
-                          reactions = [];
-                        }
-
-                        if (reactions.length === 0) return null;
-
-                        const reactionMap = reactions.reduce((acc, r) => {
-                          acc[r.emoji] = (acc[r.emoji] || 0) + 1;
-                          return acc;
-                        }, {});
-
-                        return (
-                          <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                            {hoveredEmoji && hoveredEmoji == msg.id && (
-                              <div
-                                ref={tooltipRef}
-                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
-                              >
-                                {loadingReactions ? (
-                                  <div>Loading...</div>
-                                ) : (
-                                  <div className="space-y-1 ios">
-                                    {reactionUsers.map((user) => (
-                                      <div
-                                        key={user.id}
-                                        className={` ${
-                                          theme == "dark"
-                                            ? "text-black"
-                                            : "text-black"
-                                        } flex items-center gap-2`}
-                                      >
-                                        <img
-                                          src={
-                                            user.profile_pic
-                                              ? "https://rapidcollaborate.in/ccp" +
-                                                user.profile_pic
-                                              : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                  0
-                                                )}&background=random&color=fff&size=128`
-                                          }
-                                          alt={user.name}
-                                          className="w-5 h-5 rounded-full"
-                                        />
-                                        <span>{user.name}</span>
-                                        <span>{user.emoji}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {Object.entries(reactionMap).map(
-                              ([emoji, count]) => (
-                                <div
-                                  key={emoji}
-                                  onMouseEnter={(e) => {
-                                    if (!emojiPopupLocked) {
-                                      handleReactionHover(
-                                        e,
-                                        emoji,
-                                        msg,
-                                        "message"
-                                      );
-                                    }
-                                  }}
-                                  //onMouseLeave={clearHover}
-                                  className="bg-gray-100 flex ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
-                                >
-                                  <span className="mr-1">{emoji}</span>
-                                  <span className="text-[10px] font-medium">
-                                    {count}
-                                  </span>
-                                </div>
-                              )
-                            )}
-                          </div>
-                        );
-                      })()}
+                      
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div className="flex items-start relative">
                         <div
-                          className="chat-funt-set message-actions absolute -top-3 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                          className="chat-funt-set message-actions absolute -top-0 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
                           style={{
-                            [isSent ? "right" : "left"]: "-50px",
+                            [isSent ? "right" : "left"]: "-60px",
                           }}
                         >
                           <div
