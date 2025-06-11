@@ -232,7 +232,7 @@ const ManageGroups = ({onClose}) => {
               ))}
 
               {totalPages > 1 && (
-                  <div className=" px-5 w-full flex justify-start items-center mb-12 gap-2 overflow-x-auto">
+                  <div className="w-full flex justify-start items-center mb-12 gap-2 overflow-x-auto">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage == 1}
