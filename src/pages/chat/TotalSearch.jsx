@@ -196,11 +196,19 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                           } cursor-pointer rounded`}
                           onClick={() => {
                             console.log("Clicked message:", msg);
-                            navigate("/chat", {
-                              state: { type: "message", data: msg },
-                            });
-                            // setSelectedUser(msg.user)
-                            // setSelectedMessage(msg);
+                            // navigate("/chat", {
+                            //   state: { type: "message", data: msg },
+                            // });
+                            if(selectedUser && selectedUser?.id == msg.user.id && selectedUser?.type == msg.user.type){
+
+                            }else{
+                              setSelectedUser(null);
+                            }
+                            setTimeout(()=>{
+                              setSelectedUser(msg.user)
+                              setSelectedMessage(msg);
+                            }, 100)
+                            
                           }}
                         >
                           <div className="flex items-center gap-2">
