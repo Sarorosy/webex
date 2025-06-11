@@ -551,8 +551,8 @@ const ChatSend = ({
 
         <div
           className={` ${
-            theme == "dark" ? "bg-gray-500 text-white" : "bg-white"
-          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios pt-2`}
+            theme == "dark" ? "bg-gray-700 text-white" : "bg-white"
+          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded`}
         >
           <div className="flex flex-col items-center gap-2 h-fill">
             <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition ">

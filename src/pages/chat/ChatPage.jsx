@@ -118,7 +118,7 @@ const ChatPage = () => {
             setLeftGroupOpen={setLeftGroupOpen}
           />
         ) : (
-          <div className={`flex flex-col flex-1 ${theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"} rounded m-2 ml-0 justify-between`}>
+          <div className={`flex flex-col flex-1 ${theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"} rounded m-2 justify-between`}>
            <StartConversation />
             </div>
         )}

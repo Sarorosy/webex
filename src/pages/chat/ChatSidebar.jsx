@@ -707,7 +707,7 @@ const ChatSidebar = ({
   return (
     <div
       className={` ${
-        theme == "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-black"
+        theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
       }  py-2 px-1 relative select-none  overflow-hidden  ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
@@ -721,7 +721,7 @@ const ChatSidebar = ({
     >
       <div
         onMouseDown={handleMouseDown}
-        className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[#2d2e5291] hover:bg-orange-300 hover:w-1"
+        className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-1"
       ></div>
 
       <div className="px-2  border-b mb-2">

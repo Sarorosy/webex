@@ -319,11 +319,11 @@ const ManageUsers = ({ onClose }) => {
                                   u.profile_pic
                                 }
                                 alt="Profile"
-                                className="w-8 h-8 rounded-full object-cover border"
+                                className="w-7 h-7 rounded-full object-cover border"
                               />
                             ) : (
                               <div
-                                className={`w-8 h-8 ${getRandomColor(
+                                className={`w-7 h-7 ${getRandomColor(
                                   u.id
                                 )} text-white flex items-center justify-center rounded-full text-xs font-bold`}
                               >
@@ -331,7 +331,7 @@ const ManageUsers = ({ onClose }) => {
                               </div>
                             )}
                           </div>
-                          <div>
+                          <div className="flex flex-col gap-2">
                             <div
                               className="font-medium"
                               style={{
@@ -350,12 +350,12 @@ const ManageUsers = ({ onClose }) => {
                                   u.trashed == 1 ? "line-through" : "",
                               }}
                             >
-                              <span className="flex items-center">
+                              <span className="flex items-center f-11">
                                 <Mail size={13} className="mr-2 font-bold" />{" "}
                                 {u.email}{" "}
                               </span>
                             </div>
-                            <div className="flex gap-2 mt-1">
+                            <div className="flex gap-2">
                               <div
                                 data-tooltip-id="my-tooltip"
                                 data-tooltip-content={
@@ -593,7 +593,7 @@ const ManageUsers = ({ onClose }) => {
                   )}
                 </div>
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center mb-12 gap-2">
+                  <div className="w-full flex justify-start items-center mb-12 gap-2 overflow-x-auto">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage == 1}
