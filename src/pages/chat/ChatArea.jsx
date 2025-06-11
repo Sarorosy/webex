@@ -133,6 +133,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
               setSelectedQuoteMessage={setSelectedQuoteMessage}
               scrollToBottom={scrollToBottom}
               containerRef={containerRef}
+               isTyping={isTyping}
             />
           ) : (
             <ChatFiles

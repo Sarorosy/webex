@@ -18,6 +18,7 @@ import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import axios from "axios";
 import ScreenSharing from "../../components/ScreenSharing";
+import TypingIndicator from './TypingIndicator';
 
 const ChatHeader = ({
   selectedUser,
@@ -198,9 +199,10 @@ const ChatHeader = ({
                 />
               </button>
             </span>
-            {isTyping && (
-              <div className="typing-indicator italic  f-11">Typing...</div>
-            )}
+            {/* {isTyping && (
+              // <div className="typing-indicator italic  f-11">Typing...</div>
+              // <TypingIndicator />
+            )} */}
             {/* <AgoraCall /> */}
           </h2>
 

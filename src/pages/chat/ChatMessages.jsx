@@ -27,6 +27,7 @@ import ReadPersons from "./ReadPersons";
 import ReminderModal from "./ReminderModal";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import FileModal from "../../components/FileModal";
+import TypingIndicator from "./TypingIndicator";
 
 const ChatMessages = ({
   view_user_id,
@@ -40,6 +41,7 @@ const ChatMessages = ({
   setSelectedQuoteMessage,
   scrollToBottom,
   containerRef,
+  isTyping
 }) => {
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -2030,6 +2032,9 @@ const ChatMessages = ({
               })}
             </div>
           ))
+        )}
+        {isTyping && (
+          <TypingIndicator />
         )}
         <div>
           <AnimatePresence>
