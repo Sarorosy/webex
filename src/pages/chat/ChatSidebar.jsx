@@ -44,6 +44,11 @@ const ChatSidebar = ({
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
+  const chatsRef = useRef([]);
+  useEffect(() => {
+    chatsRef.current = chats;
+  }, [chats]);
+
   const audioRef = useRef(new Audio(notificationsound));
 
   useEffect(() => {
@@ -84,7 +89,7 @@ const ChatSidebar = ({
     };
 
     const handleGroupDeleted = (data) => {
-      console.log(data)
+      console.log(data);
       setChats((prevChats) =>
         prevChats.filter(
           (chat) => !(chat.id == data.group_id && chat.type === "group")
@@ -178,6 +183,7 @@ const ChatSidebar = ({
         const filteredChats = (data.data || []).filter(
           (item) => item.id !== undefined
         );
+        console.log(data.data);
         setChats(filteredChats);
         updateChatLoginStatus(filteredChats);
         setChatsLoaded(true);
@@ -403,7 +409,6 @@ const ChatSidebar = ({
         return;
       }
 
-
       const otherUserId =
         msg.user_type === "group"
           ? msg.receiver_id
@@ -417,10 +422,9 @@ const ChatSidebar = ({
       const isRelevant =
         msg.user_type === "group"
           ? (() => {
-
               console.log("Available chats:", chats);
 
-              const matchingChat = chats.find(
+              const matchingChat = chatsRef.current.find(
                 (chat) => chat.id == otherUserId && chat.type === otherChatType
               );
 
@@ -473,8 +477,9 @@ const ChatSidebar = ({
             ? updatedChats[index]?.unread_count || 0
             : (updatedChats[index]?.unread_count || 0) + 1,
           is_mentioned:
-            Array.isArray(msg.mentioned_users) &&
-            msg.mentioned_users.includes(user?.id),
+            updatedChats[index]?.is_mentioned ||
+            (Array.isArray(msg.mentioned_users) &&
+              msg.mentioned_users.includes(user?.id)),
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -644,8 +649,9 @@ const ChatSidebar = ({
         group.selected_members.includes(user?.id)
       ) {
         // Remove selected_members from the group payload if you don't want it stored
-        const { selected_members, ...chatData } = group;
-        setChats((prevChats) => [...prevChats, chatData]);
+        // const { selected_members, ...chatData } = group;
+        // setChats((prevChats) => [...prevChats, chatData]);
+        fetchChats(false);
       }
     };
 

@@ -338,7 +338,7 @@ const ChatMessages = ({
       const handleNewMessage = (msg) => {
         if (!mounted) return;
 
-        console.log(msg, "msg from socket");
+        // console.log(msg, "msg from socket");
 
         const isGroupMessage =
           msg.user_type == "group" &&
