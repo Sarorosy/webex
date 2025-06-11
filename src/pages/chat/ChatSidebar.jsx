@@ -905,7 +905,8 @@ const ChatSidebar = ({
                   `}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
+                    <div>
+                      <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
                       {chat.profile_pic ? (
                         <img
                           src={
@@ -921,6 +922,7 @@ const ChatSidebar = ({
                         chat.type == "user" && (
                           <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
                         )}
+                    </div>
                     </div>
                     <span
                       className={`truncate  w-100 ${

@@ -1045,17 +1045,18 @@ const ChatMessages = ({
                           transition:
                             "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                         }}
-                        className={`mbox px-3 py-2 w-full ${
+                        className={`mbox px-3 py-2 w-full rounded-lg
+                             ${
                         isSent
                           ? `${
                               theme == "dark"
-                                ? "bg-gray-500 text-gray-50"
-                                : "bg-gray-100 text-gray-900"
+                                ? "bg-gray-500 text-gray-50 rounded-tr-none"
+                                : "bg-gray-100 text-gray-900 rounded-tr-none"
                             }`
                           : `${
                               theme == "dark"
-                                ? "bg-gray-500 text-gray-50 border border-gray-400"
-                                : "bg-gray-100 text-gray-900 border border-gray-200"
+                                ? "bg-gray-500 text-gray-50 rounded-tl-none"
+                                : "bg-gray-100 text-gray-900 rounded-tl-none"
                             } `
                       }
                       ${
@@ -1144,31 +1145,33 @@ const ChatMessages = ({
                           return (
                             <div className="w-full mb-1">
                               {/* File Info Box */}
-                              <div className="bg-white/80 border border-gray-300 rounded shadow-sm">
-                                <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
-                                  {isImage ? (
+                              <div className="bg-white/80 border border-gray-300 rounded shadow-sm flex flex-col gap-1">
+                                <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-l w-full">
+                                  <div>
+                                    {isImage ? (
                                     <ImageIcon
                                       className="text-pink-500"
-                                      size={15}
+                                      size={11}
                                     />
                                   ) : ext === "mp4" || ext === "mov" ? (
                                     <VideoIcon
                                       className="text-purple-600"
-                                      size={15}
+                                      size={11}
                                     />
                                   ) : ["doc", "docx", "xls", "xlsx"].includes(
                                       ext
                                     ) ? (
                                     <FileSpreadsheet
                                       className="text-green-600"
-                                      size={15}
+                                      size={11}
                                     />
                                   ) : (
                                     <FileText
                                       className="text-blue-600"
-                                      size={15}
+                                      size={11}
                                     />
                                   )}
+                                  </div>
                                   <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
                                     <a
                                       href={fileUrl}
@@ -1183,8 +1186,9 @@ const ChatMessages = ({
                                 </div>
 
                                 {/* File Preview */}
-                                <div className="px-3">
+                                
                                   {isImage && (
+                                    <div className="px-3">
                                     <button
                                       onClick={() =>{
                                         setOpenFileModal({
@@ -1202,11 +1206,12 @@ const ChatMessages = ({
                                       <img
                                         src={fileUrl}
                                         alt={msg.filename}
-                                        className="rounded-md shadow max-w-36 h-full object-contain"
+                                        className="max-w-36 h-full object-contain"
                                       />
                                     </button>
+                                    </div>
                                   )}
-                                </div>
+                                
                               </div>
                             </div>
                           );
@@ -1215,8 +1220,14 @@ const ChatMessages = ({
                           msg.quoted_msg &&
                           msg.quoted_msg_name &&
                           msg.quoted_msg_id && (
-                            <div className="border-l-2 border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800">
-                              <div className="flex items-center justify-between mb-1">
+                            <div className={` border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800
+                              ${
+                                isSent ? "border-r-2" : "border-l-2"
+                              }`}
+                            >
+                              <div className={`flex items-center justify-between mb-1 ${
+                                isSent ? "flex-row-reverse" : ""
+                              }`}>
                                 <span className="font-bold text-gray-700 mr-1">
                                   {msg.quoted_msg_name?.length > 15
                                     ? msg.quoted_msg_name.slice(0, 15) + "…"
@@ -1483,7 +1494,22 @@ const ChatMessages = ({
                                       isSent
                                         ? "border-r-2 flex flex-col justify-end items-end "
                                         : "border-l-2"
-                                    }  border-blue-400 p-2  text-sm text-gray-800  hover:shadow-md transition-shadow relative`}
+                                    }
+                                    ${
+                                      isSent
+                                        ? `${
+                                            theme == "dark"
+                                              ? "bg-gray-500 text-gray-50 rounded-tr-none"
+                                              : "bg-gray-100 text-gray-900 rounded-tr-none"
+                                          }`
+                                        : `${
+                                            theme == "dark"
+                                              ? "bg-gray-500 text-gray-50 rounded-tl-none "
+                                              : "bg-gray-100 text-gray-900 rounded-tl-none "
+                                          } `
+                                    }
+                                    
+                                    border-blue-400 p-2  text-sm rounded-lg   hover:shadow-md transition-shadow relative`}
                                     onMouseEnter={() =>{
                                       setHoveredReplyMessageId(
                                         `reply-${reply.id}`
@@ -1602,8 +1628,15 @@ const ChatMessages = ({
                                         );
                                       })()}
                                     <div
-                                      className={`font-semibold f-11 text-gray-700 flex items-end ${
+                                      className={` f-11 flex items-center ${
                                         isSent ? "flex-row-reverse" : ""
+                                      }
+                                      ${
+                                        isSent
+                                          ? "text-white-600 text-right"
+                                          : `${
+                                              theme == "dark" ? "text-white" : "text-gray-600"
+                                            }`
                                       } gap-2 mb-1 `}
                                     >
                                       {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1613,11 +1646,21 @@ const ChatMessages = ({
                                         />
                                       </div> */}
                                       
-                                      {reply.sender_id == user?.id &&
+                                      <div>
+                                        {reply.sender_id == user?.id &&
                                       !view_user_id
                                         ? "You"
                                         : reply.sender_name || "User"}
-                                      <div className="font-normal text-xs f-11 text-gray-400 flex items-center">
+                                      </div>
+                                      <div className={`text-xs f-11
+                                        ${
+                                        isSent
+                                          ? "text-white-600"
+                                          : `${
+                                              theme == "dark" ? "text-white" : "text-gray-400"
+                                            }`
+                                      }
+                                        `}>
                                         {formatTime(reply.created_at)}
                                       </div>
                                     </div>
@@ -1649,10 +1692,14 @@ const ChatMessages = ({
                                             ? view_user_id
                                             : user?.id
                                         ) ? (
-                                        <span className="absolute top-[-8px] right-[-3px] animate-pulse">
+                                        <span className={`absolute top-[-8px]  animate-pulse ${
+                                              isSent ? "left-[-3px]" : "right-[-3px]"
+                                            }`}>
                                           <Pin
                                             size={18}
-                                            className="text-orange-500 fill-orange-500 rotate-45"
+                                            className={`text-orange-500 fill-orange-500 ${
+                                              isSent ? "rotate-[-45deg]" : "rotate-45"
+                                            }`}
                                           />
                                         </span>
                                       ) : null;
