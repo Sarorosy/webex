@@ -183,7 +183,6 @@ const ChatSidebar = ({
         const filteredChats = (data.data || []).filter(
           (item) => item.id !== undefined
         );
-        console.log(data.data);
         setChats(filteredChats);
         updateChatLoginStatus(filteredChats);
         setChatsLoaded(true);
