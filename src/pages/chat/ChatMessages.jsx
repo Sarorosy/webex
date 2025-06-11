@@ -894,7 +894,7 @@ const ChatMessages = ({
       ref={containerRef}
       className={`messages-container ios flex flex-col p-3 ${
         theme == "dark"
-          ? "bg-gray-900"
+          ? "bg-gray-800"
           : "bg-gradient-to-b from-orange-50 to-white"
       } chat-messages-container-div chat-headAmsg overflow-y-auto`}
       onScroll={handleScroll}
@@ -1247,9 +1247,13 @@ const ChatMessages = ({
                                       );
                                     }
                                   }}
-                                  className="text-orange-500 hover:underline"
+                                  className={`text-orange-500 hover:text-orange-900 flex gap-1 ${
+                                isSent ? "flex-row-reverse " : ""
+                              }`}
                                 >
-                                  Go to message →
+                                  Go to message <span className={` ${
+                                isSent ? "rotate-[-180deg] " : ""
+                              }`}>→</span>
                                 </button>
                               </div>
                               <div
@@ -1310,12 +1314,12 @@ const ChatMessages = ({
                             {hoveredEmoji && hoveredEmoji == msg.id && (
                               <div
                                 ref={tooltipRef}
-                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs"
+                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs"
                               >
                                 {loadingReactions ? (
                                   <div>Loading...</div>
                                 ) : (
-                                  <div className="space-y-1 ios flex items-center">
+                                  <div className="space-y-1 ios flex items-start flex-col">
                                     {reactionUsers.map((user) => (
                                       <div
                                         key={user.id}

@@ -347,12 +347,14 @@ export default function Header() {
   return (
     <header
       className={`${
-        theme == "dark" ? "bg-gray-900 text-white" : "bg-white text-[#092e46]"
+        theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-[#092e46]"
       } shadow-md ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div className=" mx-auto flex flex-col items-center justify-between px-2 py-4 h-full ">
+      <div className={`${
+        theme == "dark" ? "border-gray-700" : ""
+      } mx-auto flex flex-col items-center justify-between px-2 py-4 h-full border-r`}>
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
@@ -468,7 +470,7 @@ export default function Header() {
                   onClick={() => updateTheme("light")}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Switch to Light Theme"
-                  className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-3 rounded-full text-gray-500  transition"
+                  className="flex hover:bg-gray-200 bg-gray-100 hover:text-black items-center p-2 rounded-full text-gray-500  transition"
                 >
                   <Sun size={17} className="" />
                 </button>
@@ -477,7 +479,7 @@ export default function Header() {
                   onClick={() => updateTheme("dark")}
                   data-tooltip-id="my-tooltip"
                   data-tooltip-content="Switch to Dark Theme"
-                  className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-3 rounded-full text-gray-500  transition"
+                  className="flex hover:bg-gray-800 border border-gray-600  hover:text-white items-center p-2 rounded-full text-gray-500  transition"
                 >
                   <MoonIcon size={17} className="" />
                 </button>
@@ -487,7 +489,7 @@ export default function Header() {
                 onClick={() => setLogoutOpen(true)}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content="Logout"
-                className="flex hover:bg-red-500 hover:text-white items-center p-3 rounded-full text-gray-500  transition"
+                className="flex hover:bg-red-500 hover:text-white items-center p-2 rounded-full text-gray-500  transition"
               >
                 <LogOut size={17} className="" />
               </button>

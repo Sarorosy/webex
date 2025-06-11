@@ -154,7 +154,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
         
 
         {chatTab == "chats" && (
-          <div className={`chat-text-n ${theme == "dark" ? "bg-gray-500" : "bg-white"}`}>
+          <div className={`chat-text-n ${theme == "dark" ? "" : "bg-white"}`}>
             {/* Message Input */}
             <ChatSend
               userId={selectedUser?.id}
