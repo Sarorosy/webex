@@ -18,6 +18,9 @@ body{
 .f-11 {
   font-size: 11px;
 }
+.f-12 {
+  font-size: 12px;
+}
 
 /* Highlight selected item in mention dropdown */
 .e-mention .e-list-item.e-active {
@@ -65,11 +68,16 @@ div#commentsMention[placeholder]:empty:before {
     width: 100%;
   }
 }
-.message{
+/* .message{
   word-wrap: break-word;
   line-break: anywhere;
+} */
+.prose {
+    word-break: break-word;
+    white-space: pre-wrap;
+    display: inline-block;
+    /* max-width: 800px; */
 }
-
 #chatInput, #chatInputuser{
   line-break: anywhere;
 }

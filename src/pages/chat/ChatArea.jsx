@@ -96,7 +96,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   };
 
   return (
-    <div className="w-full bg-white rounded-lg m-2 flex flex-col justify-between relative ">
+    <div className="w-full rounded-lg m-2 flex flex-col justify-between relative ">
       <div>
       <ChatHeader
             selectedUser={selectedUser}

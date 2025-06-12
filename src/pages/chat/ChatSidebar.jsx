@@ -724,7 +724,14 @@ const ChatSidebar = ({
         className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-1"
       ></div>
 
-      <div className="px-2  border-b mb-2">
+      <div className={`px-2 border-b mb-2
+        ${
+          theme == "dark"
+            ? "border-gray-400"
+            : ""
+        }  
+      `}
+      >
         <h1 className="text-2xl font-bold flex items-center justify-between cursor-pointer">
           {" "}
           {view_user_name && (
@@ -763,7 +770,13 @@ const ChatSidebar = ({
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Find Groups, Persons, Messages"
-            className={`p-2 py-1 rounded-md w-full text-black focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent border border-gray-300`}
+            className={`p-2 py-1 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent border border-gray-300
+              ${
+                theme == "dark"
+                  ? "bg-gray-800 border-gray-400"
+                  : ""
+              }  
+            `}
           />
           {searchQuery && (
             <button
@@ -854,7 +867,13 @@ const ChatSidebar = ({
               filteredData.some((chat) =>
                 JSON.parse(chat.favourites || "[]").includes(user.id)
               ) && (
-                <div className="text-gray-600 mb-2 px-0 flex items-center">
+                <div className={` mb-2 px-0 flex items-center
+                  ${
+                    theme == "dark"
+                      ? "text-gray-300"
+                      : "text-gray-800"
+                  }
+                `}>
                   Favourites
                   <Star
                     size={13}
@@ -893,12 +912,12 @@ const ChatSidebar = ({
                   className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer   mb-1 overflow-hidden ${
                     selectedUser?.id === chat.id &&
                     selectedUser?.type == chat.type
-                      ? "bg-gray-300 text-black"
+                      ? "bg-gray-600 text-white"
                       : ""
                   } ${chat.read_status === 1 ? "font-bold" : ""}
                   ${
                     theme == "dark"
-                      ? "hover:bg-gray-600 hover:text-gray-100"
+                      ? "hover:bg-gray-600 hover:text-white text-gray-300"
                       : "hover:bg-gray-300 hover:text-black"
                   }
                   `}

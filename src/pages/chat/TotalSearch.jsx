@@ -79,9 +79,9 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       <div
         className={` h-[100vh] ${
           theme == "dark" ? "bg-gray-800 text-white" : "bg-white"
-        } shadow-xl border-l border-gray-300 z-[100] overflow-y-auto`}
+        } shadow-xl  border-gray-300 z-[100] overflow-y-auto`}
       >
-        <div className="px-2 py-1">
+        <div className="">
           <div className="relative" ref={searchRef}>
             {/* Search Input */}
             {/* <div className="relative mb-3 flex items-center gap-2 px-2 py-1 rounded bg-white  shadow-sm transition duration-200  border border-orange-100 cursor-pointer focus-within:ring-2 focus-within:ring-gray-400">
@@ -108,7 +108,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
             </div> */}
 
             {showResults && (
-              <div className="w-full mt-2 topmost z-50">
+              <div className="w-full  topmost z-50">
                 <div className="flex gap-3 mb-1 mx-auto border-b pb-2">
                   <button
                     onClick={() => setActiveTab("spaces")}
@@ -140,7 +140,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                     />
                   </div>
                 ) : activeTab === "spaces" ? (
-                  <div className="max-h-[75vh] overflow-y-auto">
+                  <div className="max-h-[85vh] overflow-y-auto">
                     {results?.results?.length > 0 ? (
                       results.results.map((user) => (
                         <div
@@ -184,14 +184,14 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                     )}
                   </div>
                 ) : (
-                  <div className="max-h-[75vh] overflow-y-auto">
+                  <div className="max-h-[85vh] overflow-y-auto f-12">
                     {results?.messages?.length > 0 ? (
                       results.messages.map((msg) => (
                         <div
                           key={msg.id}
                           className={`p-2 border-b  last:border-b-0 ${
                             theme == "dark"
-                              ? "bg-gray-500 hover:bg-gray-600 text-white"
+                              ? "bg-gray-500 hover:bg-gray-600 text-white mw-dark "
                               : "hover:bg-gray-100"
                           } cursor-pointer rounded`}
                           onClick={() => {
@@ -211,9 +211,10 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                             
                           }}
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-start  gap-2">
+                            <div>
                             {msg.profile_pic ? (
-                              <img
+                                <img
                                 src={`https://rapidcollaborate.in/ccp${msg.profile_pic}`}
                                 alt={msg.sender_name}
                                 className="w-6 h-6 rounded-full object-cover"
@@ -223,7 +224,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                                 {msg.sender_name.charAt(0)}
                               </div>
                             )}
-                            <div className="text-sm font-semibold flex items-center">
+                            </div>
+                            <div className="font-semibold ">
                               {msg.sender_id == user?.id
                                 ? "You"
                                 : msg.sender_name}{" "}
@@ -233,9 +235,9 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                             </div>
                           </div>
                           <div
-                            className={`text-sm ${
+                            className={` ${
                               theme == "dark" ? " text-white" : "text-gray-700"
-                            } mt-1`}
+                            } mt-1  prose`}
                             dangerouslySetInnerHTML={{ __html: msg.message }}
                           />
                           <div className="text-xs text-gray-400 mt-1">
@@ -244,7 +246,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                         </div>
                       ))
                     ) : (
-                      <p className="text-gray-500 text-sm p-2">
+                      <p className="text-gray-50 p-2">
                         {!query ? "Search Messages" : " No messages found."}
                       </p>
                     )}

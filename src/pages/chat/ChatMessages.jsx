@@ -1280,7 +1280,7 @@ const ChatMessages = ({
                                 ? "text-[26px]"
                                 : "text-[13px]"
                             }`}
-                            style={{lineBreak:"auto"}}
+                            style={{}}
                             dangerouslySetInnerHTML={{ __html: msg.message }}
                           ></div>
                         </div>

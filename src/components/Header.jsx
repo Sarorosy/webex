@@ -376,11 +376,13 @@ export default function Header() {
                 className="flex items-center p-1 f-13 rounded-full hover:bg-orange-200  transition relative"
               >
                 {user?.profile_pic ? (
-                  <img
+                  <div>
+                    <img
                     src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
                     alt="Profile"
                     className="w-8 h-8 rounded-full mx-auto object-cover border"
                   />
+                  </div>
                 ) : (
                   <div className="w-8 h-8 rounded-full mx-auto object-cover border bg-blue-600 text-white flex items-center justify-center">
                     {user.name[0]}
