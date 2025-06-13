@@ -2,24 +2,27 @@ import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useAuth } from "../../utils/idb";
-import { BellDot } from "lucide-react";
+import { BellDot, Circle, CircleMinus } from "lucide-react";
 
 const ProfileSettings = () => {
-  const { user, theme, updateNotifications } = useAuth();
+  const { user, theme, updateNotifications, updateAvailability } = useAuth();
   const [selectedTab, setSelectedTab] = useState("notifications");
   const [notificationSetting, setNotificationSetting] = useState(
     user?.notifications || "all"
   );
   const [saving, setSaving] = useState(false);
 
+  const [availabilityStatus, setAvailabilityStatus] = useState("busy");
+  const [availabilityDuration, setAvailabilityDuration] = useState("");
+
   const handleSave = async () => {
     try {
       setSaving(true);
       const res = await axios.post(
-        "https://webexback-06cc.onrender.com/api/users/updateusersettings",
+        "http://localhost:5000/api/users/updateusersettings",
         {
-            userId: user?.id,
-            notifications: notificationSetting,
+          userId: user?.id,
+          notifications: notificationSetting,
         }
       );
 
@@ -32,6 +35,72 @@ const ProfileSettings = () => {
     } catch (error) {
       toast.error("An error occurred");
       console.error(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleSaveAvailability = async () => {
+    try {
+      if (!availabilityStatus) {
+        return toast.error("Please select an availability status");
+      } else if (!availabilityDuration) {
+        return toast.error("Please select an availability duration");
+      }
+      setSaving(true);
+
+      const now = new Date();
+      const availabilityUntil = new Date(now);
+
+      const durationMap = {
+        "30min": 30,
+        "1hr": 60,
+        "2hr": 120,
+        "12hr": 720,
+        "7days": 10080, // 7 * 24 * 60
+        "14days": 20160,
+      };
+
+      const minutesToAdd = durationMap[availabilityDuration];
+      if (!minutesToAdd) {
+        return toast.error("Invalid duration");
+      }
+
+      availabilityUntil.setMinutes(
+        availabilityUntil.getMinutes() + minutesToAdd
+      );
+
+      const pad = (n) => String(n).padStart(2, "0");
+      const formattedAvailabilityUntil = `${availabilityUntil.getFullYear()}-${pad(
+        availabilityUntil.getMonth() + 1
+      )}-${pad(availabilityUntil.getDate())} ${pad(
+        availabilityUntil.getHours()
+      )}:${pad(availabilityUntil.getMinutes())}:${pad(
+        availabilityUntil.getSeconds()
+      )}`;
+
+      const response = await fetch(
+        "http://localhost:5000/api/users/updateuseravailability",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user?.id,
+            availability_status: availabilityStatus,
+            availability_duration: formattedAvailabilityUntil,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (data.status) {
+        toast.success("Updated");
+        updateAvailability(availabilityStatus)
+      } else {
+        toast.error("Failed to update");
+      }
+    } catch (e) {
+      console.log("An error occured", e);
     } finally {
       setSaving(false);
     }
@@ -56,10 +125,21 @@ const ProfileSettings = () => {
               }`}
               onClick={() => setSelectedTab("notifications")}
             >
-             <BellDot size={14} className="mr-2" /> Notifications
+              <BellDot size={14} className="mr-2" /> Notifications
             </button>
           </li>
-          {/* Add more tabs like Profile, Privacy, etc. here */}
+          {/* <li>
+            <button
+              className={`w-full flex items-center text-left px-3 py-1  rounded-md ${
+                selectedTab === "availability"
+                  ? "bg-orange-600 text-white"
+                  : "hover:bg-gray-200 text-gray-800"
+              }`}
+              onClick={() => setSelectedTab("availability")}
+            >
+              <CircleMinus size={14} className="mr-2" /> Availability
+            </button>
+          </li> */}
         </ul>
       </div>
 
@@ -123,6 +203,83 @@ const ProfileSettings = () => {
                 className="bg-black text-white px-2 py-1 rounded-md f-13 hover:bg-gray-600"
               >
                 {saving ? "Saving..." : "Save Settings"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === "availability" && (
+          <div>
+            <h3 className="text-xl font-semibold mb-4">
+              Availability Settings
+            </h3>
+
+            <div className="space-y-6">
+              {/* Status Selection */}
+              <div>
+                <h4 className="font-medium mb-2">Select Status</h4>
+                <div className="flex items-center space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setAvailabilityStatus("busy")}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                      availabilityStatus === "busy"
+                        ? "bg-red-100 text-red-600  border-red-600"
+                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Circle
+                      size={14}
+                      strokeWidth={3}
+                      className="mr-2 text-red-600 font-bold"
+                    />
+                    Busy
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAvailabilityStatus("dnd")}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                      availabilityStatus === "dnd"
+                        ? "bg-red-100 text-red-600  border-red-600"
+                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    <CircleMinus
+                      size={14}
+                      strokeWidth={3}
+                      className="mr-2 text-red-600 font-bold"
+                    />
+                    Do Not Disturb
+                  </button>
+                </div>
+              </div>
+
+              {/* Duration Selection */}
+              <div>
+                <h4 className="font-medium mb-2">Duration</h4>
+                <select
+                  value={availabilityDuration}
+                  onChange={(e) => setAvailabilityDuration(e.target.value)}
+                  className="border px-3 py-2 rounded-md text-sm"
+                >
+                  <option value="">Select Duration</option>
+                  <option value="30min">30 minutes</option>
+                  <option value="1hr">1 hour</option>
+                  <option value="2hr">2 hours</option>
+                  <option value="12hr">12 hours</option>
+                  <option value="7days">7 days</option>
+                  <option value="14days">14 days</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-7">
+              <button
+                onClick={handleSaveAvailability}
+                className="bg-black text-white px-3 py-1 rounded-md text-sm hover:bg-gray-600"
+              >
+                Save Availability
               </button>
             </div>
           </div>

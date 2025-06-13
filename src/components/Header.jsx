@@ -18,6 +18,8 @@ import {
   MoonIcon,
   Sun,
   X,
+  Circle,
+  CircleMinus,
 } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
@@ -95,7 +97,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "https://webexback-06cc.onrender.com/api/saveFcmToken",
+              "http://localhost:5000/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -388,8 +390,25 @@ export default function Header() {
                     {user.name[0]}
                   </div>
                 )}
-                {onlineUserIds.includes(user?.id) && (
+                {onlineUserIds.includes(user?.id) &&( user?.availability != "busy" || user?.availability != "dnd") && (
                   <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
+                )}
+                {user?.availability == "busy" && (
+                  <span 
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Busy"
+                  className="absolute bottom-[4px] right-[4px] bg-white " >
+                    <Circle size={8} strokeWidth={6} className="text-red-600"/>
+                  </span>
+                )}
+
+                {user?.availability == "dnd" && (
+                  <span 
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Do Not Disturb"
+                  className="absolute bottom-[4px] right-[4px] bg-white" >
+                    <CircleMinus size={8} strokeWidth={5} className="text-red-600"/>
+                  </span>
                 )}
               </button>
 

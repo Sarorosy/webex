@@ -60,6 +60,17 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
+  const updateAvailability = async (status) => {
+    setUser((prev) => {
+      const updatedUser = {
+        ...prev,
+        availability: status,
+      };
+      set("User", updatedUser);
+      return updatedUser;
+    });
+  };
+
   const updateTheme =  (theme) => {
     setTheme(theme);
     localStorage.setItem("Theme", theme);
@@ -68,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, setFavourites, theme, updateTheme, updateNotifications }}
+      value={{ user, login, logout, loading, setFavourites, theme, updateTheme, updateNotifications, updateAvailability }}
     >
       {children}
     </AuthContext.Provider>
