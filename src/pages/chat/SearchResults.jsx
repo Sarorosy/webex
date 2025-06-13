@@ -7,6 +7,7 @@ const SearchResults = ({
   query,
   searchResults,
   setSelectedMessage,
+  searchLoading,
   onClose
 }) => {
   const shouldShow = searchOpen && query.trim() !== "";
@@ -22,7 +23,7 @@ const SearchResults = ({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -300, opacity: 0 }}
           transition={{ type: "tween", duration: 0.3 }}
-          className={`fixed top-0 left-0 w-[28.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} shadow-xl border-l border-gray-300 z-[100] overflow-y-auto`}
+          className={`fixed top-0 left-0 w-[24.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white mw-dark" : "bg-white text-black"} shadow-xl border-l border-gray-300 z-[100] overflow-y-auto prose`}
         >
           
 
@@ -41,9 +42,9 @@ const SearchResults = ({
               <div
                 key={msg.id}
                 onClick={() => setSelectedMessage(msg)}
-                className={`p-3  border-b text-sm ${theme == "dark" ? " text-white hover:bg-gray-400 hover:text-black" : "text-gray-800 hover:bg-gray-100"} cursor-pointer`}
+                className={`p-3  border-b text-sm ${theme == "dark" ? " text-white hover:bg-gray-700 " : "text-gray-800 hover:bg-gray-100"} cursor-pointer f-13`}
               >
-                <div className="text-xs text-gray-500 mb-1">
+                <div className={`text-xs  mb-1 ${theme == "dark" ? " text-gray-300" : "text-gray-500"} `}>
                   {msg.sender_name} –{" "}
                   {new Date(msg.created_at).toLocaleString()}
                 </div>
@@ -52,7 +53,7 @@ const SearchResults = ({
             ))
           ) : (
             <div className="p-4 text-sm text-gray-500 italic">
-              We can't find any messages that match your search.
+             {searchLoading ? "Loading..." : " We can't find any messages that match your search."}
             </div>
           )}
         </motion.div>

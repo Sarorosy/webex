@@ -78,8 +78,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       > */}
       <div
         className={` h-[100vh] ${
-          theme == "dark" ? "bg-gray-800 text-white" : "bg-white"
-        } shadow-xl  border-gray-300 z-[100] overflow-y-auto`}
+          theme == "dark" ? "bg-gray-800 text-white" : ""
+        }   border-gray-300 z-[100] overflow-y-auto`}
       >
         <div className="">
           <div className="relative" ref={searchRef}>
@@ -145,10 +145,10 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                       results.results.map((user) => (
                         <div
                           key={user.id}
-                          className={`flex items-center gap-3 p-2 ${
+                          className={`flex items-center gap-3 p-2 me-1 ${
                             theme == "dark"
-                              ? "hover:bg-gray-600 text-white"
-                              : "hover:bg-gray-100"
+                              ? "hover:bg-gray-500 text-white"
+                              : "hover:bg-gray-300"
                           } rounded cursor-pointer`}
                           onClick={() => {
                             onClose();
@@ -168,7 +168,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                               className="w-8 h-8 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold uppercase">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold uppercase">
                               {user.name.charAt(0)}
                             </div>
                           )}
@@ -189,10 +189,10 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                       results.messages.map((msg) => (
                         <div
                           key={msg.id}
-                          className={`p-2 border-b  last:border-b-0 ${
+                          className={`p-2 me-1 border-b  last:border-b-0 ${
                             theme == "dark"
-                              ? "bg-gray-500 hover:bg-gray-600 text-white mw-dark "
-                              : "hover:bg-gray-100"
+                              ? "bg-gray-800 hover:bg-gray-600 text-white mw-dark "
+                              : "hover:bg-gray-300"
                           } cursor-pointer rounded`}
                           onClick={() => {
                             console.log("Clicked message:", msg);

@@ -962,8 +962,8 @@ const ChatSidebar = ({
                     )}
                   </div>
                   {chat.read_status == 1 && (
-                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-2 rounded-full">
-                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center f-11 p-1">
+                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-0.5 rounded-full">
+                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
                         {chat.unread_count ?? 1}
                       </div>
                       {chat.is_mentioned && (

@@ -123,7 +123,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-[99] flex items-end justify-center">
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: "5%" }}
@@ -136,11 +136,11 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 z-10"
         >
-          <X size={24} />
+          <X size={18} />
         </button>
 
         {/* Banner */}
-        <div className="w-full h-[100px] bg-orange-300 rounded-t-3xl" />
+        <div className={`w-full h-[100px]  rounded-t-3xl ${theme == "dark" ? "bg-gray-800" : "bg-orange-300"} `} />
 
         {/* Group Info Card */}
         <div className="px-6 -mt-12">
@@ -242,9 +242,10 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               {members.map((member) => (
                 <li
                   key={member.id}
-                  className={`flex items-start gap-4 p-3 ${theme == "dark" ? "bg-gray-200" : "bg-white"} rounded shadow hover:shadow-md transition`}
+                  className={`flex items-start justify-between gap-4 p-3 ${theme == "dark" ? "bg-gray-200" : "bg-white"} rounded shadow hover:shadow-md transition`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
                     {member.profile_pic ? (
                       <img
                         src={`https://rapidcollaborate.in/ccp${member.profile_pic}`}
@@ -259,6 +260,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                     <p className="font-medium text-gray-900">{member.name}</p>
                     <p className="f-11 text-gray-500">{member.email}</p>
                   </div>
+                  </div>
                   {member.id !== user?.id && (
                     <button
                       onClick={() => {
@@ -268,7 +270,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
                       className="text-gray-400 hover:text-red-500"
                       title="Remove member"
                     >
-                      <X size={18} />
+                      <X size={15} />
                     </button>
                   )}
                 </li>

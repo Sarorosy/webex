@@ -34,6 +34,8 @@ const ChatHeader = ({
   setLeftGroupOpen,
   chatTab,
   setChatTab,
+  setSearchLoading
+  
 }) => {
   const { user, theme } = useAuth();
 
@@ -84,6 +86,7 @@ const ChatHeader = ({
       }
 
       try {
+        setSearchLoading(true)
         const res = await fetch(
           "https://webexback-06cc.onrender.com/api/messages/find",
           {
@@ -104,6 +107,8 @@ const ChatHeader = ({
         }
       } catch (err) {
         console.error(err);
+      }finally{
+        setSearchLoading(false);
       }
     };
 

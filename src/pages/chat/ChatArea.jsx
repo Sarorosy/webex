@@ -84,6 +84,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   // const [selectedMessage, setSelectedMessage] = useState(null);
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState([]);
 
   const containerRef = useRef(null);
   const scrollToBottom = () => {
@@ -110,6 +111,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
             setSearchResults={setSearchResults}
             setPinMessagesOpen={setPinMessagesOpen}
             setLeftGroupOpen={setLeftGroupOpen}
+            setSearchLoading={setSearchLoading}
 
             chatTab={chatTab}
             setChatTab={setChatTab}
@@ -186,6 +188,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
       </AnimatePresence>
 
       <SearchResults
+      searchLoading={searchLoading}
         searchOpen={searchOpen}
         query={query}
         searchResults={searchResults}
