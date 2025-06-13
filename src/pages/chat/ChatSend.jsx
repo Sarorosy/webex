@@ -489,7 +489,13 @@ const ChatSend = ({
   return (
     <>
       {isReply && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
+        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          ${
+            theme == "dark"
+              ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
+              : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
+          }
+        `}>
           <div>
             Replying to:{" "}
             <div
@@ -508,14 +514,20 @@ const ChatSend = ({
               setReplyMsgId(null);
               setReplyMessage(null);
             }}
-            className="text-red-600 text-xs ml-2"
+            className="p-0.5 bg-red-600 text-white hover:bg-red-700 rounded ml-2"
           >
-            Cancel
+            <X size={18} />
           </button>
         </div>
       )}
       {selectedQuoteMessage && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
+        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          ${
+            theme == "dark"
+              ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
+              : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
+          }
+        `}>
           <div>
             <div className="flex items-center gap-2">
               <QuoteIcon size={15} className="text-orange-500" />{" "}
@@ -539,9 +551,9 @@ const ChatSend = ({
             onClick={() => {
               setSelectedQuoteMessage(null);
             }}
-            className="text-red-600 text-xs ml-2"
+            className="p-0.5 bg-red-600 text-white hover:bg-red-700 rounded ml-2"
           >
-            Cancel
+            <X size={18} />
           </button>
         </div>
       )}
@@ -551,7 +563,7 @@ const ChatSend = ({
 
         <div
           className={` ${
-            theme == "dark" ? "bg-gray-700 text-white" : "bg-white"
+            theme == "dark" ? "bg-gray-700" : "bg-gray-100"
           } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded`}
         >
           <div className="flex flex-col items-center gap-2 h-fill">
@@ -620,7 +632,13 @@ const ChatSend = ({
                 id="chatInput"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
+                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                  ${
+                    theme == "dark"
+                      ? "bg-gray-600 border-gray-500 text-gray-200"
+                      : "bg-white border-gray-300"
+                  }  
+                `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -651,7 +669,13 @@ const ChatSend = ({
                 id="chatInputuser"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
+                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                  ${
+                    theme == "dark"
+                      ? "bg-gray-600 border-gray-500 text-gray-200"
+                      : "bg-white border-gray-300"
+                  }  
+                `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}

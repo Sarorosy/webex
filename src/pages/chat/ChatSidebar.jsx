@@ -909,18 +909,22 @@ const ChatSidebar = ({
                     });
                     setChats(updatedChats);
                   }}
-                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer   mb-1 overflow-hidden ${
-                    selectedUser?.id === chat.id &&
-                    selectedUser?.type == chat.type
-                      ? "bg-gray-600 text-white"
-                      : ""
-                  } ${chat.read_status === 1 ? "font-bold" : ""}
-                  ${
-                    theme == "dark"
-                      ? "hover:bg-gray-600 hover:text-white text-gray-300"
-                      : "hover:bg-gray-300 hover:text-black"
+                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer mb-1 overflow-hidden
+                    ${
+                      selectedUser?.id === chat.id && selectedUser?.type === chat.type
+                        ? theme === "dark"
+                          ? "bg-gray-600 text-white"
+                          : "bg-gray-300 text-black"
+                        : ""
+                    }
+                    ${chat.read_status === 1 ? "font-bold" : ""}
+                    ${
+                      theme === "dark"
+                        ? "hover:bg-gray-600 hover:text-white text-gray-300"
+                        : "hover:bg-gray-300 hover:text-black"
+                    }`
                   }
-                  `}
+
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     <div>
@@ -962,7 +966,7 @@ const ChatSidebar = ({
                     )}
                   </div>
                   {chat.read_status == 1 && (
-                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-0.5 rounded-full">
+                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-1 rounded-full">
                       <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
                         {chat.unread_count ?? 1}
                       </div>

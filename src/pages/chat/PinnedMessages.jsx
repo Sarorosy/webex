@@ -48,7 +48,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
           </div>
 
           {loading ? (
-            <div className="p-4 text-sm text-gray-500">Loading...</div>
+            <div className="p-4 text-sm ">Loading...</div>
           ) : messages.length > 0 ? (
             messages.map((msg) => (
               <div
@@ -57,7 +57,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                     console.log("Clicked pinned message:", msg)
                     setSelectedMessage(msg)
                 }}
-                className={`p-3  border-b text-sm ${theme == "dark" ? " text-white hover:bg-gray-400 hover:text-black" : "text-gray-800 hover:bg-gray-100"} cursor-pointer`}
+                className={`p-3  border-b text-sm ${theme == "dark" ? " text-white hover:bg-gray-700" : "text-gray-800 hover:bg-gray-100"} cursor-pointer mw-dark`}
               >
                 <div className="flex items-center gap-2 mb-1">
                   {msg.profile_pic ? (
@@ -71,7 +71,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                       {msg.sender_name.charAt(0)}
                     </div>
                   )}
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs ">
                     {msg.sender_name} –{" "}
                     {new Date(msg.created_at).toLocaleString()}
                   </div>

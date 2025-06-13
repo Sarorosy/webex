@@ -281,9 +281,9 @@ const ChatHeader = ({
               onClick={sendScreenShareRequest}
               data-tooltip-id="my-tooltip"
                 data-tooltip-content="Share your screen"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
-              <ScreenShare size={14} className="text-white" />
+              <ScreenShare size={13}  />
             </button>
           )}
 

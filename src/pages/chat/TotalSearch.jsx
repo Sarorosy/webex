@@ -147,7 +147,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                           key={user.id}
                           className={`flex items-center gap-3 p-2 me-1 ${
                             theme == "dark"
-                              ? "hover:bg-gray-500 text-white"
+                              ? "hover:bg-gray-700 text-white"
                               : "hover:bg-gray-300"
                           } rounded cursor-pointer`}
                           onClick={() => {

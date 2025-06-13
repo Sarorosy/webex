@@ -254,7 +254,7 @@ const ManageUsers = ({ onClose }) => {
       >
         <div className="">
           {/* Header and Search */}
-          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0">
+          <div className="flex items-center justify-between  px-4 py-3 bg-gray-300 sticky top-0">
             <div className="">
               <h4 className="text-lg font-semibold">Users</h4>
             </div>
@@ -268,7 +268,7 @@ const ManageUsers = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="px-4 pt-3  mb-12">
+          <div className="px-4 pt-4  mb-12">
             <div className="flex justify-end gap-2 items-center mb-3">
               <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
                 <Search size={13} className="text-gray-500" />

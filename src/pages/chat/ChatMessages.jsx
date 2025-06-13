@@ -1439,18 +1439,28 @@ const ChatMessages = ({
                                   return (
                                     <div
                                       key={`${reply.id}-${reply.created_at}`}
-                                      className={`w-full flex justify-center my-2 `}
+                                      className={`w-full flex  
+                                        ${
+                                          isSent ? "justify-start" : "justify-end"
+                                        }
+                                      `}
                                     >
-                                      <div className="bg-gray-100 text-[10px] text-gray-600 px-3 py-1 rounded-full text-center flex items-center space-x-2 shadow-sm">
+                                      <div className={` text-[10px]  px-3 py-1 rounded-md text-center flex items-center space-x-2 shadow-sm 
+                                        ${
+                                          theme == "dark"
+                                            ? "bg-gray-500 text-gray-50"
+                                            : "bg-gray-100 text-gray-600"
+                                        }
+                                        `}>
                                         <Trash2
                                           size={10}
-                                          className="text-gray-500 mr-1"
+                                          className="text-red-500"
                                         />
                                         <div>
                                           {reply.sender_name ?? ""} deleted
                                           their own reply
                                         </div>
-                                        <div className="text-[9px] opacity-70">
+                                        <div className=" opacity-70">
                                           {formatTime(reply.created_at)}
                                         </div>
                                       </div>
@@ -1536,6 +1546,44 @@ const ChatMessages = ({
                                         
                                       </div>
                                     ) : null}
+                                    
+                                    <div
+                                      className={` f-11 flex items-center ${
+                                        isSent ? "flex-row-reverse" : ""
+                                      }
+                                      ${
+                                        isSent
+                                          ? "text-white-600 text-right"
+                                          : `${
+                                              theme == "dark" ? "text-white" : "text-gray-600"
+                                            }`
+                                      } gap-2 mb-1 `}
+                                    >
+                                      {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <Reply
+                                          size={10}
+                                          className="text-blue-600"
+                                        />
+                                      </div> */}
+                                      
+                                      <div>
+                                        {reply.sender_id == user?.id &&
+                                      !view_user_id
+                                        ? "You"
+                                        : reply.sender_name || "User"}
+                                      </div>
+                                      <div className={`text-xs f-11
+                                        ${
+                                        isSent
+                                          ? "text-white-600"
+                                          : `${
+                                              theme == "dark" ? "text-white" : "text-gray-400"
+                                            }`
+                                      }
+                                        `}>
+                                        {formatTime(reply.created_at)}
+                                      </div>
+                                    </div>
                                     {reply.is_file == 1 &&
                                       reply.filename &&
                                       (() => {
@@ -1557,13 +1605,13 @@ const ChatMessages = ({
                                           .pop();
 
                                         return (
-                                          <div className="w-full mb-3">
+                                          <div className="w-full mb-2">
                                             {/* File Info Box */}
                                             <div
                                               open
                                               className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
                                             >
-                                              <div className="flex items-center gap-3 cursor-pointer px-3 py-2 hover:bg-gray-50 transition rounded-lg">
+                                              <div className="flex items-center gap-2 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
                                                 {isImage ? (
                                                   <ImageIcon
                                                     className="text-pink-500"
@@ -1633,43 +1681,6 @@ const ChatMessages = ({
                                           </div>
                                         );
                                       })()}
-                                    <div
-                                      className={` f-11 flex items-center ${
-                                        isSent ? "flex-row-reverse" : ""
-                                      }
-                                      ${
-                                        isSent
-                                          ? "text-white-600 text-right"
-                                          : `${
-                                              theme == "dark" ? "text-white" : "text-gray-600"
-                                            }`
-                                      } gap-2 mb-1 `}
-                                    >
-                                      {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <Reply
-                                          size={10}
-                                          className="text-blue-600"
-                                        />
-                                      </div> */}
-                                      
-                                      <div>
-                                        {reply.sender_id == user?.id &&
-                                      !view_user_id
-                                        ? "You"
-                                        : reply.sender_name || "User"}
-                                      </div>
-                                      <div className={`text-xs f-11
-                                        ${
-                                        isSent
-                                          ? "text-white-600"
-                                          : `${
-                                              theme == "dark" ? "text-white" : "text-gray-400"
-                                            }`
-                                      }
-                                        `}>
-                                        {formatTime(reply.created_at)}
-                                      </div>
-                                    </div>
                                     <div
                                       className="prose prose-sm max-w-none f-13"
                                       dangerouslySetInnerHTML={{
