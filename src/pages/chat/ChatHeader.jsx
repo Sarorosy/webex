@@ -228,7 +228,7 @@ const ChatHeader = ({
         {/* Right Section */}
         <div className="flex justify-between items-center gap-3">
           {selectedUser?.type == "group" && selectedUser?.group_type && (
-              <div className="typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11">{selectedUser?.group_type} group</div>
+              <div className={`typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11 text-black`}>{selectedUser?.group_type} group</div>
             )}
           {searchOpen ? (
             <div className="flex items-center">
