@@ -53,6 +53,7 @@ const ChatHeader = ({
         setSelectedUser((prev) => ({
           ...prev,
           name: data.name,
+          group_type:data.group_type
         }));
       }
     };
@@ -88,7 +89,7 @@ const ChatHeader = ({
       try {
         setSearchLoading(true)
         const res = await fetch(
-          "http://localhost:5000/api/messages/find",
+          "https://webexback-06cc.onrender.com/api/messages/find",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -119,7 +120,7 @@ const ChatHeader = ({
   const handleFavourite = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/chats/favourite",
+        "https://webexback-06cc.onrender.com/api/chats/favourite",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -209,6 +210,8 @@ const ChatHeader = ({
               // <TypingIndicator />
             )} */}
             {/* <AgoraCall /> */}
+
+            
           </h2>
 
           {selectedUser?.office_name && selectedUser?.city_name && (
@@ -224,6 +227,9 @@ const ChatHeader = ({
 
         {/* Right Section */}
         <div className="flex justify-between items-center gap-3">
+          {selectedUser?.type == "group" && selectedUser?.group_type && (
+              <div className="typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11">{selectedUser?.group_type} group</div>
+            )}
           {searchOpen ? (
             <div className="flex items-center">
               <input
@@ -281,9 +287,9 @@ const ChatHeader = ({
               onClick={sendScreenShareRequest}
               data-tooltip-id="my-tooltip"
                 data-tooltip-content="Share your screen"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+              className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
-              <ScreenShare size={14} className="text-white" />
+              <ScreenShare size={13}  />
             </button>
           )}
 

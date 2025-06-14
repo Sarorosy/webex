@@ -132,6 +132,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
               setReplyMsgId={setReplyMsgId}
               setReplyMessage={setReplyMessage}
               selectedMessage={selectedMessage}
+              selectedQuoteMessage={selectedQuoteMessage}
               setSelectedQuoteMessage={setSelectedQuoteMessage}
               scrollToBottom={scrollToBottom}
               containerRef={containerRef}

@@ -188,15 +188,15 @@ div#commentsMention[placeholder]:empty:before {
 
 .overflow-y-auto::-webkit-scrollbar
 {
-	width: 6px;
-	background-color: #e85720;
+	width: 5px;
+	background-color: #e79676;
   border-radius: 8px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb
 {
-	background-color: #e85720;
-	border: 2px solid #e85720;
+	background-color: #e79676;
+	border: 2px solid #e79676;
   border-radius: 8px;
 }
 
@@ -210,15 +210,15 @@ div#commentsMention[placeholder]:empty:before {
 
 .m-list-h::-webkit-scrollbar
 {
-	width: 6px;
-	background-color: #e85720;
+	width: 5px;
+	background-color: #e79676;
   border-radius:8px;
 }
 
 .m-list-h::-webkit-scrollbar-thumb
 {
-	background-color: #e85720;
-	border: 8px solid #e85720;
+	background-color: #e79676;
+	border: 8px solid #e79676;
   border-radius:8px;
 }
 

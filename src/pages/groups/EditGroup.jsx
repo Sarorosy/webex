@@ -1,82 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, X, Minus } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Plus, X, Minus } from "lucide-react";
 import Select, { components } from "react-select";
-import { useAuth } from '../../utils/idb';
-import toast from 'react-hot-toast';
+import { useAuth } from "../../utils/idb";
+import toast from "react-hot-toast";
 
-const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
+const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
   const { user } = useAuth();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [name, setName] = useState("");
+  const [groupType, setGroupType] = useState("");
+  const [description, setDescription] = useState("");
   const [memberLimit, setMemberLimit] = useState(0);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-      // Fetch users from the API
-      const fetchInfo = async () => {
-        try {
-          const res = await fetch(`http://localhost:5000/api/groups/group/${selectedGroup.group_id}`);
-          const data = await res.json();
-          if(data.status){
-            setName(data.group.name);
-            setDescription(data.group.description);
-            setMemberLimit(data.group.member_limit);
-          }
-        } catch (err) {
-          console.error('Error fetching users:', err);
+    // Fetch users from the API
+    const fetchInfo = async () => {
+      try {
+        const res = await fetch(
+          `https://webexback-06cc.onrender.com/api/groups/group/${selectedGroup.group_id}`
+        );
+        const data = await res.json();
+        if (data.status) {
+          setName(data.group.name);
+          setGroupType(data.group.group_type);
+          setDescription(data.group.description);
+          setMemberLimit(data.group.member_limit);
         }
-      };
-      fetchInfo();
-    }, [selectedGroup]);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+    fetchInfo();
+  }, [selectedGroup]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      setCreating(true)
-      const response = await fetch('http://localhost:5000/api/groups/update', {
-        method: 'POST',
+      setCreating(true);
+      const response = await fetch("https://webexback-06cc.onrender.com/api/groups/update", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            id: selectedGroup?.group_id,
+          id: selectedGroup?.group_id,
           name,
           description,
           member_limit: memberLimit,
-          user_id : user?.id,
-          sender_name : user?.name,
+          user_id: user?.id,
+          sender_name: user?.name,
+          group_type: groupType,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.status) {
-        toast.success('Group updated successfully!');
+        toast.success("Group updated successfully!");
         onClose(); // Close the modal after creation
         finalFunction();
       } else {
-        toast.error(data.message || 'Error creating group');
+        toast.error(data.message || "Error creating group");
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Something went wrong while creating the group.');
-    }finally{
-      setCreating(false)
+      console.error("Error:", error);
+      toast.error("Something went wrong while creating the group.");
+    } finally {
+      setCreating(false);
     }
   };
-  
 
   const handleMemberLimitChange = (operation) => {
     setMemberLimit((prev) => {
-      if (operation === 'increase') return prev + 1;
-      if (operation === 'decrease' && prev > 1) return prev - 1;
+      if (operation === "increase") return prev + 1;
+      if (operation === "decrease" && prev > 1) return prev - 1;
       return prev;
     });
   };
-
-  
 
   return (
     <motion.div
@@ -86,22 +88,24 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
       exit={{ opacity: 0 }}
     >
       <div className="bg-white w-full max-w-md h-auto overflow-y-auto rounded-lg">
-        
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
-            <h2 className="text-lg font-semibold text-white">Edit Group</h2>
-            <div>
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
+          <h2 className="text-lg font-semibold text-white">Edit Group</h2>
+          <div>
             <button
-            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
-            onClick={onClose} // Close modal without doing anything
+              className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+              onClick={onClose} // Close modal without doing anything
             >
-            <X size={15}  />
+              <X size={15} />
             </button>
-            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Group Name
             </label>
             <input
@@ -109,23 +113,24 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder='Group name'
+              placeholder="Group name"
               className="w-full p-2 py-1 border rounded-md"
               required
             />
           </div>
 
-          
-
           {user?.user_type != "user" && (
             <div>
-              <label htmlFor="memberLimit" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="memberLimit"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Member Limit
               </label>
               <div className="flex items-center space-x-4">
                 <button
                   type="button"
-                  onClick={() => handleMemberLimitChange('decrease')}
+                  onClick={() => handleMemberLimitChange("decrease")}
                   className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                 >
                   <Minus size={15} />
@@ -133,7 +138,7 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
                 <span className="text-md font-medium">{memberLimit}</span>
                 <button
                   type="button"
-                  onClick={() => handleMemberLimitChange('increase')}
+                  onClick={() => handleMemberLimitChange("increase")}
                   className="p-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                 >
                   <Plus size={15} />
@@ -142,7 +147,26 @@ const EditGroup = ({ selectedGroup, onClose , finalFunction }) => {
             </div>
           )}
 
-          
+          <div>
+            <label
+              htmlFor="group_type"
+              className="block text-sm font-medium mb-2"
+            >
+              Group Type
+            </label>
+            <select
+              name="group_type"
+              id="group_type"
+              value={groupType}
+              onChange={(e) => {
+                setGroupType(e.target.value);
+              }}
+              className="p-2 border rounded py-1"
+            >
+              <option value="work">Work Group</option>
+              <option value="team">Team Group</option>
+            </select>
+          </div>
 
           <div className="flex justify-end gap-2">
             {/* <button

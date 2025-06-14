@@ -18,6 +18,7 @@ const EditUser = ({ userId, onClose, after }) => {
         city_name: "",
         profilePic: null,
         user_panel: "AP",
+        seniority: "junior",
         max_group_count: 5
     });
 
@@ -28,7 +29,7 @@ const EditUser = ({ userId, onClose, after }) => {
         const fetchUserDetails = async () => {
             try {
                 setFetching(true);
-                const response = await fetch(`http://localhost:5000/api/users/user/${userId}`);
+                const response = await fetch(`https://webexback-06cc.onrender.com/api/users/user/${userId}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -44,6 +45,7 @@ const EditUser = ({ userId, onClose, after }) => {
                         pronouns: data.user.pronouns,
                         bio: data.user.bio,
                         user_panel: data.user.user_panel || "AP",
+                        seniority: data.user.seniority || "junior",
                         max_group_count: data.user.max_group_count || 5,
                         office_name: data.user.office_name || "",
                         city_name: data.user.city_name || "",
@@ -89,6 +91,7 @@ const EditUser = ({ userId, onClose, after }) => {
             formData.append("pronouns", userData.pronouns);
             formData.append("bio", userData.bio);
             formData.append("user_panel", userData.user_panel);
+            formData.append("seniority", userData.seniority);
             formData.append("max_group_count", userData.max_group_count);
             formData.append("office_name", userData.office_name);
             formData.append("city_name", userData.city_name);
@@ -97,7 +100,7 @@ const EditUser = ({ userId, onClose, after }) => {
             if (userData.profilePic) {
                 formData.append("profile_pic", userData.profilePic);
             }
-            const response = await axios.put(`http://localhost:5000/api/users/update`, formData, {
+            const response = await axios.put(`https://webexback-06cc.onrender.com/api/users/update`, formData, {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             if (response.data.status) {
@@ -169,6 +172,18 @@ const EditUser = ({ userId, onClose, after }) => {
                                 >
                                     <option value="AP">Attendance Panel</option>
                                     <option value="SP">Service Panel</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="f-13 mb-1">Seniority:</label>
+                                <select
+                                    name="seniority"
+                                    value={userData.seniority}
+                                    onChange={handleChange}
+                                    className="border p-2 py-1 rounded-md w-full"
+                                >
+                                    <option value="junior">Junior</option>
+                                    <option value="senior">Senior</option>
                                 </select>
                             </div>
                             <div className="flex gap-2 mt-3 items-center ">

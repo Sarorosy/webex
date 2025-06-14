@@ -12,6 +12,8 @@ import {
   ArrowLeft,
   MessageCircle,
   X,
+  Circle,
+  CircleMinus,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -167,7 +169,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -522,14 +524,27 @@ const ChatSidebar = ({
       );
     };
 
+    const handleAvailabilityUpdated = ({ userId, availability_status }) => {
+      setChats((prevChats) =>
+        prevChats.map((chat) => {
+          if (chat.type === "user" && chat.id == userId) {
+            return { ...chat, availability: availability_status };
+          }
+          return chat;
+        })
+      );
+    };
+
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
     });
 
     socket.on("user_loggedin", handleUserLoggedIn);
+    socket.on("availability_updated", handleAvailabilityUpdated);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
+      socket.off("availability_updated", handleAvailabilityUpdated);
     };
   }, [user, chats]);
 
@@ -628,6 +643,19 @@ const ChatSidebar = ({
     };
 
     const handleGroupUpdated = (data) => {
+
+      if (
+    selectedUser?.id === data.id &&
+    selectedUser?.type === "group"
+  ) {
+    setSelectedUser((prev) => ({
+      ...prev,
+      name: data.name,
+      group: data.group,
+      group_type: data.group_type,
+    }));
+  }
+
       setChats((prevChats) =>
         prevChats.map((chat) => {
           if (chat.id == data.id && chat.type === "group") {
@@ -635,11 +663,13 @@ const ChatSidebar = ({
               ...chat,
               name: data.name,
               group: data.group,
+              group_type: data.group_type,
             };
           }
           return chat;
         })
       );
+      
     };
 
     const handleGroupCreated = (group) => {
@@ -724,12 +754,9 @@ const ChatSidebar = ({
         className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-1"
       ></div>
 
-      <div className={`px-2 border-b mb-2
-        ${
-          theme == "dark"
-            ? "border-gray-400"
-            : ""
-        }  
+      <div
+        className={`px-2 border-b mb-2
+        ${theme == "dark" ? "border-gray-400" : ""}  
       `}
       >
         <h1 className="text-2xl font-bold flex items-center justify-between cursor-pointer">
@@ -771,11 +798,7 @@ const ChatSidebar = ({
             onChange={handleSearchChange}
             placeholder="Find Groups, Persons, Messages"
             className={`p-2 py-1 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent border border-gray-300
-              ${
-                theme == "dark"
-                  ? "bg-gray-800 border-gray-400"
-                  : ""
-              }  
+              ${theme == "dark" ? "bg-gray-800 border-gray-400" : ""}  
             `}
           />
           {searchQuery && (
@@ -867,13 +890,11 @@ const ChatSidebar = ({
               filteredData.some((chat) =>
                 JSON.parse(chat.favourites || "[]").includes(user.id)
               ) && (
-                <div className={` mb-2 px-0 flex items-center
-                  ${
-                    theme == "dark"
-                      ? "text-gray-300"
-                      : "text-gray-800"
-                  }
-                `}>
+                <div
+                  className={` mb-2 px-0 flex items-center
+                  ${theme == "dark" ? "text-gray-300" : "text-gray-800"}
+                `}
+                >
                   Favourites
                   <Star
                     size={13}
@@ -909,38 +930,73 @@ const ChatSidebar = ({
                     });
                     setChats(updatedChats);
                   }}
-                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer   mb-1 overflow-hidden ${
-                    selectedUser?.id === chat.id &&
-                    selectedUser?.type == chat.type
-                      ? "bg-gray-600 text-white"
-                      : ""
-                  } ${chat.read_status === 1 ? "font-bold" : ""}
-                  ${
-                    theme == "dark"
-                      ? "hover:bg-gray-600 hover:text-white text-gray-300"
-                      : "hover:bg-gray-300 hover:text-black"
-                  }
-                  `}
+                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer mb-1 overflow-hidden
+                    ${
+                      selectedUser?.id === chat.id &&
+                      selectedUser?.type === chat.type
+                        ? theme === "dark"
+                          ? "bg-gray-600 text-white"
+                          : "bg-gray-300 text-black"
+                        : ""
+                    }
+                    ${chat.read_status === 1 ? "font-bold" : ""}
+                    ${
+                      theme === "dark"
+                        ? "hover:bg-gray-600 hover:text-white text-gray-300"
+                        : "hover:bg-gray-300 hover:text-black"
+                    }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     <div>
                       <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                      {chat.profile_pic ? (
-                        <img
-                          src={
-                            "https://rapidcollaborate.in/ccp" + chat.profile_pic
-                          }
-                          alt="Profile"
-                          className="w-8 h-8 rounded-full mx-auto object-cover border"
-                        />
-                      ) : (
-                        chat.name[0]
-                      )}
-                      {onlineUserIds.includes(chat.id) &&
-                        chat.type == "user" && (
-                          <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                        {chat.profile_pic ? (
+                          <img
+                            src={
+                              "https://rapidcollaborate.in/ccp" +
+                              chat.profile_pic
+                            }
+                            alt="Profile"
+                            className="w-8 h-8 rounded-full mx-auto object-cover border"
+                          />
+                        ) : (
+                          chat.name[0]
                         )}
-                    </div>
+                        {onlineUserIds.includes(chat.id) &&
+                          !chat.availability &&
+                          chat.type == "user" && (
+                            <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                          )}
+                        {chat.availability &&
+                          chat.availability == "busy" &&
+                          chat.type == "user" && (
+                            <span
+                              data-tooltip-id="my-tooltip"
+                              data-tooltip-content="Busy"
+                              className="absolute bottom-0 right-0 bg-white "
+                            >
+                              <Circle
+                                size={8}
+                                strokeWidth={6}
+                                className="text-red-600"
+                              />
+                            </span>
+                          )}
+                        {chat.availability &&
+                          chat.availability == "dnd" &&
+                          chat.type == "user" && (
+                            <span
+                              data-tooltip-id="my-tooltip"
+                              data-tooltip-content="Do Not Disturb"
+                              className="absolute bottom-0 right-0 bg-white "
+                            >
+                              <CircleMinus
+                                size={8}
+                                strokeWidth={6}
+                                className="text-red-600"
+                              />
+                            </span>
+                          )}
+                      </div>
                     </div>
                     <span
                       className={`truncate  w-100 ${
@@ -962,7 +1018,7 @@ const ChatSidebar = ({
                     )}
                   </div>
                   {chat.read_status == 1 && (
-                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-0.5 rounded-full">
+                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-1 rounded-full">
                       <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
                         {chat.unread_count ?? 1}
                       </div>

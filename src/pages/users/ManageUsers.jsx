@@ -73,7 +73,7 @@ const ManageUsers = ({ onClose }) => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:5000/api/users/fetchallusers"
+        "https://webexback-06cc.onrender.com/api/users/fetchallusers"
       );
       const data = await response.json();
       if (data.status) {
@@ -136,7 +136,7 @@ const ManageUsers = ({ onClose }) => {
     if (!selectedUser) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/delete/${selectedUser}`,
+        `https://webexback-06cc.onrender.com/api/users/delete/${selectedUser}`,
         {
           method: "DELETE",
         }
@@ -190,7 +190,7 @@ const ManageUsers = ({ onClose }) => {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/users/changeUserType`,
+        `https://webexback-06cc.onrender.com/api/users/changeUserType`,
         {
           method: "PUT",
           headers: {
@@ -254,7 +254,7 @@ const ManageUsers = ({ onClose }) => {
       >
         <div className="">
           {/* Header and Search */}
-          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0">
+          <div className="flex items-center justify-between  px-4 py-3 bg-gray-300 sticky top-0">
             <div className="">
               <h4 className="text-lg font-semibold">Users</h4>
             </div>
@@ -268,7 +268,7 @@ const ManageUsers = ({ onClose }) => {
             </div>
           </div>
 
-          <div className="px-4 pt-3  mb-12">
+          <div className="px-4 pt-4  mb-12">
             <div className="flex justify-end gap-2 items-center mb-3">
               <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
                 <Search size={13} className="text-gray-500" />
@@ -340,7 +340,7 @@ const ManageUsers = ({ onClose }) => {
                                   u.trashed == 1 ? "line-through" : "",
                               }}
                             >
-                              {u.name}
+                              {u.name} 
                             </div>
                             <div
                               className="flex flex-col justify-start items-start"
@@ -371,6 +371,16 @@ const ManageUsers = ({ onClose }) => {
                                 }}
                               >
                                 {u.user_panel}
+                              </div>
+                              <div
+                                className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
+                                style={{
+                                  color: u.trashed == 1 ? "red" : "#fff",
+                                  textDecoration:
+                                    u.trashed == 1 ? "line-through" : "",
+                                }}
+                              >
+                                {u.seniority}
                               </div>
                               <div
                                 className="flex items-center"

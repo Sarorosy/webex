@@ -12,6 +12,7 @@ const AddUser = ({ onClose, after }) => {
     max_group_count: 1000,
     office_name: "",
     city_name: "",
+    seniority :'junior'
   });
   const [adding, setAdding] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +44,7 @@ const AddUser = ({ onClose, after }) => {
     }
     try {
       setAdding(true);
-      const response = await fetch("http://localhost:5000/api/users/add", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/users/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -125,6 +126,15 @@ const AddUser = ({ onClose, after }) => {
           >
             <option value="SP">Service Panel</option>
             <option value="AP">Attendance Panel</option>
+          </select>
+          <select
+            name="seniority"
+            value={formData.seniority}
+            onChange={handleChange}
+            className="p-2 border rounded py-1"
+          >
+            <option value="junior">Junior</option>
+            <option value="senior">Senior</option>
           </select>
 
           <input

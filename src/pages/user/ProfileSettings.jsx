@@ -12,14 +12,14 @@ const ProfileSettings = () => {
   );
   const [saving, setSaving] = useState(false);
 
-  const [availabilityStatus, setAvailabilityStatus] = useState("busy");
+  const [availabilityStatus, setAvailabilityStatus] = useState(null);
   const [availabilityDuration, setAvailabilityDuration] = useState("");
 
   const handleSave = async () => {
     try {
       setSaving(true);
       const res = await axios.post(
-        "http://localhost:5000/api/users/updateusersettings",
+        "https://webexback-06cc.onrender.com/api/users/updateusersettings",
         {
           userId: user?.id,
           notifications: notificationSetting,
@@ -43,43 +43,45 @@ const ProfileSettings = () => {
     try {
       if (!availabilityStatus) {
         return toast.error("Please select an availability status");
-      } else if (!availabilityDuration) {
+      } else if (availabilityStatus != "available" && !availabilityDuration) {
         return toast.error("Please select an availability duration");
       }
       setSaving(true);
 
       const now = new Date();
       const availabilityUntil = new Date(now);
+      let formattedAvailabilityUntil = "";
+      if (availabilityStatus != "available") {
+        const durationMap = {
+          "30min": 30,
+          "1hr": 60,
+          "2hr": 120,
+          "12hr": 720,
+          "7days": 10080, // 7 * 24 * 60
+          "14days": 20160,
+        };
 
-      const durationMap = {
-        "30min": 30,
-        "1hr": 60,
-        "2hr": 120,
-        "12hr": 720,
-        "7days": 10080, // 7 * 24 * 60
-        "14days": 20160,
-      };
+        const minutesToAdd = durationMap[availabilityDuration];
+        if (!minutesToAdd) {
+          return toast.error("Invalid duration");
+        }
 
-      const minutesToAdd = durationMap[availabilityDuration];
-      if (!minutesToAdd) {
-        return toast.error("Invalid duration");
+        availabilityUntil.setMinutes(
+          availabilityUntil.getMinutes() + minutesToAdd
+        );
+
+        const pad = (n) => String(n).padStart(2, "0");
+        formattedAvailabilityUntil = `${availabilityUntil.getFullYear()}-${pad(
+          availabilityUntil.getMonth() + 1
+        )}-${pad(availabilityUntil.getDate())} ${pad(
+          availabilityUntil.getHours()
+        )}:${pad(availabilityUntil.getMinutes())}:${pad(
+          availabilityUntil.getSeconds()
+        )}`;
       }
 
-      availabilityUntil.setMinutes(
-        availabilityUntil.getMinutes() + minutesToAdd
-      );
-
-      const pad = (n) => String(n).padStart(2, "0");
-      const formattedAvailabilityUntil = `${availabilityUntil.getFullYear()}-${pad(
-        availabilityUntil.getMonth() + 1
-      )}-${pad(availabilityUntil.getDate())} ${pad(
-        availabilityUntil.getHours()
-      )}:${pad(availabilityUntil.getMinutes())}:${pad(
-        availabilityUntil.getSeconds()
-      )}`;
-
       const response = await fetch(
-        "http://localhost:5000/api/users/updateuseravailability",
+        "https://webexback-06cc.onrender.com/api/users/updateuseravailability",
         {
           method: "POST",
           headers: {
@@ -88,14 +90,17 @@ const ProfileSettings = () => {
           body: JSON.stringify({
             userId: user?.id,
             availability_status: availabilityStatus,
-            availability_duration: formattedAvailabilityUntil,
+            availability_duration:
+              availabilityStatus == "available"
+                ? null
+                : formattedAvailabilityUntil,
           }),
         }
       );
       const data = await response.json();
       if (data.status) {
         toast.success("Updated");
-        updateAvailability(availabilityStatus)
+        updateAvailability(availabilityStatus);
       } else {
         toast.error("Failed to update");
       }
@@ -128,7 +133,7 @@ const ProfileSettings = () => {
               <BellDot size={14} className="mr-2" /> Notifications
             </button>
           </li>
-          {/* <li>
+          <li>
             <button
               className={`w-full flex items-center text-left px-3 py-1  rounded-md ${
                 selectedTab === "availability"
@@ -139,7 +144,7 @@ const ProfileSettings = () => {
             >
               <CircleMinus size={14} className="mr-2" /> Availability
             </button>
-          </li> */}
+          </li>
         </ul>
       </div>
 
@@ -210,19 +215,44 @@ const ProfileSettings = () => {
 
         {selectedTab === "availability" && (
           <div>
-            <h3 className="text-xl font-semibold mb-4">
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
               Availability Settings
+              {user?.availability  ? (
+                <span className="f-11 ml-3 text-gray-700">
+                  Current Availability : {user?.availability}
+                </span>
+              ) : (
+                <span className="f-11 ml-3 text-gray-700">
+                  Current Availability : available
+                </span>
+              )}
             </h3>
 
             <div className="space-y-6">
               {/* Status Selection */}
               <div>
                 <h4 className="font-medium mb-2">Select Status</h4>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 f-11">
+                  <button
+                    type="button"
+                    onClick={() => setAvailabilityStatus("available")}
+                    className={`flex items-center px-3 py-1 rounded-md text-sm font-medium border ${
+                      availabilityStatus === "available"
+                        ? "bg-green-100 text-green-600  border-green-600"
+                        : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Circle
+                      size={14}
+                      strokeWidth={3}
+                      className="mr-2 text-green-600 font-bold fill-green-600"
+                    />
+                    Available
+                  </button>
                   <button
                     type="button"
                     onClick={() => setAvailabilityStatus("busy")}
-                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                    className={`flex items-center px-3 py-1 rounded-md text-sm font-medium border ${
                       availabilityStatus === "busy"
                         ? "bg-red-100 text-red-600  border-red-600"
                         : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
@@ -239,7 +269,7 @@ const ProfileSettings = () => {
                   <button
                     type="button"
                     onClick={() => setAvailabilityStatus("dnd")}
-                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium border ${
+                    className={`flex items-center px-3 py-1 rounded-md text-sm font-medium border ${
                       availabilityStatus === "dnd"
                         ? "bg-red-100 text-red-600  border-red-600"
                         : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
@@ -256,22 +286,24 @@ const ProfileSettings = () => {
               </div>
 
               {/* Duration Selection */}
-              <div>
-                <h4 className="font-medium mb-2">Duration</h4>
-                <select
-                  value={availabilityDuration}
-                  onChange={(e) => setAvailabilityDuration(e.target.value)}
-                  className="border px-3 py-2 rounded-md text-sm"
-                >
-                  <option value="">Select Duration</option>
-                  <option value="30min">30 minutes</option>
-                  <option value="1hr">1 hour</option>
-                  <option value="2hr">2 hours</option>
-                  <option value="12hr">12 hours</option>
-                  <option value="7days">7 days</option>
-                  <option value="14days">14 days</option>
-                </select>
-              </div>
+              {availabilityStatus && availabilityStatus != "available" && (
+                <div>
+                  <h4 className="font-medium mb-2">Duration</h4>
+                  <select
+                    value={availabilityDuration}
+                    onChange={(e) => setAvailabilityDuration(e.target.value)}
+                    className="border px-3 py-2 rounded-md text-sm"
+                  >
+                    <option value="">Select Duration</option>
+                    <option value="30min">30 minutes</option>
+                    <option value="1hr">1 hour</option>
+                    <option value="2hr">2 hours</option>
+                    <option value="12hr">12 hours</option>
+                    <option value="7days">7 days</option>
+                    <option value="14days">14 days</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-7">

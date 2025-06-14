@@ -32,7 +32,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/messages/totalfind",
+          "https://webexback-06cc.onrender.com/api/messages/totalfind",
           {
             method: "POST",
             headers: {
@@ -147,7 +147,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                           key={user.id}
                           className={`flex items-center gap-3 p-2 me-1 ${
                             theme == "dark"
-                              ? "hover:bg-gray-500 text-white"
+                              ? "hover:bg-gray-700 text-white"
                               : "hover:bg-gray-300"
                           } rounded cursor-pointer`}
                           onClick={() => {

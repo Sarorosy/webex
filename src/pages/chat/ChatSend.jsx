@@ -10,6 +10,7 @@ import { useSelectedUser } from "../../utils/SelectedUserContext";
 import { File, Paperclip, QuoteIcon, Send, X } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
 import EmojiPicker from "emoji-picker-react";
+import toast from "react-hot-toast";
 
 const ChatSend = ({
   type,
@@ -29,6 +30,7 @@ const ChatSend = ({
   const inputRef = useRef(null);
   const [groupUsers, setGroupUsers] = useState([]);
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { selectedUser, setSelectedUser } = useSelectedUser();
   const [selectedFile, setSelectedFile] = useState(null);
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
@@ -68,7 +70,7 @@ const ChatSend = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/groups/members/${userId}`
+        `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 
@@ -79,6 +81,7 @@ const ChatSend = ({
             id: member.id,
             userName: member.name,
             userColor: "#6A0572",
+            seniority : member.seniority ?? "junior",
             profilePic: member.profile_pic
               ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
@@ -146,8 +149,26 @@ const ChatSend = ({
     );
     setSuggestions(filteredUsers);
   };
-  const itemTemplate = (data) => (
-    <div className="flex items-center gap-2 p-2">
+  const itemTemplate = (data) => {
+  const groupType = selectedUser?.group_type; // assumes selectedUser is available
+  const isJunior = user?.seniority == "junior";
+  const isTaggingJunior = data.seniority == "junior";
+  const isTaggingSenior = data.seniority == "senior";
+
+  let isDisabled = false;
+
+  if (selectedUser?.type == "group" && groupType == "work" && isJunior && isTaggingSenior) {
+    isDisabled = true;
+  } else if (selectedUser?.type == "group" && groupType == "team" && isJunior && isTaggingJunior) {
+    isDisabled = true;
+  }
+
+  return (
+    <div
+      className={`flex items-center gap-2 p-2 ${
+        isDisabled ? "opacity-50 pointer-events-none" : ""
+      }`}
+    >
       {data.profilePic ? (
         <img
           src={data.profilePic}
@@ -156,19 +177,80 @@ const ChatSend = ({
         />
       ) : (
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
+          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm"
           style={{
             backgroundColor: data.userColor,
           }}
         >
-          <span className="custom-margin">
-            {data.userName?.charAt(0).toUpperCase()}
-          </span>
+          {data.userName?.charAt(0).toUpperCase()}
         </div>
       )}
       <span>{data.userName}</span>
     </div>
   );
+};
+
+  // Select event handler
+  const handleSelect = (e) => {
+    const selUser = e.itemData;
+    const userId = selUser.id;
+    const userName = selUser.userName;
+
+    const mentionSeniority = selUser.seniority;
+
+  const groupType = selectedUser?.group_type;
+  const isJunior = user?.seniority === "junior";
+
+  if (groupType === "work" && isJunior && mentionSeniority === "senior") {
+    toast.error("You can't select a senior user");
+    e.cancel = true;
+    return;
+  }
+
+  if (groupType === "team" && isJunior && mentionSeniority === "junior") {
+    toast.error("You can't select another junior user");
+    e.cancel = true;
+    return;
+  }
+
+    // Check if the user is already in the selectedUsers array
+    if (!selectedUsers.some((user) => user.id === userId)) {
+      // Add the selected user to the array
+      setSelectedUsers((prevState) => [
+        ...prevState,
+        { id: userId, name: userName },
+      ]);
+    }
+
+    // Let the MentionComponent update the DOM first
+    setTimeout(() => {
+      const chatInput = document.getElementById("chatInput");
+
+      // Create a space text node
+      const spaceNode = document.createTextNode(" ");
+
+      // Insert space at the end of the content
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      // Set cursor at the end of the contentEditable div
+      range.selectNodeContents(chatInput);
+      range.collapse(false); // Collapse to end
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Insert space at cursor position
+      document.execCommand("insertText", false, " ");
+
+      // Update the value state with the new content
+      setValue(chatInput.innerHTML);
+
+      // Focus back on the input
+      chatInput.focus();
+
+      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
+    }, 0);
+  };
 
   const [isSending, setIsSending] = useState(false);
   const handleSend = async () => {
@@ -221,7 +303,7 @@ const ChatSend = ({
       }
 
       const res = await fetch(
-        "http://localhost:5000/api/chats/send",
+        "https://webexback-06cc.onrender.com/api/chats/send",
         {
           method: "POST",
           body: formData, // No need for headers, browser sets Content-Type with boundary
@@ -328,50 +410,7 @@ const ChatSend = ({
     console.log("Value updated:", value);
   }, [value]);
 
-  // Select event handler
-  const handleSelect = (e) => {
-    const selectedUser = e.itemData;
-    const userId = selectedUser.id;
-    const userName = selectedUser.userName;
 
-    // Check if the user is already in the selectedUsers array
-    if (!selectedUsers.some((user) => user.id === userId)) {
-      // Add the selected user to the array
-      setSelectedUsers((prevState) => [
-        ...prevState,
-        { id: userId, name: userName },
-      ]);
-    }
-
-    // Let the MentionComponent update the DOM first
-    setTimeout(() => {
-      const chatInput = document.getElementById("chatInput");
-
-      // Create a space text node
-      const spaceNode = document.createTextNode(" ");
-
-      // Insert space at the end of the content
-      const selection = window.getSelection();
-      const range = document.createRange();
-
-      // Set cursor at the end of the contentEditable div
-      range.selectNodeContents(chatInput);
-      range.collapse(false); // Collapse to end
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-      // Insert space at cursor position
-      document.execCommand("insertText", false, " ");
-
-      // Update the value state with the new content
-      setValue(chatInput.innerHTML);
-
-      // Focus back on the input
-      chatInput.focus();
-
-      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
-    }, 0);
-  };
 
   // Input change handler to track value changes
   const handleInputChange = (e) => {
@@ -489,7 +528,13 @@ const ChatSend = ({
   return (
     <>
       {isReply && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
+        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          ${
+            theme == "dark"
+              ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
+              : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
+          }
+        `}>
           <div>
             Replying to:{" "}
             <div
@@ -508,14 +553,20 @@ const ChatSend = ({
               setReplyMsgId(null);
               setReplyMessage(null);
             }}
-            className="text-red-600 text-xs ml-2"
+            className="p-0.5 bg-red-600 text-white hover:bg-red-700 rounded ml-2"
           >
-            Cancel
+            <X size={18} />
           </button>
         </div>
       )}
       {selectedQuoteMessage && (
-        <div className="bg-gray-100 ios p-2 rounded text-xs text-gray-600 flex justify-between items-center absolute top-[-50px] w-full br-none">
+        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          ${
+            theme == "dark"
+              ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
+              : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
+          }
+        `}>
           <div>
             <div className="flex items-center gap-2">
               <QuoteIcon size={15} className="text-orange-500" />{" "}
@@ -539,9 +590,9 @@ const ChatSend = ({
             onClick={() => {
               setSelectedQuoteMessage(null);
             }}
-            className="text-red-600 text-xs ml-2"
+            className="p-0.5 bg-red-600 text-white hover:bg-red-700 rounded ml-2"
           >
-            Cancel
+            <X size={18} />
           </button>
         </div>
       )}
@@ -551,7 +602,7 @@ const ChatSend = ({
 
         <div
           className={` ${
-            theme == "dark" ? "bg-gray-700 text-white" : "bg-white"
+            theme == "dark" ? "bg-gray-700" : "bg-gray-100"
           } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded`}
         >
           <div className="flex flex-col items-center gap-2 h-fill">
@@ -620,7 +671,13 @@ const ChatSend = ({
                 id="chatInput"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
+                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                  ${
+                    theme == "dark"
+                      ? "bg-gray-600 border-gray-500 text-gray-200"
+                      : "bg-white border-gray-300"
+                  }  
+                `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -651,7 +708,13 @@ const ChatSend = ({
                 id="chatInputuser"
                 ref={inputRef}
                 contentEditable
-                className="w-full h-[70px] overflow-y-auto px-3 py-2 rounded border border-gray-300 focus:outline-none"
+                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                  ${
+                    theme == "dark"
+                      ? "bg-gray-600 border-gray-500 text-gray-200"
+                      : "bg-white border-gray-300"
+                  }  
+                `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange}
                 onKeyDown={handleKeyDown}

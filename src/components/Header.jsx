@@ -46,7 +46,7 @@ import notificationsound from "../assets/notification-sound.mp3";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const { user, login, logout, theme, updateTheme } = useAuth();
+  const { user, login, logout, theme, updateTheme , updateAvailability} = useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
@@ -97,7 +97,7 @@ export default function Header() {
             };
 
             const response = await fetch(
-              "http://localhost:5000/api/saveFcmToken",
+              "https://webexback-06cc.onrender.com/api/saveFcmToken",
               {
                 method: "POST",
                 headers: {
@@ -140,6 +140,27 @@ export default function Header() {
       console.error("Error getting notification permission or token:", error);
     }
   };
+
+  useEffect(() => {
+    if (!user) return;
+
+    connectSocket(user.id);
+    const socket = getSocket();
+
+    
+
+    const handleAvailabilityUpdated = ({ userId, availability_status }) => {
+      if(user?.id == userId ){
+        updateAvailability(availability_status);
+      }
+    };
+
+    socket.on("availability_updated", handleAvailabilityUpdated);
+
+    return () => {
+      socket.off("availability_updated", handleAvailabilityUpdated);
+    };
+  }, [user]);
 
   const selectedUserRef = useRef(selectedUser);
 
