@@ -12,9 +12,10 @@ import Profile from "../pages/user/Profile";
 import ForgotPassword from "../pages/ForgotPassword";
 import ScreenSharing from "../components/ScreenSharing";
 
+//basename="/ccp" 
 export default function AppRouter() {
   return (
-    <Router > //basename="/ccp" 
+    <Router > 
       <ScrollToTop />
       <SelectedUserProvider>
       <Routes>
