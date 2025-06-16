@@ -8,7 +8,7 @@ export default defineConfig({
     host: '0.0.0.0',  // listen on all interfaces
     port: 5174,       // or your desired port
   },
-  base: '/ccp/',
+  // base: '/ccp/',
   define: {
     global: 'window',
   },

@@ -14,7 +14,7 @@ import ScreenSharing from "../components/ScreenSharing";
 
 export default function AppRouter() {
   return (
-    <Router basename="/ccp" >
+    <Router > //basename="/ccp" 
       <ScrollToTop />
       <SelectedUserProvider>
       <Routes>
