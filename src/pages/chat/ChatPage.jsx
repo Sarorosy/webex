@@ -80,6 +80,7 @@ const ChatPage = () => {
             delete_user_name: user?.name,
             user_id: user?.id,
             user_name: user?.name,
+            post_user_id : user?.id,
             own: true,
             group_id: selectedUser?.id,
           }),

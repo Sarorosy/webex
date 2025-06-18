@@ -163,7 +163,7 @@ const ChatHeader = ({
     <div className="absolute w-full z-[99]">
       {/* HEADER */}
       <div
-        className={`flex items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
+        className={`flex flex-col md:flex-col items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
           theme == "dark"
             ? "chat-header-bg-dark text-white"
             : "chat-header-bg text-gray-800"
@@ -214,13 +214,13 @@ const ChatHeader = ({
             
           </h2>
 
-          {selectedUser?.office_name && selectedUser?.city_name && (
+          {/* {selectedUser?.office_name && selectedUser?.city_name && (
             <p className="flex items-center ml-6">
               <Building className="mr-2 text-gray-700" size={15} />{" "}
               {selectedUser?.office_name}{" "}
               {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}
             </p>
-          )}
+          )} */}
           
           
         </div>

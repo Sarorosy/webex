@@ -81,20 +81,28 @@ const ChatSend = ({
             id: member.id,
             userName: member.name,
             userColor: "#6A0572",
-            seniority : member.seniority ?? "junior",
+            seniority: member.seniority ?? "junior",
             profilePic: member.profile_pic
               ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
           }));
 
-        const allUser = {
-          id: "all",
-          userName: "All",
-          userColor: "#000000",
-          profilePic: null,
-        };
+        if (
+          selectedUser?.type == "group" &&
+          selectedUser?.group_type == "team" &&
+          user?.seniority == "senior"
+        ) {
+          const allUser = {
+            id: "all",
+            userName: "All",
+            userColor: "#000000",
+            profilePic: null,
+          };
 
-        setGroupUsers([allUser, ...transformedUsers]);
+          setGroupUsers([allUser, ...transformedUsers]);
+        } else {
+          setGroupUsers(transformedUsers);
+        }
       } else {
         console.error(data.message || "Failed to fetch group members");
       }
@@ -132,13 +140,13 @@ const ChatSend = ({
   const { user, theme } = useAuth(); // Get sender_id
 
   useEffect(() => {
-    // console.log("selected Users:", selectedUsers);
+    console.log("selected Users:", selectedUsers);
   }, [selectedUsers]);
 
   useEffect(() => {
-    const hasAll = selectedUsers.some((u) => u.id === "all");
+    const hasAll = selectedUsers.some((u) => u.id == "all");
     if (hasAll) {
-      setSelectedUsers(groupUsers);
+      // setSelectedUsers(groupUsers);
     }
   }, [selectedUsers, groupUsers]);
 
@@ -150,25 +158,58 @@ const ChatSend = ({
     setSuggestions(filteredUsers);
   };
   const itemTemplate = (data) => {
-  const groupType = selectedUser?.group_type; // assumes selectedUser is available
-  const isJunior = user?.seniority == "junior";
-  const isTaggingJunior = data.seniority == "junior";
-  const isTaggingSenior = data.seniority == "senior";
+    const groupType = selectedUser?.group_type; // assumes selectedUser is available
+    const isJunior = user?.seniority == "junior";
+    const isTaggingJunior = data.seniority == "junior";
+    const isTaggingSenior = data.seniority == "senior";
 
-  let isDisabled = false;
+    let isDisabled = false;
 
-  if (selectedUser?.type == "group" && groupType == "work" && isJunior && isTaggingSenior) {
-    isDisabled = true;
-  } else if (selectedUser?.type == "group" && groupType == "team" && isJunior && isTaggingJunior) {
-    isDisabled = true;
-  }
+    if (
+      selectedUser?.type == "group" &&
+      groupType == "work" &&
+      isJunior &&
+      isTaggingSenior
+    ) {
+      isDisabled = true;
+    } else if (
+      selectedUser?.type == "group" &&
+      groupType == "team" &&
+      isJunior &&
+      isTaggingJunior
+    ) {
+      isDisabled = true;
+    }
 
-  return (
-    <div
-      className={`flex items-center gap-2 p-2 ${
-        isDisabled ? "opacity-50 pointer-events-none" : ""
-      }`}
-    >
+    return (
+      <div
+        className={`flex items-center gap-2 p-2 ${
+          isDisabled ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
+        {data.profilePic ? (
+          <img
+            src={data.profilePic}
+            alt={data.userName}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+            style={{
+              backgroundColor: data.userColor,
+            }}
+          >
+            {data.userName?.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span>{data.userName}</span>
+      </div>
+    );
+  };
+
+  const itemTemplatee = (data) => (
+    <div className="flex items-center gap-2 p-2">
       {data.profilePic ? (
         <img
           src={data.profilePic}
@@ -177,18 +218,19 @@ const ChatSend = ({
         />
       ) : (
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
           style={{
             backgroundColor: data.userColor,
           }}
         >
-          {data.userName?.charAt(0).toUpperCase()}
+          <span className="custom-margin">
+            {data.userName?.charAt(0).toUpperCase()}
+          </span>
         </div>
       )}
       <span>{data.userName}</span>
     </div>
   );
-};
 
   // Select event handler
   const handleSelect = (e) => {
@@ -198,24 +240,104 @@ const ChatSend = ({
 
     const mentionSeniority = selUser.seniority;
 
-  const groupType = selectedUser?.group_type;
-  const isJunior = user?.seniority === "junior";
+    const groupType = selectedUser?.group_type;
+    const isJunior = user?.seniority === "junior";
 
-  if (groupType === "work" && isJunior && mentionSeniority === "senior") {
-    toast.error("You can't select a senior user");
-    e.cancel = true;
-    return;
-  }
+    if (groupType === "work" && isJunior && mentionSeniority === "senior") {
+      toast.error("You can't select a senior user");
+      e.cancel = true;
+      return;
+    }
 
-  if (groupType === "team" && isJunior && mentionSeniority === "junior") {
-    toast.error("You can't select another junior user");
-    e.cancel = true;
-    return;
-  }
+    if (groupType === "team" && isJunior && mentionSeniority === "junior") {
+      toast.error("You can't select another junior user");
+      e.cancel = true;
+      return;
+    }
+
+    if (userId == "all") {
+      const hasAll = selectedUsers.some((user) => user.id == "all");
+
+      if (hasAll) {
+        setSelectedUsers([]);
+      } else {
+        setSelectedUsers([
+          { id: "all", name: "All" },
+          ...groupUsers.map((u) => ({
+            id: u.id,
+            name: u.userName,
+          })),
+        ]);
+      }
+
+      //return; // Skip rest of the logic for 'all'
+    }
 
     // Check if the user is already in the selectedUsers array
     if (!selectedUsers.some((user) => user.id === userId)) {
       // Add the selected user to the array
+      setSelectedUsers((prevState) => [
+        ...prevState,
+        { id: userId, name: userName },
+      ]);
+    }
+
+    // Let the MentionComponent update the DOM first
+    setTimeout(() => {
+      const chatInput = document.getElementById("chatInput");
+
+      // Create a space text node
+      const spaceNode = document.createTextNode(" ");
+
+      // Insert space at the end of the content
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      // Set cursor at the end of the contentEditable div
+      range.selectNodeContents(chatInput);
+      range.collapse(false); // Collapse to end
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Insert space at cursor position
+      document.execCommand("insertText", false, " ");
+
+      // Update the value state with the new content
+      setValue(chatInput.innerHTML);
+
+      // Focus back on the input
+      chatInput.focus();
+
+      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
+    }, 0);
+  };
+
+  const handleSelectt = (e) => {
+    const selectedUser = e.itemData;
+    const userId = selectedUser.id;
+    const userName = selectedUser.userName;
+
+    if (userId == "all") {
+      const hasAll = selectedUsers.some((user) => user.id == "all");
+
+      if (hasAll) {
+        setSelectedUsers([]);
+      } else {
+        setSelectedUsers([
+          { id: "all", name: "All" },
+          ...groupUsers.map((u) => ({
+            id: u.id,
+            name: u.userName,
+          })),
+        ]);
+      }
+
+      //return; // Skip rest of the logic for 'all'
+    }
+
+    // Check if the user is already in the selectedUsers array
+    if (!selectedUsers.some((user) => user.id == userId)) {
+      // Add the selected user to the arrayMore actions
       setSelectedUsers((prevState) => [
         ...prevState,
         { id: userId, name: userName },
@@ -302,13 +424,10 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/send",
-        {
-          method: "POST",
-          body: formData, // No need for headers, browser sets Content-Type with boundary
-        }
-      );
+      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/send", {
+        method: "POST",
+        body: formData, // No need for headers, browser sets Content-Type with boundary
+      });
 
       if (!res.ok) throw new Error("Message send failed");
 
@@ -324,6 +443,7 @@ const ChatSend = ({
       setIsSending(false);
       setSubmitBtnDisabled(false);
       setMessageLoading(false);
+      setSelectedUsers([]);
       setValue("");
       const chatInput = document.getElementById("chatInput");
       const chatInput2 = document.getElementById("chatInputuser");
@@ -349,53 +469,52 @@ const ChatSend = ({
   };
 
   const handlePaste = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const clipboardData = e.clipboardData;
-  const items = clipboardData.items;
-  let imageFound = false;
+    const clipboardData = e.clipboardData;
+    const items = clipboardData.items;
+    let imageFound = false;
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (item.type.indexOf("image") !== -1) {
-      imageFound = true;
-      const file = item.getAsFile();
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf("image") !== -1) {
+        imageFound = true;
+        const file = item.getAsFile();
 
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const img = document.createElement("img");
-        img.src = event.target.result;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = document.createElement("img");
+          img.src = event.target.result;
 
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+          const selection = window.getSelection();
+          if (!selection.rangeCount) return;
 
-        const range = selection.getRangeAt(0);
-        range.insertNode(img);
+          const range = selection.getRangeAt(0);
+          range.insertNode(img);
 
-        // Optional: If you want a line break after the image
-        const br = document.createElement("br");
-        range.setStartAfter(img);
-        range.insertNode(br);
+          // Optional: If you want a line break after the image
+          const br = document.createElement("br");
+          range.setStartAfter(img);
+          range.insertNode(br);
 
-        range.setStartAfter(br);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
+          range.setStartAfter(br);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
 
-        triggerInputEvent(e.target);
-      };
-      reader.readAsDataURL(file);
-      break;
+          triggerInputEvent(e.target);
+        };
+        reader.readAsDataURL(file);
+        break;
+      }
     }
-  }
 
-  if (!imageFound) {
-    const text = clipboardData.getData("text/plain");
-    document.execCommand("insertText", false, text);
-    triggerInputEvent(e.target);
-  }
-};
-
+    if (!imageFound) {
+      const text = clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
+      triggerInputEvent(e.target);
+    }
+  };
 
   // 🔁 Helper to dispatch an input event manually
   const triggerInputEvent = (el) => {
@@ -409,8 +528,6 @@ const ChatSend = ({
   useEffect(() => {
     console.log("Value updated:", value);
   }, [value]);
-
-
 
   // Input change handler to track value changes
   const handleInputChange = (e) => {
@@ -470,10 +587,10 @@ const ChatSend = ({
     );
 
     // Update state only if changed
-    if (updatedSelectedUsers.length !== selectedUsers.length) {
-      setSelectedUsers(updatedSelectedUsers);
-      //console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
-    }
+    // if (updatedSelectedUsers.length !== selectedUsers.length) {
+    //   setSelectedUsers(updatedSelectedUsers);
+    //   console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+    // }
   }, [value]);
 
   useEffect(() => {
@@ -528,13 +645,15 @@ const ChatSend = ({
   return (
     <>
       {isReply && (
-        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+        <div
+          className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
           ${
             theme == "dark"
               ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
               : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
           }
-        `}>
+        `}
+        >
           <div>
             Replying to:{" "}
             <div
@@ -560,13 +679,15 @@ const ChatSend = ({
         </div>
       )}
       {selectedQuoteMessage && (
-        <div className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+        <div
+          className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
           ${
             theme == "dark"
               ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
               : "bg-gray-100 text-gray-600 border border-gray-200 border-1"
           }
-        `}>
+        `}
+        >
           <div>
             <div className="flex items-center gap-2">
               <QuoteIcon size={15} className="text-orange-500" />{" "}

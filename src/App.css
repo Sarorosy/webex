@@ -350,3 +350,14 @@ div#commentsMention[placeholder]:empty:before {
   padding: 5px 10px !important;
   background-color: rgb(234 88 12) !important;
 }
+
+@media (max-width: 768px) {
+  .mobile-hide {
+    display: none !important;
+  }
+  .sidebar-container {
+    width: 90vw !important;
+    min-width: unset !important;
+    max-width: unset !important;
+  }
+}

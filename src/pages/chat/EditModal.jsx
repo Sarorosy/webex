@@ -8,7 +8,15 @@ import { useAuth } from "../../utils/idb";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { X } from "lucide-react";
 
-const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) => {
+const EditModal = ({
+  msgId,
+  userId,
+  message,
+  msgType,
+  type,
+  onClose,
+  onUpdate,
+}) => {
   const [value, setValue] = useState(message);
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -29,36 +37,48 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
     { id: 5, userName: "Elena Rodriguez", userColor: "#1A936F" },
   ];
   const [groupUsers, setGroupUsers] = useState([]);
-  
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch(`https://webexback-06cc.onrender.com/api/groups/members/${userId}`);
-        const data = await res.json();
-  
-        if (data.status) {
-          const transformedUsers = data.members.map((member, index) => ({
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(
+        `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
+      );
+      const data = await res.json();
+
+      if (data.status) {
+        const transformedUsers = data.members
+          .filter((member) => member.id != user?.id) // Exclude self
+          .map((member) => ({
             id: member.id,
             userName: member.name,
-            userColor: '#6A0572',
+            userColor: "#6A0572",
+            seniority: member.seniority ?? "junior",
             profilePic: member.profile_pic
               ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
           }));
-  
-          setGroupUsers(transformedUsers);
-        } else {
-          console.error(data.message || "Failed to fetch group members");
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err);
+
+        const allUser = {
+          id: "all",
+          userName: "All",
+          userColor: "#000000",
+          profilePic: null,
+        };
+
+        setGroupUsers([allUser, ...transformedUsers]);
+      } else {
+        console.error(data.message || "Failed to fetch group members");
       }
-    };
-  
-    useEffect(() => {
-      if (type === "group") {
-        fetchUsers();
-      }
-    }, [type, userId]); 
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (type === "group") {
+      fetchUsers();
+    }
+  }, [type, userId]);
 
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
 
@@ -87,7 +107,6 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
         >
           {data.userName?.charAt(0).toUpperCase()}
         </div>
-
       )}
       <span>{data.userName}</span>
     </div>
@@ -128,48 +147,66 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
   }, [value]); // Runs every time value changes
 
   const handleSelect = (e) => {
-  const selectedUser = e.itemData;
-  const userId = selectedUser.id;
-  const userName = selectedUser.userName;
+    const selectedUser = e.itemData;
+    const userId = selectedUser.id;
+    const userName = selectedUser.userName;
 
-  // Check if the user is already in the selectedUsers array
-  if (!selectedUsers.some((user) => user.id === userId)) {
-    // Add the selected user to the array
-    setSelectedUsers((prevState) => [
-      ...prevState,
-      { id: userId, name: userName },
-    ]);
-  }
+    if (userId == "all") {
+      const hasAll = selectedUsers.some((user) => user.id == "all");
 
-  // Let the MentionComponent update the DOM first
-  setTimeout(() => {
-    const chatInput = document.getElementById("chatInput");
-    
-    // Create a space text node
-    const spaceNode = document.createTextNode(" ");
-    
-    // Insert space at the end of the content
-    const selection = window.getSelection();
-    const range = document.createRange();
-    
-    // Set cursor at the end of the contentEditable div
-    range.selectNodeContents(chatInput);
-    range.collapse(false); // Collapse to end
-    selection.removeAllRanges();
-    selection.addRange(range);
-    
-    // Insert space at cursor position
-    document.execCommand("insertText", false, " ");
-    
-    // Update the value state with the new content
-    setValue(chatInput.innerHTML);
-    
-    // Focus back on the input
-    chatInput.focus();
-    
-    console.log(`Selected user ID: ${userId}, Name: ${userName}`);
-  }, 0);
-};
+      if (hasAll) {
+        setSelectedUsers([]);
+      } else {
+        setSelectedUsers([
+          { id: "all", name: "All" },
+          ...groupUsers.map((u) => ({
+            id: u.id,
+            name: u.userName,
+          })),
+        ]);
+      }
+
+      //return; // Skip rest of the logic for 'all'
+    }
+
+    // Check if the user is already in the selectedUsers array
+    if (!selectedUsers.some((user) => user.id === userId)) {
+      // Add the selected user to the array
+      setSelectedUsers((prevState) => [
+        ...prevState,
+        { id: userId, name: userName },
+      ]);
+    }
+
+    // Let the MentionComponent update the DOM first
+    setTimeout(() => {
+      const chatInput = document.getElementById("chatInput");
+
+      // Create a space text node
+      const spaceNode = document.createTextNode(" ");
+
+      // Insert space at the end of the content
+      const selection = window.getSelection();
+      const range = document.createRange();
+
+      // Set cursor at the end of the contentEditable div
+      range.selectNodeContents(chatInput);
+      range.collapse(false); // Collapse to end
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Insert space at cursor position
+      document.execCommand("insertText", false, " ");
+
+      // Update the value state with the new content
+      setValue(chatInput.innerHTML);
+
+      // Focus back on the input
+      chatInput.focus();
+
+      console.log(`Selected user ID: ${userId}, Name: ${userName}`);
+    }, 0);
+  };
   // Input change handler to track value changes
   const handleInputChange = (e) => {
     setValue(e.target.innerHTML);
@@ -177,27 +214,26 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
   };
 
   useEffect(() => {
-  // Create a dummy DOM to parse the HTML value
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = value;
+    // Create a dummy DOM to parse the HTML value
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = value;
 
-  // Get all mention names from spans
-  const mentionedNames = Array.from(
-    tempDiv.querySelectorAll('.e-mention-chip')
-  ).map((el) => el.textContent.trim());
+    // Get all mention names from spans
+    const mentionedNames = Array.from(
+      tempDiv.querySelectorAll(".e-mention-chip")
+    ).map((el) => el.textContent.trim());
 
-  // Filter out users no longer mentioned
-  const updatedSelectedUsers = selectedUsers.filter((user) =>
-    mentionedNames.includes(user.name)
-  );
+    // Filter out users no longer mentioned
+    const updatedSelectedUsers = selectedUsers.filter((user) =>
+      mentionedNames.includes(user.name)
+    );
 
-  // Update state only if changed
-  if (updatedSelectedUsers.length !== selectedUsers.length) {
-    setSelectedUsers(updatedSelectedUsers);
-    console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
-  }
-}, [value]);
-
+    // Update state only if changed
+    if (updatedSelectedUsers.length !== selectedUsers.length) {
+      setSelectedUsers(updatedSelectedUsers);
+      console.log("Cleaned up selectedUsers:", updatedSelectedUsers);
+    }
+  }, [value]);
 
   return (
     <motion.div
@@ -213,93 +249,92 @@ const EditModal = ({ msgId,userId, message,msgType, type, onClose, onUpdate }) =
         transition={{ duration: 0.2 }}
         className="bg-white rounded-md shadow-lg w-full max-w-md"
       >
-        <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
           <h2 className="text-lg font-semibold text-white">Edit Message</h2>
           <div>
             <button
-            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
-            onClick={onClose} // Close modal without doing anything
-          >
-            <X size={15}  />
-          </button>
+              className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+              onClick={onClose} // Close modal without doing anything
+            >
+              <X size={15} />
+            </button>
           </div>
         </div>
         <div className=" p-4">
-        {type === "group" ? (
-          <div className="relative w-full">
-            {value.trim() === "" && (
-              <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
-                Type @ to mention someone...
-              </div>
-            )}
-            <div
-              id="chatInput"
-              ref={chatInputRef}
-              contentEditable
-              className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
-              placeholder="Type @ to mention someone..."
-              onInput={handleInputChange} // Track changes in the input
-            ></div>
+          {type === "group" ? (
+            <div className="relative w-full">
+              {value.trim() === "" && (
+                <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                  Type @ to mention someone...
+                </div>
+              )}
+              <div
+                id="chatInput"
+                ref={chatInputRef}
+                contentEditable
+                className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
+                placeholder="Type @ to mention someone..."
+                onInput={handleInputChange} // Track changes in the input
+              ></div>
 
-            <MentionComponent
-              dataSource={groupUsers}
-              fields={{ text: "userName" }}
-              target="#chatInput"
-              mentionChar="@"
-              allowSpaces={true}
-              popupHeight="200px"
-              popupWidth="250px"
-              itemTemplate={itemTemplate}
-              select={handleSelect} // Attach the select event handler
-            />
+              <MentionComponent
+                dataSource={groupUsers}
+                fields={{ text: "userName" }}
+                target="#chatInput"
+                mentionChar="@"
+                allowSpaces={true}
+                popupHeight="200px"
+                popupWidth="250px"
+                itemTemplate={itemTemplate}
+                select={handleSelect} // Attach the select event handler
+              />
+            </div>
+          ) : (
+            // <textarea
+            //   value={value}
+            //   onChange={(e) => setValue(e.target.value)}
+            //   rows={1}
+            //   placeholder="Edit your message..."
+            //   className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
+            // />
+            <div className="relative w-full">
+              {value.trim() === "" && (
+                <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
+                  Type your message...
+                </div>
+              )}
+              <div
+                id="chatInput"
+                ref={chatInputRef}
+                contentEditable
+                className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
+                placeholder="Type @ to mention someone..."
+                onInput={handleInputChange} // Track changes in the input
+              ></div>
+
+              <MentionComponent
+                dataSource={[]}
+                fields={{ text: "userName" }}
+                target="#chatInput"
+                mentionChar="^"
+                allowSpaces={true}
+                popupHeight="200px"
+                popupWidth="250px"
+                itemTemplate={itemTemplate}
+                select={handleSelect} // Attach the select event handler
+              />
+            </div>
+          )}
+
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              onClick={handleEdit}
+              disabled={submitBtnDisabled}
+              className="px-4 py-1 rounded border border-orange-500 hover:text-white hover:bg-orange-500 f-13"
+            >
+              {submitBtnDisabled ? "Updating..." : "Update"}
+            </button>
           </div>
-        ) : (
-          // <textarea
-          //   value={value}
-          //   onChange={(e) => setValue(e.target.value)}
-          //   rows={1}
-          //   placeholder="Edit your message..."
-          //   className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none resize-none"
-          // />
-          <div className="relative w-full">
-            {value.trim() === "" && (
-              <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
-                Type your message...
-              </div>
-            )}
-            <div
-              id="chatInput"
-              ref={chatInputRef}
-              contentEditable
-              className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
-              placeholder="Type @ to mention someone..."
-              onInput={handleInputChange} // Track changes in the input
-            ></div>
-
-            <MentionComponent
-              dataSource={[]}
-              fields={{ text: "userName" }}
-              target="#chatInput"
-              mentionChar="^"
-              allowSpaces={true}
-              popupHeight="200px"
-              popupWidth="250px"
-              itemTemplate={itemTemplate}
-              select={handleSelect} // Attach the select event handler
-            />
-          </div>
-        )}
-
-        <div className="mt-4 flex justify-end gap-2">
-          
-          <button
-            onClick={handleEdit}
-            disabled={submitBtnDisabled}
-            className="px-4 py-1 rounded border border-orange-500 hover:text-white hover:bg-orange-500 f-13"
-          >
-            {submitBtnDisabled ? "Updating..." : "Update"}
-          </button>
-        </div>
         </div>
       </motion.div>
     </motion.div>

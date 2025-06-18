@@ -14,6 +14,7 @@ import {
   X,
   Circle,
   CircleMinus,
+  Volume2,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -481,6 +482,10 @@ const ChatSidebar = ({
             updatedChats[index]?.is_mentioned ||
             (Array.isArray(msg.mentioned_users) &&
               msg.mentioned_users.includes(user?.id)),
+          is_all:
+            updatedChats[index]?.is_all ||
+            (Array.isArray(msg.mentioned_users) &&
+              msg.mentioned_users.includes("all")),
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -535,16 +540,25 @@ const ChatSidebar = ({
       );
     };
 
+    const handleGroupMembersAdded = ({ group_id, members }) => {
+      if(members && members.includes(user?.id)){
+        console.log("fetching chats")
+        fetchChats(false);
+      }
+    };
+
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
     });
 
     socket.on("user_loggedin", handleUserLoggedIn);
     socket.on("availability_updated", handleAvailabilityUpdated);
+    socket.on("group_members_added", handleGroupMembersAdded);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
       socket.off("availability_updated", handleAvailabilityUpdated);
+      socket.off("group_members_added", handleGroupMembersAdded);
     };
   }, [user, chats]);
 
@@ -556,6 +570,10 @@ const ChatSidebar = ({
     return chats.filter((chat) => chat.read_status === 1).length;
   }, [chats]);
 
+  const unreadAtCount = useMemo(() => {
+    return chats.filter((chat) => chat.is_mentioned == true).length;
+  }, [chats]);
+
   const filteredResult = useMemo(() => {
     if (!chats || chats.length == 0 || !user) return [];
 
@@ -564,7 +582,8 @@ const ChatSidebar = ({
         activeTab === "all" ||
         (activeTab === "direct" && chat.type === "user") ||
         (activeTab === "group" && chat.type === "group") ||
-        (activeTab === "unread" && chat.read_status === 1);
+        (activeTab === "unread" && chat.read_status === 1)||
+        (activeTab === "@" && chat.is_mentioned == true);
 
       const matchesSearch = chat.name
         .toLowerCase()
@@ -643,18 +662,14 @@ const ChatSidebar = ({
     };
 
     const handleGroupUpdated = (data) => {
-
-      if (
-    selectedUser?.id === data.id &&
-    selectedUser?.type === "group"
-  ) {
-    setSelectedUser((prev) => ({
-      ...prev,
-      name: data.name,
-      group: data.group,
-      group_type: data.group_type,
-    }));
-  }
+      if (selectedUser?.id === data.id && selectedUser?.type === "group") {
+        setSelectedUser((prev) => ({
+          ...prev,
+          name: data.name,
+          group: data.group,
+          group_type: data.group_type,
+        }));
+      }
 
       setChats((prevChats) =>
         prevChats.map((chat) => {
@@ -669,7 +684,6 @@ const ChatSidebar = ({
           return chat;
         })
       );
-      
     };
 
     const handleGroupCreated = (group) => {
@@ -677,9 +691,6 @@ const ChatSidebar = ({
         Array.isArray(group.selected_members) &&
         group.selected_members.includes(user?.id)
       ) {
-        // Remove selected_members from the group payload if you don't want it stored
-        // const { selected_members, ...chatData } = group;
-        // setChats((prevChats) => [...prevChats, chatData]);
         fetchChats(false);
       }
     };
@@ -740,7 +751,7 @@ const ChatSidebar = ({
         theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
       }  py-2 px-1 relative select-none  overflow-hidden  ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
-      }`}
+      } sidebar-container ${selectedUser?.id ? "mobile-hide" : ""}`}
       style={{
         width: `${sidebarWidth}px`,
         minWidth: "300px",
@@ -827,6 +838,7 @@ const ChatSidebar = ({
               "direct",
               "group",
               ...(unreadCount > 0 ? ["unread"] : []),
+              ...(unreadAtCount > 0 ? ["@"] : []),
             ].map((tab) => {
               const label = tab.charAt(0).toUpperCase() + tab.slice(1);
               const Icon =
@@ -836,33 +848,41 @@ const ChatSidebar = ({
                   ? Users2
                   : tab === "unread"
                   ? MessageCircle
+                   : tab === "@"
+                  ? AtSign
                   : Users;
 
               const showCount = tab === "unread" && unreadCount > 0;
+              const showAtCount = tab == "@" && unreadAtCount > 0;
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex items-center ${
-                    tab == "unread" ? "" : "gap-1"
+                    (tab == "unread" || tab == "@") ? "" : "gap-1"
                   } px-2 py-1 rounded f-11 relative ${
                     activeTab === tab
                       ? "bg-orange-500 text-white font-semibold border border-orange-500"
                       : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
                   }`}
                 >
-                  <Icon size={tab == "unread" ? 16 : 12} />
+                  <Icon size={(tab == "unread" || tab == "@") ? 16 : 12} />
                   <div
                     data-tooltip-id="my-tooltip"
                     data-tooltip-content={
                       label == "Unread" ? "Unread Messages" : ""
                     }
                   >
-                    {label == "Unread" ? null : label}
+                    {(label == "Unread" || label == "@") ? null : label}
                   </div>
                   {showCount && (
                     <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                  {showAtCount && (
+                    <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
+                      {unreadAtCount > 99 ? "99+" : unreadAtCount}
                     </span>
                   )}
                 </button>
@@ -1022,8 +1042,11 @@ const ChatSidebar = ({
                       <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
                         {chat.unread_count ?? 1}
                       </div>
-                      {chat.is_mentioned && (
+                      {chat.is_mentioned && !chat.is_all && (
                         <AtSign className="text-orange-500" size={16} />
+                      )}
+                      {chat.is_all && (
+                        <Volume2 className="text-orange-500" size={16} />
                       )}
                     </div>
                   )}

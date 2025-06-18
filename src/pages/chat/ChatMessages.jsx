@@ -97,7 +97,7 @@ const ChatMessages = ({
       const data = await res.json();
       const reversedData = data.reverse();
 
-      console.log(reversedData);
+      // console.log(reversedData);
 
       if (reversedData.length > 0) {
         let maxId = 0;
@@ -163,6 +163,7 @@ const ChatMessages = ({
 
   useEffect(() => {
      let isMounted = true;
+     console.log("mounted",isMounted)
     const loadInitialMessages = async () => {
        if (!isMounted || messages.length > 0) return;
         
@@ -194,6 +195,13 @@ const ChatMessages = ({
       setHasMore(true);
     };
   }, [userId, userType, user?.id]);
+
+  useEffect(() => {
+  isFetchingRef.current = false; // Reset fetching status
+  hasMoreRef.current = true;     // Allow loading more data
+  setHasMore(true);              // Sync component state
+}, [userId, userType]);
+
 
   useEffect(() => {
     if (containerRef.current && messages.length > 0) {
@@ -249,11 +257,13 @@ const ChatMessages = ({
   useEffect(() => {
     const observer = new IntersectionObserver(
       async ([entry]) => {
-        console.log("IntersectionObserver triggered", {
-          isIntersecting: entry.isIntersecting,
-          hasMore,
-          isLoading,
-        });
+        // console.log("IntersectionObserver triggered", {
+        //   isIntersecting: entry.isIntersecting,
+        //   hasMore,
+        //   isLoading,
+        //   isFetchingRef,
+        //   hasMoreRef
+        // });
 
         if (
           entry.isIntersecting &&
@@ -671,7 +681,7 @@ const ChatMessages = ({
             "created_at",
             selmsg.created_at
           );
-          fetchAroundMessageUrl.searchParams.append("limit", "13"); // Fetch a reasonable number of messages
+          fetchAroundMessageUrl.searchParams.append("limit", "100"); // Fetch a reasonable number of messages
 
           const response = await fetch(fetchAroundMessageUrl.toString());
 
