@@ -32,7 +32,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "https://webexback-06cc.onrender.com/api/messages/totalfind",
+          "http://localhost:5000/api/messages/totalfind",
           {
             method: "POST",
             headers: {

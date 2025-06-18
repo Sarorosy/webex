@@ -89,7 +89,7 @@ const ChatHeader = ({
       try {
         setSearchLoading(true)
         const res = await fetch(
-          "https://webexback-06cc.onrender.com/api/messages/find",
+          "http://localhost:5000/api/messages/find",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -120,7 +120,7 @@ const ChatHeader = ({
   const handleFavourite = async () => {
     try {
       const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/favourite",
+        "http://localhost:5000/api/chats/favourite",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
