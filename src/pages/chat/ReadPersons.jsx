@@ -15,7 +15,7 @@ const ReadPersons = ({ messageId }) => {
     try {
       setLoading(load);
       const res = await axios.get(
-        `http://localhost:5000/api/chats/read-persons/${messageId}`
+        `https://webexback-06cc.onrender.com/api/chats/read-persons/${messageId}`
       );
       if (res.data.status) {
         setReadUsers(res.data.data);

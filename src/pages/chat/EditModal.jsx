@@ -41,7 +41,7 @@ const EditModal = ({
   const fetchUsers = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/groups/members/${userId}`
+        `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
       );
       const data = await res.json();
 

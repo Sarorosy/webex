@@ -14,7 +14,7 @@ const Requests = ({ onClose }) => {
 
   const fetchUserRequests = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/userlimit/all");
+      const res = await axios.get("https://webexback-06cc.onrender.com/api/userlimit/all");
       setUserRequests(res.data.requests);
     } catch (err) {
       console.error("Error fetching user limit requests:", err);
@@ -23,7 +23,7 @@ const Requests = ({ onClose }) => {
 
   const fetchGroupRequests = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/grouplimit/all");
+      const res = await axios.get("https://webexback-06cc.onrender.com/api/grouplimit/all");
       if (res.data.status) {
         setGroupRequests(res.data.requests);
       }
@@ -44,7 +44,7 @@ const Requests = ({ onClose }) => {
   const handleUserApprove = async (id) => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/userlimit/approve",
+        "https://webexback-06cc.onrender.com/api/userlimit/approve",
         { id }
       );
 
@@ -77,7 +77,7 @@ const Requests = ({ onClose }) => {
     const member_limit = limitUpdates[id] || 1;
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/grouplimit/approve",
+        "https://webexback-06cc.onrender.com/api/grouplimit/approve",
         { id, member_limit }
       );
 

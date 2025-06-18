@@ -20,7 +20,7 @@ const AddGroup = ({ onClose, finalFunction }) => {
     const fetchUsers = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/api/users/getusersforgroup",
+          "https://webexback-06cc.onrender.com/api/users/getusersforgroup",
           {
             method: "POST",
             headers: {
@@ -48,7 +48,7 @@ const AddGroup = ({ onClose, finalFunction }) => {
 
     try {
       setCreating(true);
-      const response = await fetch("http://localhost:5000/api/groups/create", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/groups/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
