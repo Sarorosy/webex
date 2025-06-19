@@ -444,7 +444,7 @@ const ChatSidebar = ({
 
       setChats((prevChats) => {
         const index = prevChats.findIndex(
-          (chat) => chat.id == otherUserId && chat.type == msg.user_type // match type
+          (chat) => chat.id == otherUserId && chat.type == otherChatType // match type
         );
 
         if (index == -1) {
@@ -455,11 +455,10 @@ const ChatSidebar = ({
         const isSameAsSelected =
           selectedUser &&
           selectedUser.id == otherUserId &&
-          selectedUser.type == msg.user_type;
+          selectedUser.type == otherChatType;
 
         if (msg.sender_id != user?.id) {
           try {
-            console.log("music Playing");
             audioRef.current.currentTime = 0;
             audioRef.current.play();
           } catch (e) {
@@ -574,6 +573,10 @@ const ChatSidebar = ({
     return chats.filter((chat) => chat.is_mentioned == true).length;
   }, [chats]);
 
+  const unreadForAllCount = useMemo(() => {
+    return chats.filter((chat) => chat.is_all == true).length;
+  }, [chats]);
+
   const filteredResult = useMemo(() => {
     if (!chats || chats.length == 0 || !user) return [];
 
@@ -583,7 +586,8 @@ const ChatSidebar = ({
         (activeTab === "direct" && chat.type === "user") ||
         (activeTab === "group" && chat.type === "group") ||
         (activeTab === "unread" && chat.read_status === 1)||
-        (activeTab === "@" && chat.is_mentioned == true);
+        (activeTab === "@" && chat.is_mentioned == true) ||
+        (activeTab === "forall" && chat.is_all == true);
 
       const matchesSearch = chat.name
         .toLowerCase()
@@ -839,6 +843,7 @@ const ChatSidebar = ({
               "group",
               ...(unreadCount > 0 ? ["unread"] : []),
               ...(unreadAtCount > 0 ? ["@"] : []),
+              ...(unreadForAllCount > 0 ? ["forall"] : [])
             ].map((tab) => {
               const label = tab.charAt(0).toUpperCase() + tab.slice(1);
               const Icon =
@@ -850,30 +855,33 @@ const ChatSidebar = ({
                   ? MessageCircle
                    : tab === "@"
                   ? AtSign
+                  : tab === "forall"
+                  ? Volume2
                   : Users;
 
               const showCount = tab === "unread" && unreadCount > 0;
               const showAtCount = tab == "@" && unreadAtCount > 0;
+              const showForAllCount = tab == "forall" && unreadForAllCount > 0;
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex items-center ${
-                    (tab == "unread" || tab == "@") ? "" : "gap-1"
+                    (tab == "unread" || tab == "@" || tab == "forall" || tab == "direct"  || tab == "group") ? "" : "gap-1"
                   } px-2 py-1 rounded f-11 relative ${
                     activeTab === tab
                       ? "bg-orange-500 text-white font-semibold border border-orange-500"
                       : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
                   }`}
                 >
-                  <Icon size={(tab == "unread" || tab == "@") ? 16 : 12} />
+                  <Icon size={(tab == "unread" || tab == "@" || tab == "forall" || tab == "direct"  || tab == "group") ? 16 : 12} />
                   <div
                     data-tooltip-id="my-tooltip"
                     data-tooltip-content={
                       label == "Unread" ? "Unread Messages" : ""
                     }
                   >
-                    {(label == "Unread" || label == "@") ? null : label}
+                    {(label == "Unread" || label == "@" || label == "Forall" || label == "Direct" || label == "Group") ? null : label}
                   </div>
                   {showCount && (
                     <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
@@ -883,6 +891,11 @@ const ChatSidebar = ({
                   {showAtCount && (
                     <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadAtCount > 99 ? "99+" : unreadAtCount}
+                    </span>
+                  )}
+                  {showForAllCount && (
+                    <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
+                      {unreadForAllCount > 99 ? "99+" : unreadForAllCount}
                     </span>
                   )}
                 </button>
@@ -944,6 +957,7 @@ const ChatSidebar = ({
                           read_status: 0,
                           unread_count: 0,
                           is_mentioned: false,
+                          is_all :false
                         };
                       }
                       return c;

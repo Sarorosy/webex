@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/ccp/dev-sw.js?dev-sw', { scope: '/ccp/', type: 'classic' })

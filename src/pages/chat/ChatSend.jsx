@@ -67,7 +67,7 @@ const ChatSend = ({
     };
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsersold = async () => {
     try {
       const res = await fetch(
         `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
@@ -85,6 +85,9 @@ const ChatSend = ({
             profilePic: member.profile_pic
               ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
+            email: member.email,
+            user_panel: member.user_panel,
+            logged_in_status: true,
           }));
 
         if (
@@ -97,11 +100,24 @@ const ChatSend = ({
             userName: "All",
             userColor: "#000000",
             profilePic: null,
+            logged_in_status: true,
           };
 
-          setGroupUsers([allUser, ...transformedUsers]);
+          const finalList = [allUser, ...transformedUsers];
+
+          setGroupUsers(finalList);
+          updateGroupLoginStatus(finalList);
         } else {
-          setGroupUsers(transformedUsers);
+          const allUser = {
+            id: "all",
+            userName: "All",
+            userColor: "#000000",
+            profilePic: null,
+          };
+
+          const finalList = [allUser, ...transformedUsers];
+          setGroupUsers(finalList);
+          updateGroupLoginStatus(finalList);
         }
       } else {
         console.error(data.message || "Failed to fetch group members");
@@ -110,6 +126,92 @@ const ChatSend = ({
       console.error("Error fetching users:", err);
     }
   };
+
+  const fetchUsers = async () => {
+  try {
+    const res = await fetch(
+      `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
+    );
+    const data = await res.json();
+
+    if (data.status) {
+      const transformedUsers = data.members
+        .filter((member) => member.id != user?.id) // only exclude self here
+        .map((member) => ({
+          id: member.id,
+          userName: member.name,
+          userColor: "#6A0572",
+          seniority: member.seniority ?? "junior",
+          profilePic: member.profile_pic
+            ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
+            : null,
+          email: member.email,
+          user_panel: member.user_panel,
+        }));
+
+      // Include "All"
+      const allUser = {
+        id: "all",
+        userName: "All",
+        userColor: "#000000",
+        profilePic: null,
+        logged_in_status: true,
+      };
+
+      const fullList = [allUser, ...transformedUsers];
+
+      // Check login status and filter out "Leave"
+      const updatedUsers = await Promise.all(
+        fullList.map(async (u) => {
+          if (u.id === "all") return u;
+
+          let logged_in_status = true;
+          let isLeave = false;
+
+          try {
+            let url = "";
+
+            if (u.user_panel === "AP") {
+              url =
+                "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
+            } else if (u.user_panel === "SP") {
+              url =
+                "https://elementk.in/spbackend/api/login-history/check-login-status";
+            }
+
+            if (url) {
+              const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: u.email }),
+              });
+
+              const result = await res.json();
+              if (result.message === "Leave") {
+                isLeave = true;
+              } else {
+                logged_in_status = result.message === "Loggedin";
+              }
+            }
+          } catch (err) {
+            console.error("Login check failed for", u.email, err);
+            logged_in_status = false;
+          }
+
+          return isLeave ? null : { ...u, logged_in_status };
+        })
+      );
+
+      const filtered = updatedUsers.filter(Boolean); // remove nulls
+      setGroupUsers(filtered);
+    } else {
+      console.error(data.message || "Failed to fetch group members");
+    }
+  } catch (err) {
+    console.error("Error fetching users:", err);
+  }
+};
+
 
   useEffect(() => {
     setValue("");
@@ -195,7 +297,7 @@ const ChatSend = ({
           />
         ) : (
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-white  font-semibold text-sm`}
             style={{
               backgroundColor: data.userColor,
             }}
@@ -203,7 +305,9 @@ const ChatSend = ({
             {data.userName?.charAt(0).toUpperCase()}
           </div>
         )}
-        <span>{data.userName}</span>
+        <span>
+          {data.userName}
+        </span>
       </div>
     );
   };
@@ -378,19 +482,34 @@ const ChatSend = ({
   const handleSend = async () => {
     if (isSending || (!value.trim() && !selectedFile)) return;
 
+    const rawText = value.trim();
+
+    // Step 1: Find all email addresses and replace with placeholders
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+    const emails = [];
+    const maskedText = rawText.replace(emailRegex, (match) => {
+      const placeholder = `__EMAIL_${emails.length}__`;
+      emails.push(match);
+      return placeholder;
+    });
+
+    // Step 2: Linkify only URLs in text (no emails inside now)
     const urlRegex =
       /((https?:\/\/)?(?:www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/g;
 
-    const linkifiedMessage = value.trim().replace(urlRegex, (url) => {
-      // Clean HTML tags from URL portion only
+    const linkified = maskedText.replace(urlRegex, (url) => {
       const plainUrl = url.replace(/<[^>]+>/g, "");
-
       let href = plainUrl;
       if (!plainUrl.startsWith("http://") && !plainUrl.startsWith("https://")) {
         href = "https://" + plainUrl;
       }
 
       return `<a href="${href}" class="messages-a-link" target="_blank">${plainUrl}</a>`;
+    });
+
+    // Step 3: Restore original emails
+    const finalMessage = linkified.replace(/__EMAIL_(\d+)__/g, (_, index) => {
+      return emails[parseInt(index)];
     });
 
     try {
@@ -405,7 +524,7 @@ const ChatSend = ({
       formData.append("user_type", type);
       formData.append("sender_id", user.id);
       formData.append("receiver_id", userId);
-      formData.append("message", linkifiedMessage);
+      formData.append("message", finalMessage);
       formData.append("sender_name", user.name);
       formData.append("profile_pic", user.profile_pic);
       formData.append(

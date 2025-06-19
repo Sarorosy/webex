@@ -163,7 +163,7 @@ const ChatHeader = ({
     <div className="absolute w-full z-[99]">
       {/* HEADER */}
       <div
-        className={`flex flex-col md:flex-col items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
+        className={`flex flex-col md:flex-row items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
           theme == "dark"
             ? "chat-header-bg-dark text-white"
             : "chat-header-bg text-gray-800"
