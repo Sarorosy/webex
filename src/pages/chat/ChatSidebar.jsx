@@ -477,14 +477,16 @@ const ChatSidebar = ({
           unread_count: isSameAsSelected
             ? updatedChats[index]?.unread_count || 0
             : (updatedChats[index]?.unread_count || 0) + 1,
-          is_mentioned:
-            updatedChats[index]?.is_mentioned ||
-            (Array.isArray(msg.mentioned_users) &&
-              msg.mentioned_users.includes(user?.id)),
-          is_all:
-            updatedChats[index]?.is_all ||
-            (Array.isArray(msg.mentioned_users) &&
-              msg.mentioned_users.includes("all")),
+          is_mentioned: isSameAsSelected
+            ? updatedChats[index]?.is_mentioned
+            : updatedChats[index]?.is_mentioned ||
+              (Array.isArray(msg.mentioned_users) &&
+                msg.mentioned_users.includes(user?.id)),
+          is_all: isSameAsSelected
+            ? updatedChats[index]?.is_all
+            : updatedChats[index]?.is_all ||
+              (Array.isArray(msg.mentioned_users) &&
+                msg.mentioned_users.includes("all")),
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -540,8 +542,8 @@ const ChatSidebar = ({
     };
 
     const handleGroupMembersAdded = ({ group_id, members }) => {
-      if(members && members.includes(user?.id)){
-        console.log("fetching chats")
+      if (members && members.includes(user?.id)) {
+        console.log("fetching chats");
         fetchChats(false);
       }
     };
@@ -585,7 +587,7 @@ const ChatSidebar = ({
         activeTab === "all" ||
         (activeTab === "direct" && chat.type === "user") ||
         (activeTab === "group" && chat.type === "group") ||
-        (activeTab === "unread" && chat.read_status === 1)||
+        (activeTab === "unread" && chat.read_status === 1) ||
         (activeTab === "@" && chat.is_mentioned == true) ||
         (activeTab === "forall" && chat.is_all == true);
 
@@ -843,7 +845,7 @@ const ChatSidebar = ({
               "group",
               ...(unreadCount > 0 ? ["unread"] : []),
               ...(unreadAtCount > 0 ? ["@"] : []),
-              ...(unreadForAllCount > 0 ? ["forall"] : [])
+              ...(unreadForAllCount > 0 ? ["forall"] : []),
             ].map((tab) => {
               const label = tab.charAt(0).toUpperCase() + tab.slice(1);
               const Icon =
@@ -853,7 +855,7 @@ const ChatSidebar = ({
                   ? Users2
                   : tab === "unread"
                   ? MessageCircle
-                   : tab === "@"
+                  : tab === "@"
                   ? AtSign
                   : tab === "forall"
                   ? Volume2
@@ -867,21 +869,43 @@ const ChatSidebar = ({
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex items-center ${
-                    (tab == "unread" || tab == "@" || tab == "forall" || tab == "direct"  || tab == "group") ? "" : "gap-1"
+                    tab == "unread" ||
+                    tab == "@" ||
+                    tab == "forall" ||
+                    tab == "direct" ||
+                    tab == "group"
+                      ? ""
+                      : "gap-1"
                   } px-2 py-1 rounded f-11 relative ${
                     activeTab === tab
                       ? "bg-orange-500 text-white font-semibold border border-orange-500"
                       : "text-gray-400 border border-orange-500  hover:bg-orange-500 hover:text-white"
                   }`}
                 >
-                  <Icon size={(tab == "unread" || tab == "@" || tab == "forall" || tab == "direct"  || tab == "group") ? 16 : 12} />
+                  <Icon
+                    size={
+                      tab == "unread" ||
+                      tab == "@" ||
+                      tab == "forall" ||
+                      tab == "direct" ||
+                      tab == "group"
+                        ? 16
+                        : 12
+                    }
+                  />
                   <div
                     data-tooltip-id="my-tooltip"
                     data-tooltip-content={
                       label == "Unread" ? "Unread Messages" : ""
                     }
                   >
-                    {(label == "Unread" || label == "@" || label == "Forall" || label == "Direct" || label == "Group") ? null : label}
+                    {label == "Unread" ||
+                    label == "@" ||
+                    label == "Forall" ||
+                    label == "Direct" ||
+                    label == "Group"
+                      ? null
+                      : label}
                   </div>
                   {showCount && (
                     <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
@@ -957,7 +981,7 @@ const ChatSidebar = ({
                           read_status: 0,
                           unread_count: 0,
                           is_mentioned: false,
-                          is_all :false
+                          is_all: false,
                         };
                       }
                       return c;
