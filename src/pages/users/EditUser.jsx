@@ -182,8 +182,8 @@ const EditUser = ({ userId, onClose, after }) => {
                                     onChange={handleChange}
                                     className="border p-2 py-1 rounded-md w-full"
                                 >
-                                    <option value="junior">Junior</option>
-                                    <option value="senior">Senior</option>
+                                    <option value="junior">Associate</option>
+                                    <option value="senior">Sr. Associate</option>
                                 </select>
                             </div>
                             <div className="flex gap-2 mt-3 items-center ">

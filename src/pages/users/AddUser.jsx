@@ -133,8 +133,8 @@ const AddUser = ({ onClose, after }) => {
             onChange={handleChange}
             className="p-2 border rounded py-1"
           >
-            <option value="junior">Junior</option>
-            <option value="senior">Senior</option>
+            <option value="junior">Associate</option>
+            <option value="senior">Sr. Associate</option>
           </select>
 
           <input

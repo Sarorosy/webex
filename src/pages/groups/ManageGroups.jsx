@@ -9,6 +9,7 @@ import {
   Info,
   Trash2,
   X,
+  Search,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import AddGroup from "./AddGroup";
@@ -22,6 +23,7 @@ const ManageGroups = ({onClose}) => {
   const [addGroup, setAddGroup] = useState(false);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [loading, setLoading]= useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchGroups();
@@ -76,12 +78,16 @@ const ManageGroups = ({onClose}) => {
     }
   };
 
+  const filteredGroups = groups.filter(
+    (group) =>
+      group.group_name.toLowerCase().includes(search.toLowerCase())
+  );
   const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
   
-    const totalPages = Math.ceil(groups.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredGroups.length / itemsPerPage);
   
-    const paginatedGroups = groups.slice(
+    const paginatedGroups = filteredGroups.slice(
       (currentPage - 1) * itemsPerPage,
       currentPage * itemsPerPage
     );
@@ -128,6 +134,16 @@ const ManageGroups = ({onClose}) => {
 
             {/* ACTION BUTTONS */}
             <div className="flex gap-2 mb-3 justify-end px-4">
+               <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
+                <Search size={13} className="text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search groups..."
+                  className="bg-transparent outline-none f-13"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
               <button
                 onClick={fetchGroups}
                 className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
@@ -140,7 +156,7 @@ const ManageGroups = ({onClose}) => {
                 className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
               >
                 <Plus size={12} />
-                Add Group
+                Create 
               </button>
             </div>
 

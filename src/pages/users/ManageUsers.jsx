@@ -380,7 +380,7 @@ const ManageUsers = ({ onClose }) => {
                                     u.trashed == 1 ? "line-through" : "",
                                 }}
                               >
-                                {u.seniority}
+                                {u.seniority == "junior" ? "Associate" : "Sr. Associate"}
                               </div>
                               <div
                                 className="flex items-center"
