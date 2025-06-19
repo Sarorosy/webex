@@ -307,6 +307,10 @@ div#commentsMention[placeholder]:empty:before {
 
 .chat-text-n img {
     width: 80px;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #7a7a7a;
+    border-radius: 5px;
 }
 
 
