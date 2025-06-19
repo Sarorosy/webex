@@ -348,13 +348,13 @@ const ChatSend = ({
     const isJunior = user?.seniority === "junior";
 
     if (groupType === "work" && isJunior && mentionSeniority === "senior") {
-      toast.error("You can't select a senior user");
+      toast.error("You can't tag Senior Associate");
       e.cancel = true;
       return;
     }
 
     if (groupType === "team" && isJunior && mentionSeniority === "junior") {
-      toast.error("You can't select another junior user");
+      toast.error("You can't tag Associate");
       e.cancel = true;
       return;
     }
