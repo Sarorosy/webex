@@ -42,7 +42,7 @@ const ChatMessages = ({
   setSelectedQuoteMessage,
   scrollToBottom,
   containerRef,
-  isTyping
+  isTyping,
 }) => {
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
@@ -58,7 +58,6 @@ const ChatMessages = ({
   const [latestMessage, setLatestMessage] = useState(null);
   const [hasFetchedInitially, setHasFetchedInitially] = useState(false);
 
-
   const isFetchingRef = useRef(false);
   const messageRefs = useRef({});
   const { user, theme } = useAuth();
@@ -70,9 +69,6 @@ const ChatMessages = ({
   useEffect(() => {
     setLatestMessageId(null);
   }, [view_user_id, userId, userType]);
-
-  
- 
 
   const fetchMessages = async (skipCount = 0) => {
     console.log("Fetching with skip:", skipCount);
@@ -162,17 +158,18 @@ const ChatMessages = ({
   }, []);
 
   useEffect(() => {
-     let isMounted = true;
-     console.log("mounted",isMounted)
+    let isMounted = true;
+    console.log("mounted", isMounted);
     const loadInitialMessages = async () => {
-       if (!isMounted || messages.length > 0) return;
-        
+      if (!isMounted || messages.length > 0) return;
+
       const initialMessages = await fetchMessages(messages.length);
       // setMessages(initialMessages);
-      setMessages(prev => {
+      setMessages((prev) => {
         // Filter out any initial messages that already exist
         const newMessages = initialMessages.filter(
-          initialMsg => !prev.some(existingMsg => existingMsg.id === initialMsg.id)
+          (initialMsg) =>
+            !prev.some((existingMsg) => existingMsg.id === initialMsg.id)
         );
         return [...newMessages, ...prev];
       });
@@ -191,17 +188,16 @@ const ChatMessages = ({
     return () => {
       isMounted = false;
       setMessages([]);
-       setSkip(0);
+      setSkip(0);
       setHasMore(true);
     };
   }, [userId, userType, user?.id]);
 
   useEffect(() => {
-  isFetchingRef.current = false; // Reset fetching status
-  hasMoreRef.current = true;     // Allow loading more data
-  setHasMore(true);              // Sync component state
-}, [userId, userType]);
-
+    isFetchingRef.current = false; // Reset fetching status
+    hasMoreRef.current = true; // Allow loading more data
+    setHasMore(true); // Sync component state
+  }, [userId, userType]);
 
   useEffect(() => {
     if (containerRef.current && messages.length > 0) {
@@ -228,16 +224,16 @@ const ChatMessages = ({
 
       if (olderMessages.length > 0) {
         // setMessages((prevMessages) => [...olderMessages, ...prevMessages]);
-        setMessages(prevMessages => {
-        const existingIds = new Set(prevMessages.map(msg => msg.id));
-        const filteredNewMessages = olderMessages.filter(
-          msg => !existingIds.has(msg.id)
-        );
-        
-        return [...filteredNewMessages, ...prevMessages];
-      });
+        setMessages((prevMessages) => {
+          const existingIds = new Set(prevMessages.map((msg) => msg.id));
+          const filteredNewMessages = olderMessages.filter(
+            (msg) => !existingIds.has(msg.id)
+          );
+
+          return [...filteredNewMessages, ...prevMessages];
+        });
         // setSkip(skip + olderMessages.length);
-        setSkip(prevSkip => prevSkip + olderMessages.length);
+        setSkip((prevSkip) => prevSkip + olderMessages.length);
 
         const moreAvailable = olderMessages.length == limit;
         setHasMore(moreAvailable);
@@ -267,7 +263,7 @@ const ChatMessages = ({
 
         if (
           entry.isIntersecting &&
-           hasFetchedInitially &&
+          hasFetchedInitially &&
           !isLoading &&
           !isFetchingRef.current &&
           hasMoreRef.current &&
@@ -399,7 +395,7 @@ const ChatMessages = ({
       const handleNewReply = (reply) => {
         if (!mounted) return;
 
-       // console.log("reply", reply);
+        // console.log("reply", reply);
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
             if (msg.id == reply.reply_msg_id) {
@@ -572,16 +568,19 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          message_id: msgId,
-        }),
-      });
+      const response = await fetch(
+        "https://webexback-06cc.onrender.com/api/messages/pin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            message_id: msgId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -617,20 +616,24 @@ const ChatMessages = ({
     setReplyMsgId(null);
     setReplyMessage(null);
   };
+
   const handleCopy = (msg) => {
-    if (!msg || !msg.message) return;
+    let selectedText = window.getSelection().toString().trim();
 
-    // Remove HTML tags
-    const plainText = msg.message.replace(/<[^>]*>/g, "").trim();
+    if (!selectedText) {
+      if (!msg || !msg.message) return;
 
-    // Copy to clipboard
+      // Remove HTML tags if needed
+      selectedText = msg.message.replace(/<[^>]*>/g, "").trim();
+    }
+
     navigator.clipboard
-      .writeText(plainText)
+      .writeText(selectedText)
       .then(() => {
         toast("Copied");
       })
       .catch((err) => {
-        console.error("Failed to copy message:", err);
+        console.error("Failed to copy text:", err);
       });
   };
 
@@ -709,7 +712,6 @@ const ChatMessages = ({
 
           // Find the specific message
           existingMessage = mergedMessages.find((msg) => msg.id == selmsg.id);
-
         } catch (error) {
           console.error("Error fetching messages:", error);
           return;
@@ -901,7 +903,11 @@ const ChatMessages = ({
         theme == "dark"
           ? "bg-gray-800"
           : "bg-gradient-to-b from-orange-50 to-white"
-      } chat-messages-container-div chat-headAmsg ${ (isReply || selectedQuoteMessage) ? "overflow-y-hidden" : "overflow-y-auto"}`}
+      } chat-messages-container-div chat-headAmsg ${
+        isReply || selectedQuoteMessage
+          ? "overflow-y-hidden"
+          : "overflow-y-auto"
+      }`}
       onScroll={handleScroll}
     >
       <div ref={topSentinelRef}></div>
@@ -991,7 +997,7 @@ const ChatMessages = ({
                       }
                     }}
                     //onDoubleClick={() => handleReply(msg.id, msg.message)}
-                    
+
                     className={`relative message-wrapper gap-2 rounded-lg w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
@@ -1027,11 +1033,12 @@ const ChatMessages = ({
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      {msg.is_new && msg.is_new == "1" && msg.mentioned_users && msg.mentioned_users.includes(user?.id) ? (
+                      {msg.is_new &&
+                      msg.is_new == "1" &&
+                      msg.mentioned_users &&
+                      msg.mentioned_users.includes(user?.id) ? (
                         <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
                       ) : null}
-                      
-                      
 
                       <div
                         className={`message-content flex flex-col justify-start w-full ${
@@ -1039,350 +1046,367 @@ const ChatMessages = ({
                         }`}
                       >
                         <div
-                        style={{
-                          opacity: isReply && replyMsgId != msg.id ? "0.3" : "1",
-                          filter:
-                            isReply && replyMsgId != msg.id ? "blur(3px)" : "none",
-                          boxShadow:
-                            isReply && replyMsgId == msg.id
-                              ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
-                              : "none",
-                          transition:
-                            "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
-                        }}
-                        className={`mbox px-3 py-2 w-full rounded-lg
+                          style={{
+                            opacity:
+                              isReply && replyMsgId != msg.id ? "0.3" : "1",
+                            filter:
+                              isReply && replyMsgId != msg.id
+                                ? "blur(3px)"
+                                : "none",
+                            boxShadow:
+                              isReply && replyMsgId == msg.id
+                                ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
+                                : "none",
+                            transition:
+                              "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
+                          }}
+                          className={`mbox px-3 py-2 w-full rounded-lg
                              ${
-                        isSent
-                          ? `${
-                              theme == "dark"
-                                ? "bg-gray-500 text-gray-50 rounded-tr-none"
-                                : "bg-gray-100 text-gray-900 rounded-tr-none"
-                            }`
-                          : `${
-                              theme == "dark"
-                                ? "bg-gray-500 text-gray-50 rounded-tl-none"
-                                : "bg-gray-100 text-gray-900 rounded-tl-none"
-                            } `
-                      }
+                               isSent
+                                 ? `${
+                                     theme == "dark"
+                                       ? "bg-gray-500 text-gray-50 rounded-tr-none"
+                                       : "bg-gray-100 text-gray-900 rounded-tr-none"
+                                   }`
+                                 : `${
+                                     theme == "dark"
+                                       ? "bg-gray-500 text-gray-50 rounded-tl-none"
+                                       : "bg-gray-100 text-gray-900 rounded-tl-none"
+                                   } `
+                             }
                       ${
                         isReply && replyMsgId == msg.id
                           ? "ring-2 p-2 ring-blue-400 bg-blue-50 "
                           : ""
                       }
                       `}
-                        onMouseEnter={() => {
-                      if (!emojiPopupLocked) setHoveredMessageId(msg.id);
-                    }}
-                    // onMouseLeave={() => {
-                    //   if (!emojiPopupLocked) {
-                    //     setHoveredMessageId(null);
-                    //     clearHover();
-                    //   }
-                    // }}
+                          onMouseEnter={() => {
+                            if (!emojiPopupLocked && msg.sender_id != 167)
+                              setHoveredMessageId(msg.id);
+                          }}
+                          // onMouseLeave={() => {
+                          //   if (!emojiPopupLocked) {
+                          //     setHoveredMessageId(null);
+                          //     clearHover();
+                          //   }
+                          // }}
                         >
-                        <div
-                        className={`text-xs  mb-1 font-medium ${
-                          isSent
-                            ? "text-white-600 text-right"
-                            : `${
-                                theme == "dark" ? "text-white" : "text-gray-600"
-                              }`
-                        }`}
-                      >
-                        <div
-                          className={`flex gap-2 items-end f-11 ${
-                            isSent ? "flex-row-reverse" : ""
-                          }`}
-                        >
-                          <div>
-                            {isSent && !view_user_id
-                              ? "You"
-                              : msg.sender_name ?? "Unknown User"}
-                          </div>
                           <div
-                            className={`message-time flex items-center text-xs f-11 ${
-                              isSent ? "justify-end" : "justify-start"
-                            }  ${
+                            className={`text-xs  mb-1 font-medium ${
                               isSent
-                                ? `${
-                                    theme == "dark"
-                                      ? "text-gray-100"
-                                      : "text-gray-400"
-                                  }`
+                                ? "text-white-600 text-right"
                                 : `${
                                     theme == "dark"
-                                      ? "text-gray-100"
-                                      : "text-gray-400"
+                                      ? "text-white"
+                                      : "text-gray-600"
                                   }`
                             }`}
-                            data-tooltip-id="my-tooltip"
-                            data-tooltip-content={msg.created_at}
                           >
-                            <div> {formatTime(msg.created_at)}</div>
-                          </div>
-                          <div>
-                            {msg.is_edited == 1 && (
-                              <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
-                                Edited
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {msg.is_file == 1 &&
-                        msg.filename &&
-                        (() => {
-                          const ext = msg.filename
-                            .split(".")
-                            .pop()
-                            .toLowerCase();
-                          const isImage = [
-                            "png",
-                            "jpg",
-                            "jpeg",
-                            "avif",
-                            "svg",
-                            "webp",
-                          ].includes(ext);
-                          const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
-                          const filenameOnly = msg.filename.split("/").pop();
-
-                          return (
-                            <div className="w-full mb-1">
-                              {/* File Info Box */}
-                              <div className="bg-white/80 border border-gray-300 rounded shadow-sm flex flex-col gap-1">
-                                <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-l w-full">
-                                  <div>
-                                    {isImage ? (
-                                    <ImageIcon
-                                      className="text-pink-500"
-                                      size={11}
-                                    />
-                                  ) : ext === "mp4" || ext === "mov" ? (
-                                    <VideoIcon
-                                      className="text-purple-600"
-                                      size={11}
-                                    />
-                                  ) : ["doc", "docx", "xls", "xlsx"].includes(
-                                      ext
-                                    ) ? (
-                                    <FileSpreadsheet
-                                      className="text-green-600"
-                                      size={11}
-                                    />
-                                  ) : (
-                                    <FileText
-                                      className="text-blue-600"
-                                      size={11}
-                                    />
-                                  )}
-                                  </div>
-                                  <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
-                                    <a
-                                      href={fileUrl}
-                                      target="_blank"
-                                      download={fileUrl}
-                                      rel="noopener noreferrer"
-                                      className="f-11 text-blue-600 hover:underline  flex items-center"
-                                    >
-                                      {msg.filename.split("/").pop()}
-                                    </a>
-                                  </span>
-                                </div>
-
-                                {/* File Preview */}
-                                
-                                  {isImage && (
-                                    <div className="px-3">
-                                    <button
-                                      onClick={() =>{
-                                        setOpenFileModal({
-                                          url: `https://rapidcollaborate.in/ccp${msg.filename}`,
-                                          name: msg.filename.split("/").pop(),
-                                          sender_name: msg.sender_name,
-                                          time:msg.created_at
-                                        })
-                                        console.log(msg)
-
-                                      }
-                                        
-                                      }
-                                    >
-                                      <img
-                                        src={fileUrl}
-                                        alt={msg.filename}
-                                        className="max-w-36 h-full object-contain"
-                                      />
-                                    </button>
-                                    </div>
-                                  )}
-                                
-                              </div>
-                            </div>
-                          );
-                        })()}
-                        {msg.is_quoted == 1 &&
-                          msg.quoted_msg &&
-                          msg.quoted_msg_name &&
-                          msg.quoted_msg_id && (
-                            <div className={` border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800
-                              ${
-                                isSent ? "border-r-2" : "border-l-2"
+                            <div
+                              className={`flex gap-2 items-end f-11 ${
+                                isSent ? "flex-row-reverse" : ""
                               }`}
                             >
-                              <div className={`flex items-center justify-between mb-1 ${
-                                isSent ? "flex-row-reverse" : ""
-                              }`}>
-                                <span className="font-bold text-gray-700 mr-1">
-                                  {msg.quoted_msg_name?.length > 15
-                                    ? msg.quoted_msg_name.slice(0, 15) + "…"
-                                    : msg.quoted_msg_name}
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    try {
-                                      const quoted = JSON.parse(
-                                        msg.quoted_msg_json
-                                      );
-                                      setSelectedMessage(quoted);
-                                    } catch (e) {
-                                      console.error(
-                                        "Invalid quoted_msg_json",
-                                        e.message
-                                      );
-                                    }
-                                  }}
-                                  className={`text-orange-500 hover:text-orange-900 flex gap-1 ${
-                                isSent ? "flex-row-reverse " : ""
-                              }`}
-                                >
-                                  Go to message <span className={` ${
-                                isSent ? "rotate-[-180deg] " : ""
-                              }`}>→</span>
-                                </button>
+                              <div>
+                                {isSent && !view_user_id
+                                  ? "You"
+                                  : msg.sender_name ?? "Unknown User"}
                               </div>
                               <div
-                                className="text-[11px] text-gray-700"
-                                dangerouslySetInnerHTML={{
-                                  __html: msg.quoted_msg,
-                                }}
-                              ></div>
-                            </div>
-                          )}
-                        <div
-                          className={` flex ${
-                            isSent ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <div
-                            ref={proseRef}
-                            className={`prose prose-sm ${
-                              isSent ? "text-start" : "text-start"
-                            } max-w-none ${
-                              isSingleEmoji(msg.message)
-                                ? "text-[26px]"
-                                : "text-[13px]"
-                            }`}
-                            style={{}}
-                            dangerouslySetInnerHTML={{ __html: msg.message }}
-                          ></div>
-                        </div>
-                        {(() => {
-                        let reactions = [];
-
-                        try {
-                          const parsed =
-                            typeof msg.reactions === "string"
-                              ? JSON.parse(msg.reactions)
-                              : msg.reactions;
-
-                          if (Array.isArray(parsed)) {
-                            reactions = parsed;
-                          }
-                        } catch {
-                          reactions = [];
-                        }
-
-                        if (reactions.length === 0) return null;
-
-                        const reactionMap = reactions.reduce((acc, r) => {
-                          acc[r.emoji] = (acc[r.emoji] || 0) + 1;
-                          return acc;
-                        }, {});
-
-                        return (
-                          <div className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
-                            ${
-                              isSent ? "justify-end" : "justify-start"
-                            }
-                          `}>
-                            {hoveredEmoji && hoveredEmoji == msg.id && (
-                              <div
-                                ref={tooltipRef}
-                                className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs"
+                                className={`message-time flex items-center text-xs f-11 ${
+                                  isSent ? "justify-end" : "justify-start"
+                                }  ${
+                                  isSent
+                                    ? `${
+                                        theme == "dark"
+                                          ? "text-gray-100"
+                                          : "text-gray-400"
+                                      }`
+                                    : `${
+                                        theme == "dark"
+                                          ? "text-gray-100"
+                                          : "text-gray-400"
+                                      }`
+                                }`}
+                                data-tooltip-id="my-tooltip"
+                                data-tooltip-content={msg.created_at}
                               >
-                                {loadingReactions ? (
-                                  <div>Loading...</div>
-                                ) : (
-                                  <div className="space-y-1 ios flex items-start flex-col">
-                                    {reactionUsers.map((user) => (
-                                      <div
-                                        key={user.id}
-                                        className={` ${
-                                          theme == "dark"
-                                            ? "text-black"
-                                            : "text-black"
-                                        } flex items-center gap-2`}
-                                      >
-                                        <img
-                                          src={
-                                            user.profile_pic
-                                              ? "https://rapidcollaborate.in/ccp" +
-                                                user.profile_pic
-                                              : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                  0
-                                                )}&background=random&color=fff&size=128`
-                                          }
-                                          alt={user.name}
-                                          className="w-5 h-5 rounded-full"
-                                        />
-                                        <span className="f-11">{user.name}</span>
-                                        <span>{user.emoji}</span>
-                                      </div>
-                                    ))}
-                                  </div>
+                                <div> {formatTime(msg.created_at)}</div>
+                              </div>
+                              <div>
+                                {msg.is_edited == 1 && (
+                                  <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
+                                    Edited
+                                  </p>
                                 )}
                               </div>
-                            )}
-
-                            {Object.entries(reactionMap).map(
-                              ([emoji, count]) => (
-                                <div
-                                  key={emoji}
-                                  onMouseEnter={(e) => {
-                                    if (!emojiPopupLocked) {
-                                      handleReactionHover(
-                                        e,
-                                        emoji,
-                                        msg,
-                                        "message"
-                                      );
-                                    }
-                                  }}
-                                  //onMouseLeave={clearHover}
-                                  className="bg-gray-100 flex ios border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs flex items-center"
-                                >
-                                  <span className="mr-1">{emoji}</span>
-                                  <span className="text-[10px] font-medium">
-                                    {count}
-                                  </span>
-                                </div>
-                              )
-                            )}
+                            </div>
                           </div>
-                        );
-                      })()}
-                      </div>
+                          {msg.is_file == 1 &&
+                            msg.filename &&
+                            (() => {
+                              const ext = msg.filename
+                                .split(".")
+                                .pop()
+                                .toLowerCase();
+                              const isImage = [
+                                "png",
+                                "jpg",
+                                "jpeg",
+                                "avif",
+                                "svg",
+                                "webp",
+                              ].includes(ext);
+                              const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
+                              const filenameOnly = msg.filename
+                                .split("/")
+                                .pop();
+
+                              return (
+                                <div className="w-full mb-1">
+                                  {/* File Info Box */}
+                                  <div className="bg-white/80 border border-gray-300 rounded shadow-sm flex flex-col gap-1">
+                                    <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-l w-full">
+                                      <div>
+                                        {isImage ? (
+                                          <ImageIcon
+                                            className="text-pink-500"
+                                            size={11}
+                                          />
+                                        ) : ext === "mp4" || ext === "mov" ? (
+                                          <VideoIcon
+                                            className="text-purple-600"
+                                            size={11}
+                                          />
+                                        ) : [
+                                            "doc",
+                                            "docx",
+                                            "xls",
+                                            "xlsx",
+                                          ].includes(ext) ? (
+                                          <FileSpreadsheet
+                                            className="text-green-600"
+                                            size={11}
+                                          />
+                                        ) : (
+                                          <FileText
+                                            className="text-blue-600"
+                                            size={11}
+                                          />
+                                        )}
+                                      </div>
+                                      <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
+                                        <a
+                                          href={fileUrl}
+                                          target="_blank"
+                                          download={fileUrl}
+                                          rel="noopener noreferrer"
+                                          className="f-11 text-blue-600 hover:underline  flex items-center"
+                                        >
+                                          {msg.filename.split("/").pop()}
+                                        </a>
+                                      </span>
+                                    </div>
+
+                                    {/* File Preview */}
+
+                                    {isImage && (
+                                      <div className="px-3">
+                                        <button
+                                          onClick={() => {
+                                            setOpenFileModal({
+                                              url: `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                              name: msg.filename
+                                                .split("/")
+                                                .pop(),
+                                              sender_name: msg.sender_name,
+                                              time: msg.created_at,
+                                            });
+                                            console.log(msg);
+                                          }}
+                                        >
+                                          <img
+                                            src={fileUrl}
+                                            alt={msg.filename}
+                                            className="max-w-36 h-full object-contain"
+                                          />
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          {msg.is_quoted == 1 &&
+                            msg.quoted_msg &&
+                            msg.quoted_msg_name &&
+                            msg.quoted_msg_id && (
+                              <div
+                                className={` border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800
+                              ${isSent ? "border-r-2" : "border-l-2"}`}
+                              >
+                                <div
+                                  className={`flex items-center justify-between mb-1 ${
+                                    isSent ? "flex-row-reverse" : ""
+                                  }`}
+                                >
+                                  <span className="font-bold text-gray-700 mr-1">
+                                    {msg.quoted_msg_name?.length > 15
+                                      ? msg.quoted_msg_name.slice(0, 15) + "…"
+                                      : msg.quoted_msg_name}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      try {
+                                        const quoted = JSON.parse(
+                                          msg.quoted_msg_json
+                                        );
+                                        setSelectedMessage(quoted);
+                                      } catch (e) {
+                                        console.error(
+                                          "Invalid quoted_msg_json",
+                                          e.message
+                                        );
+                                      }
+                                    }}
+                                    className={`text-orange-500 hover:text-orange-900 flex gap-1 ${
+                                      isSent ? "flex-row-reverse " : ""
+                                    }`}
+                                  >
+                                    Go to message{" "}
+                                    <span
+                                      className={` ${
+                                        isSent ? "rotate-[-180deg] " : ""
+                                      }`}
+                                    >
+                                      →
+                                    </span>
+                                  </button>
+                                </div>
+                                <div
+                                  className="text-[11px] text-gray-700"
+                                  dangerouslySetInnerHTML={{
+                                    __html: msg.quoted_msg,
+                                  }}
+                                ></div>
+                              </div>
+                            )}
+                          <div
+                            className={` flex ${
+                              isSent ? "justify-end" : "justify-start"
+                            }`}
+                          >
+                            <div
+                              ref={proseRef}
+                              className={`prose prose-sm ${
+                                isSent ? "text-start" : "text-start"
+                              } max-w-none ${
+                                isSingleEmoji(msg.message)
+                                  ? "text-[26px]"
+                                  : "text-[13px]"
+                              }`}
+                              style={{}}
+                              dangerouslySetInnerHTML={{ __html: msg.message }}
+                            ></div>
+                          </div>
+                          {(() => {
+                            let reactions = [];
+
+                            try {
+                              const parsed =
+                                typeof msg.reactions === "string"
+                                  ? JSON.parse(msg.reactions)
+                                  : msg.reactions;
+
+                              if (Array.isArray(parsed)) {
+                                reactions = parsed;
+                              }
+                            } catch {
+                              reactions = [];
+                            }
+
+                            if (reactions.length === 0) return null;
+
+                            const reactionMap = reactions.reduce((acc, r) => {
+                              acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                              return acc;
+                            }, {});
+
+                            return (
+                              <div
+                                className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
+                            ${isSent ? "justify-end" : "justify-start"}
+                          `}
+                              >
+                                {hoveredEmoji && hoveredEmoji == msg.id && (
+                                  <div
+                                    ref={tooltipRef}
+                                    className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs"
+                                  >
+                                    {loadingReactions ? (
+                                      <div>Loading...</div>
+                                    ) : (
+                                      <div className="space-y-1 ios flex items-start flex-col">
+                                        {reactionUsers.map((user) => (
+                                          <div
+                                            key={user.id}
+                                            className={` ${
+                                              theme == "dark"
+                                                ? "text-black"
+                                                : "text-black"
+                                            } flex items-center gap-2`}
+                                          >
+                                            <img
+                                              src={
+                                                user.profile_pic
+                                                  ? "https://rapidcollaborate.in/ccp" +
+                                                    user.profile_pic
+                                                  : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                      0
+                                                    )}&background=random&color=fff&size=128`
+                                              }
+                                              alt={user.name}
+                                              className="w-5 h-5 rounded-full"
+                                            />
+                                            <span className="f-11">
+                                              {user.name}
+                                            </span>
+                                            <span>{user.emoji}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {Object.entries(reactionMap).map(
+                                  ([emoji, count]) => (
+                                    <div
+                                      key={emoji}
+                                      onMouseEnter={(e) => {
+                                        if (!emojiPopupLocked) {
+                                          handleReactionHover(
+                                            e,
+                                            emoji,
+                                            msg,
+                                            "message"
+                                          );
+                                        }
+                                      }}
+                                      //onMouseLeave={clearHover}
+                                      className="bg-gray-100 flex ios border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs flex items-center"
+                                    >
+                                      <span className="mr-1">{emoji}</span>
+                                      <span className="text-[10px] font-medium">
+                                        {count}
+                                      </span>
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </div>
                         {(() => {
                           let pinned = [];
 
@@ -1400,17 +1424,15 @@ const ChatMessages = ({
                             pinned.includes(
                               isValidViewUserId ? view_user_id : user?.id
                             ) ? (
-                            <span className={`absolute top-[-8px]  animate-pulse
-                              ${
-                                isSent ? "left-[-3px]" : "right-[-3px]"
-                              }
-                            `}>
+                            <span
+                              className={`absolute top-[-8px]  animate-pulse
+                              ${isSent ? "left-[-3px]" : "right-[-3px]"}
+                            `}
+                            >
                               <Pin
                                 size={18}
                                 className={`text-orange-500 fill-orange-500 
-                                  ${
-                                    isSent ? "rotate-[-45deg]" : "rotate-45"
-                                  }
+                                  ${isSent ? "rotate-[-45deg]" : "rotate-45"}
                                 `}
                               />
                             </span>
@@ -1444,17 +1466,21 @@ const ChatMessages = ({
                                       key={`${reply.id}-${reply.created_at}`}
                                       className={`w-full flex  
                                         ${
-                                          isSent ? "justify-start" : "justify-end"
+                                          isSent
+                                            ? "justify-start"
+                                            : "justify-end"
                                         }
                                       `}
                                     >
-                                      <div className={` text-[10px]  px-3 py-1 rounded-md text-center flex items-center space-x-2 shadow-sm 
+                                      <div
+                                        className={` text-[10px]  px-3 py-1 rounded-md text-center flex items-center space-x-2 shadow-sm 
                                         ${
                                           theme == "dark"
                                             ? "bg-gray-500 text-gray-50"
                                             : "bg-gray-100 text-gray-600"
                                         }
-                                        `}>
+                                        `}
+                                      >
                                         <Trash2
                                           size={10}
                                           className="text-red-500"
@@ -1476,20 +1502,25 @@ const ChatMessages = ({
                                   : reply.sender_id == user.id;
 
                                 return (
-                                  <div className={`flex gap-2
-                                    ${
-                                      isSent ? "flex-row-reverse" : ""
-                                    }
+                                  <div
+                                    className={`flex gap-2
+                                    ${isSent ? "flex-row-reverse" : ""}
                                     
                                   `}
-                                  style={{
-                          opacity: isReply && replyMsgId != reply.reply_msg_id ? "0.3" : "1",
-                          filter:
-                            isReply && replyMsgId != reply.reply_msg_id ? "blur(3px)" : "none",
-                          transition:
-                            "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
-                        }}
-                                  
+                                    style={{
+                                      opacity:
+                                        isReply &&
+                                        replyMsgId != reply.reply_msg_id
+                                          ? "0.3"
+                                          : "1",
+                                      filter:
+                                        isReply &&
+                                        replyMsgId != reply.reply_msg_id
+                                          ? "blur(3px)"
+                                          : "none",
+                                      transition:
+                                        "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
+                                    }}
                                   >
                                     <div>
                                       {reply.profile_pic &&
@@ -1510,20 +1541,20 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
-                                  <div
-                                    key={`${reply.id}-${reply.created_at}`}
-                                    ref={(el) =>
-                                      (messageRefs.current[reply.id] = el)
-                                    }
-                                    className={`reply-box w-full ${
-                                      highlightedMessageId == reply.id
-                                        ? " bg-gray-300"
-                                        : " bg-gray-100"
-                                    } ${
-                                      isSent
-                                        ? "border-r-2 flex flex-col justify-end items-end "
-                                        : "border-l-2"
-                                    }
+                                    <div
+                                      key={`${reply.id}-${reply.created_at}`}
+                                      ref={(el) =>
+                                        (messageRefs.current[reply.id] = el)
+                                      }
+                                      className={`reply-box w-full ${
+                                        highlightedMessageId == reply.id
+                                          ? " bg-gray-300"
+                                          : " bg-gray-100"
+                                      } ${
+                                        isSent
+                                          ? "border-r-2 flex flex-col justify-end items-end "
+                                          : "border-l-2"
+                                      }
                                     ${
                                       isSent
                                         ? `${
@@ -1539,419 +1570,444 @@ const ChatMessages = ({
                                     }
                                     
                                     border-blue-400 p-2  text-sm rounded-lg   hover:shadow-md transition-shadow relative`}
-                                    onMouseEnter={() =>{
-                                      setHoveredReplyMessageId(
-                                        `reply-${reply.id}`
-                                      )
-                                      if (!emojiPopupLocked) {
-                                        setHoveredMessageId(null);
-                                        clearHover();
-                                      }
-                                    }}
-                                    onMouseLeave={() => {
-                                      setHoveredReplyMessageId(null);
-                                      clearReplyHover();
-                                      
-                                    }}
-                                  >
-                                    {reply.is_new && reply.is_new == "1" && reply.mentioned_users && reply.mentioned_users.includes(user?.id) ? (
-                                      <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse">
-                                        
-                                      </div>
-                                    ) : null}
-                                    
-                                    <div
-                                      className={` f-11 flex items-center ${
-                                        isSent ? "flex-row-reverse" : ""
-                                      }
+                                      onMouseEnter={() => {
+                                        setHoveredReplyMessageId(
+                                          `reply-${reply.id}`
+                                        );
+                                        if (!emojiPopupLocked) {
+                                          setHoveredMessageId(null);
+                                          clearHover();
+                                        }
+                                      }}
+                                      onMouseLeave={() => {
+                                        setHoveredReplyMessageId(null);
+                                        clearReplyHover();
+                                      }}
+                                    >
+                                      {reply.is_new &&
+                                      reply.is_new == "1" &&
+                                      reply.mentioned_users &&
+                                      reply.mentioned_users.includes(
+                                        user?.id
+                                      ) ? (
+                                        <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
+                                      ) : null}
+
+                                      <div
+                                        className={` f-11 flex items-center ${
+                                          isSent ? "flex-row-reverse" : ""
+                                        }
                                       ${
                                         isSent
                                           ? "text-white-600 text-right"
                                           : `${
-                                              theme == "dark" ? "text-white" : "text-gray-600"
+                                              theme == "dark"
+                                                ? "text-white"
+                                                : "text-gray-600"
                                             }`
                                       } gap-2 mb-1 `}
-                                    >
-                                      {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                      >
+                                        {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                                         <Reply
                                           size={10}
                                           className="text-blue-600"
                                         />
                                       </div> */}
-                                      
-                                      <div>
-                                        {reply.sender_id == user?.id &&
-                                      !view_user_id
-                                        ? "You"
-                                        : reply.sender_name || "User"}
-                                      </div>
-                                      <div className={`text-xs f-11
+
+                                        <div>
+                                          {reply.sender_id == user?.id &&
+                                          !view_user_id
+                                            ? "You"
+                                            : reply.sender_name || "User"}
+                                        </div>
+                                        <div
+                                          className={`text-xs f-11
                                         ${
-                                        isSent
-                                          ? "text-white-600"
-                                          : `${
-                                              theme == "dark" ? "text-white" : "text-gray-400"
-                                            }`
-                                      }
-                                        `}>
-                                        {formatTime(reply.created_at)}
+                                          isSent
+                                            ? "text-white-600"
+                                            : `${
+                                                theme == "dark"
+                                                  ? "text-white"
+                                                  : "text-gray-400"
+                                              }`
+                                        }
+                                        `}
+                                        >
+                                          {formatTime(reply.created_at)}
+                                        </div>
                                       </div>
-                                    </div>
-                                    {reply.is_file == 1 &&
-                                      reply.filename &&
-                                      (() => {
-                                        const ext = reply.filename
-                                          .split(".")
-                                          .pop()
-                                          .toLowerCase();
-                                        const isImage = [
-                                          "png",
-                                          "jpg",
-                                          "jpeg",
-                                          "avif",
-                                          "svg",
-                                          "webp",
-                                        ].includes(ext);
-                                        const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
-                                        const filenameOnly = reply.filename
-                                          .split("/")
-                                          .pop();
+                                      {reply.is_file == 1 &&
+                                        reply.filename &&
+                                        (() => {
+                                          const ext = reply.filename
+                                            .split(".")
+                                            .pop()
+                                            .toLowerCase();
+                                          const isImage = [
+                                            "png",
+                                            "jpg",
+                                            "jpeg",
+                                            "avif",
+                                            "svg",
+                                            "webp",
+                                          ].includes(ext);
+                                          const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
+                                          const filenameOnly = reply.filename
+                                            .split("/")
+                                            .pop();
 
-                                        return (
-                                          <div className="w-full mb-2">
-                                            {/* File Info Box */}
-                                            <div
-                                              open
-                                              className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
-                                            >
-                                              <div className="flex items-center gap-2 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
-                                                {isImage ? (
-                                                  <ImageIcon
-                                                    className="text-pink-500"
-                                                    size={15}
-                                                  />
-                                                ) : ext === "mp4" ||
-                                                  ext === "mov" ? (
-                                                  <VideoIcon
-                                                    className="text-purple-600"
-                                                    size={15}
-                                                  />
-                                                ) : [
-                                                    "doc",
-                                                    "docx",
-                                                    "xls",
-                                                    "xlsx",
-                                                  ].includes(ext) ? (
-                                                  <FileSpreadsheet
-                                                    className="text-green-600"
-                                                    size={15}
-                                                  />
-                                                ) : (
-                                                  <FileText
-                                                    className="text-blue-600"
-                                                    size={15}
-                                                  />
-                                                )}
-                                                <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
-                                                  <a
-                                                    href={fileUrl}
-                                                    download={fileUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="f-11 text-blue-600 hover:underline  flex items-center"
-                                                  >
-                                                    {reply.filename
-                                                      .split("/")
-                                                      .pop()}
-                                                  </a>
-                                                </span>
-                                              </div>
-
-                                              {/* File Preview */}
-                                              <div className="px-3">
-                                                {isImage && (
-                                                  <button
-                                                    onClick={() =>
-                                                      setOpenFileModal({
-                                                        url: `https://rapidcollaborate.in/ccp${reply.filename}`,
-                                                        name: reply.filename
-                                                          .split("/")
-                                                          .pop(),
-                                                        sender_name: reply.sender_name,
-                                                        time:reply.created_at
-                                                      })
-                                                    }
-                                                  >
-                                                    <img
-                                                      src={fileUrl}
-                                                      alt={reply.filename}
-                                                      className="rounded-md shadow max-w-36 h-full object-contain"
+                                          return (
+                                            <div className="w-full mb-2">
+                                              {/* File Info Box */}
+                                              <div
+                                                open
+                                                className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
+                                              >
+                                                <div className="flex items-center gap-2 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
+                                                  {isImage ? (
+                                                    <ImageIcon
+                                                      className="text-pink-500"
+                                                      size={15}
                                                     />
-                                                  </button>
-                                                )}
+                                                  ) : ext === "mp4" ||
+                                                    ext === "mov" ? (
+                                                    <VideoIcon
+                                                      className="text-purple-600"
+                                                      size={15}
+                                                    />
+                                                  ) : [
+                                                      "doc",
+                                                      "docx",
+                                                      "xls",
+                                                      "xlsx",
+                                                    ].includes(ext) ? (
+                                                    <FileSpreadsheet
+                                                      className="text-green-600"
+                                                      size={15}
+                                                    />
+                                                  ) : (
+                                                    <FileText
+                                                      className="text-blue-600"
+                                                      size={15}
+                                                    />
+                                                  )}
+                                                  <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
+                                                    <a
+                                                      href={fileUrl}
+                                                      download={fileUrl}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      className="f-11 text-blue-600 hover:underline  flex items-center"
+                                                    >
+                                                      {reply.filename
+                                                        .split("/")
+                                                        .pop()}
+                                                    </a>
+                                                  </span>
+                                                </div>
+
+                                                {/* File Preview */}
+                                                <div className="px-3">
+                                                  {isImage && (
+                                                    <button
+                                                      onClick={() =>
+                                                        setOpenFileModal({
+                                                          url: `https://rapidcollaborate.in/ccp${reply.filename}`,
+                                                          name: reply.filename
+                                                            .split("/")
+                                                            .pop(),
+                                                          sender_name:
+                                                            reply.sender_name,
+                                                          time: reply.created_at,
+                                                        })
+                                                      }
+                                                    >
+                                                      <img
+                                                        src={fileUrl}
+                                                        alt={reply.filename}
+                                                        className="rounded-md shadow max-w-36 h-full object-contain"
+                                                      />
+                                                    </button>
+                                                  )}
+                                                </div>
                                               </div>
                                             </div>
+                                          );
+                                        })()}
+                                      <div
+                                        className="prose prose-sm max-w-none f-13"
+                                        dangerouslySetInnerHTML={{
+                                          __html: reply.message,
+                                        }}
+                                        style={{ lineBreak: "auto" }}
+                                      ></div>
+                                      {(() => {
+                                        let pinned = [];
+
+                                        if (Array.isArray(reply.pinned_users)) {
+                                          pinned = reply.pinned_users;
+                                        } else {
+                                          try {
+                                            pinned = JSON.parse(
+                                              reply.pinned_users
+                                            );
+                                          } catch {
+                                            pinned = [];
+                                          }
+                                        }
+
+                                        return Array.isArray(pinned) &&
+                                          pinned.includes(
+                                            isValidViewUserId
+                                              ? view_user_id
+                                              : user?.id
+                                          ) ? (
+                                          <span
+                                            className={`absolute top-[-8px]  animate-pulse ${
+                                              isSent
+                                                ? "left-[-3px]"
+                                                : "right-[-3px]"
+                                            }`}
+                                          >
+                                            <Pin
+                                              size={18}
+                                              className={`text-orange-500 fill-orange-500 ${
+                                                isSent
+                                                  ? "rotate-[-45deg]"
+                                                  : "rotate-45"
+                                              }`}
+                                            />
+                                          </span>
+                                        ) : null;
+                                      })()}
+                                      {(() => {
+                                        let reactions = [];
+
+                                        try {
+                                          const parsed =
+                                            typeof reply.reactions === "string"
+                                              ? JSON.parse(reply.reactions)
+                                              : reply.reactions;
+
+                                          if (Array.isArray(parsed)) {
+                                            reactions = parsed;
+                                          }
+                                        } catch {
+                                          reactions = [];
+                                        }
+
+                                        if (reactions.length === 0) return null;
+
+                                        const reactionMap = reactions.reduce(
+                                          (acc, r) => {
+                                            acc[r.emoji] =
+                                              (acc[r.emoji] || 0) + 1;
+                                            return acc;
+                                          },
+                                          {}
+                                        );
+
+                                        return (
+                                          <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
+                                            {hoveredReplyEmoji &&
+                                              hoveredReplyEmoji == reply.id && (
+                                                <div
+                                                  ref={tooltipRef}
+                                                  className={`absolute top-[30px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs
+                                                  ${
+                                                    isSent
+                                                      ? "-left-[150px]"
+                                                      : "-right-[30px]"
+                                                  }  
+                                                `}
+                                                >
+                                                  {loadingReactions ? (
+                                                    <div>Loading...</div>
+                                                  ) : (
+                                                    <div className="space-y-1 ios">
+                                                      {reactionUsers.map(
+                                                        (user) => (
+                                                          <div
+                                                            key={user.id}
+                                                            className="flex items-center gap-2"
+                                                          >
+                                                            <img
+                                                              src={
+                                                                user.profile_pic
+                                                                  ? "https://rapidcollaborate.in/ccp" +
+                                                                    user.profile_pic
+                                                                  : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                                      0
+                                                                    )}&background=random&color=fff&size=128`
+                                                              }
+                                                              alt={user.name}
+                                                              className="w-5 h-5 rounded-full"
+                                                            />
+                                                            <span>
+                                                              {user.name}
+                                                            </span>
+                                                            <span>
+                                                              {user.emoji}
+                                                            </span>
+                                                          </div>
+                                                        )
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
+
+                                            {Object.entries(reactionMap).map(
+                                              ([emoji, count]) => (
+                                                <div
+                                                  key={emoji}
+                                                  onMouseEnter={(e) =>
+                                                    handleReactionHover(
+                                                      e,
+                                                      emoji,
+                                                      reply,
+                                                      "reply"
+                                                    )
+                                                  }
+                                                  //onMouseLeave={clearHover}
+                                                  className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
+                                                >
+                                                  <span className="mr-1">
+                                                    {emoji}
+                                                  </span>
+                                                  <span className="text-[10px] font-medium">
+                                                    {count}
+                                                  </span>
+                                                </div>
+                                              )
+                                            )}
                                           </div>
                                         );
                                       })()}
-                                    <div
-                                      className="prose prose-sm max-w-none f-13"
-                                      dangerouslySetInnerHTML={{
-                                        __html: reply.message,
-                                      }}
-                                      style={{lineBreak:"auto"}}
-                                    ></div>
-                                    {(() => {
-                                      let pinned = [];
-
-                                      if (Array.isArray(reply.pinned_users)) {
-                                        pinned = reply.pinned_users;
-                                      } else {
-                                        try {
-                                          pinned = JSON.parse(
-                                            reply.pinned_users
-                                          );
-                                        } catch {
-                                          pinned = [];
-                                        }
-                                      }
-
-                                      return Array.isArray(pinned) &&
-                                        pinned.includes(
-                                          isValidViewUserId
-                                            ? view_user_id
-                                            : user?.id
-                                        ) ? (
-                                        <span className={`absolute top-[-8px]  animate-pulse ${
-                                              isSent ? "left-[-3px]" : "right-[-3px]"
-                                            }`}>
-                                          <Pin
-                                            size={18}
-                                            className={`text-orange-500 fill-orange-500 ${
-                                              isSent ? "rotate-[-45deg]" : "rotate-45"
-                                            }`}
-                                          />
-                                        </span>
-                                      ) : null;
-                                    })()}
-                                    {(() => {
-                                      let reactions = [];
-
-                                      try {
-                                        const parsed =
-                                          typeof reply.reactions === "string"
-                                            ? JSON.parse(reply.reactions)
-                                            : reply.reactions;
-
-                                        if (Array.isArray(parsed)) {
-                                          reactions = parsed;
-                                        }
-                                      } catch {
-                                        reactions = [];
-                                      }
-
-                                      if (reactions.length === 0) return null;
-
-                                      const reactionMap = reactions.reduce(
-                                        (acc, r) => {
-                                          acc[r.emoji] =
-                                            (acc[r.emoji] || 0) + 1;
-                                          return acc;
-                                        },
-                                        {}
-                                      );
-
-                                      return (
-                                        <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                                          {hoveredReplyEmoji &&
-                                            hoveredReplyEmoji == reply.id && (
-                                              <div
-                                                ref={tooltipRef}
-                                                className={`absolute top-[30px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs
-                                                  ${
-                                                    isSent ? "-left-[150px]" : "-right-[30px]"
-                                                  }  
-                                                `}
-                                              >
-                                                {loadingReactions ? (
-                                                  <div>Loading...</div>
-                                                ) : (
-                                                  <div className="space-y-1 ios">
-                                                    {reactionUsers.map(
-                                                      (user) => (
-                                                        <div
-                                                          key={user.id}
-                                                          className="flex items-center gap-2"
-                                                        >
-                                                          <img
-                                                            src={
-                                                              user.profile_pic
-                                                                ? "https://rapidcollaborate.in/ccp" +
-                                                                  user.profile_pic
-                                                                : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                                    0
-                                                                  )}&background=random&color=fff&size=128`
-                                                            }
-                                                            alt={user.name}
-                                                            className="w-5 h-5 rounded-full"
-                                                          />
-                                                          <span>
-                                                            {user.name}
-                                                          </span>
-                                                          <span>
-                                                            {user.emoji}
-                                                          </span>
-                                                        </div>
-                                                      )
-                                                    )}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            )}
-
-                                          {Object.entries(reactionMap).map(
-                                            ([emoji, count]) => (
-                                              <div
-                                                key={emoji}
-                                                onMouseEnter={(e) =>
-                                                  handleReactionHover(
-                                                    e,
-                                                    emoji,
-                                                    reply,
-                                                    "reply"
-                                                  )
-                                                }
-                                                //onMouseLeave={clearHover}
-                                                className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
-                                              >
-                                                <span className="mr-1">
-                                                  {emoji}
-                                                </span>
-                                                <span className="text-[10px] font-medium">
-                                                  {count}
-                                                </span>
-                                              </div>
-                                            )
-                                          )}
-                                        </div>
-                                      );
-                                    })()}
-                                    {/* <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                      {/* <div className="text-xs text-gray-500 mt-2 flex items-center">
                                       {formatTime(reply.created_at)}
                                     </div> */}
 
-                                    {/* Reply Actions */}
-                                    {hoveredReplyMessageId ==
-                                      `reply-${reply.id}` && (
-                                      <div
-                                        className={` ${
-                                          isSent ? "left-[-150px]" : "right-[-150px]"
-                                        } chat-funt-set message-actions absolute -top-0  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
-                                      >
+                                      {/* Reply Actions */}
+                                      {hoveredReplyMessageId ==
+                                        `reply-${reply.id}` && (
                                         <div
-                                          className="relative action-button"
-                                          ref={emojiRef}
+                                          className={` ${
+                                            isSent
+                                              ? "left-[-150px]"
+                                              : "right-[-150px]"
+                                          } chat-funt-set message-actions absolute -top-0  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
                                         >
-                                          <button
-                                            onClick={() =>
-                                              setShowReplyEmojiPopup(
-                                                (prev) => !prev
-                                              )
-                                            }
-                                            className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
-                                            title="React"
+                                          <div
+                                            className="relative action-button"
+                                            ref={emojiRef}
                                           >
-                                            <Smile size={11} />
-                                          </button>
-                                          {showReplyEmojiPopup && (
-                                            <EmojiPopup
-                                              onSelect={(emoji) => {
-                                                handleReact(
+                                            <button
+                                              onClick={() =>
+                                                setShowReplyEmojiPopup(
+                                                  (prev) => !prev
+                                                )
+                                              }
+                                              className="action-button py-1 px-2 text-gray-600 hover:bg-yellow-50 transition-colors"
+                                              title="React"
+                                            >
+                                              <Smile size={11} />
+                                            </button>
+                                            {showReplyEmojiPopup && (
+                                              <EmojiPopup
+                                                onSelect={(emoji) => {
+                                                  handleReact(
+                                                    reply.id,
+                                                    emoji,
+                                                    "reply"
+                                                  );
+                                                  setShowReplyEmojiPopup(false);
+                                                }}
+                                              />
+                                            )}
+                                          </div>
+
+                                          {isReplySent && (
+                                            <button
+                                              onClick={() =>
+                                                handleEdit(
                                                   reply.id,
-                                                  emoji,
-                                                  "reply"
-                                                );
-                                                setShowReplyEmojiPopup(false);
-                                              }}
-                                            />
+                                                  "reply",
+                                                  reply.message
+                                                )
+                                              }
+                                              className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                                              title="Edit reply"
+                                            >
+                                              <Pen size={11} />
+                                            </button>
                                           )}
-                                        </div>
-                                        <button
-                                          onClick={() => handleCopy(reply)}
-                                          className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                                          title="Copy"
-                                        >
-                                          <Copy size={11} />
-                                        </button>
-                                        {isReplySent && (
+
                                           <button
                                             onClick={() =>
-                                              handleEdit(
-                                                reply.id,
-                                                "reply",
+                                              handleReply(
+                                                reply.reply_msg_id,
                                                 reply.message
                                               )
                                             }
-                                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                                            title="Edit reply"
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-green-50 transition-colors"
+                                            title="Reply to reply"
                                           >
-                                            <Pen size={11} />
+                                            <Reply size={11} />
                                           </button>
-                                        )}
 
-                                        <button
-                                          onClick={() =>
-                                            handleReply(
-                                              reply.reply_msg_id,
-                                              reply.message
-                                            )
-                                          }
-                                          className="action-button py-1 px-2 text-gray-600 hover:bg-green-50 transition-colors"
-                                          title="Reply to reply"
-                                        >
-                                          <Reply size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() =>
-                                            handleReminder(reply.id)
-                                          }
-                                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
-                                          title="Set reminder"
-                                        >
-                                          <BellDot size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() => handleQuote(reply)}
-                                          className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
-                                          title="Quote reply"
-                                        >
-                                          <QuoteIcon size={11} />
-                                        </button>
-
-                                        <button
-                                          onClick={() => handlePinMsg(reply.id)}
-                                          className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50 transition-colors"
-                                          title="Pin reply"
-                                        >
-                                          <Pin size={11} />
-                                        </button>
-
-                                        {isReplySent && (
                                           <button
                                             onClick={() =>
-                                              handleDeleteMsg(reply.id, "reply")
+                                              handleReminder(reply.id)
                                             }
-                                            className="action-button py-1 px-2 text-gray-600 hover:bg-red-50 transition-colors"
-                                            title="Delete reply"
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                            title="Set reminder"
                                           >
-                                            <Trash2 size={11} />
+                                            <BellDot size={11} />
                                           </button>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+
+                                          <button
+                                            onClick={() => handleQuote(reply)}
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                            title="Quote reply"
+                                          >
+                                            <QuoteIcon size={11} />
+                                          </button>
+
+                                          <button
+                                            onClick={() =>
+                                              handlePinMsg(reply.id)
+                                            }
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50 transition-colors"
+                                            title="Pin reply"
+                                          >
+                                            <Pin size={11} />
+                                          </button>
+
+                                          {isReplySent && (
+                                            <button
+                                              onClick={() =>
+                                                handleDeleteMsg(
+                                                  reply.id,
+                                                  "reply"
+                                                )
+                                              }
+                                              className="action-button py-1 px-2 text-gray-600 hover:bg-red-50 transition-colors"
+                                              title="Delete reply"
+                                            >
+                                              <Trash2 size={11} />
+                                            </button>
+                                          )}
+                                          <button
+                                            onClick={() => handleCopy(reply)}
+                                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                                            title="Copy"
+                                          >
+                                            <Copy size={11} />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 );
                               })}
@@ -1959,8 +2015,6 @@ const ChatMessages = ({
                           ) : null;
                         })()}
                       </div>
-
-                      
                     </div>
                     {hoveredMessageId === msg.id && (
                       <div className="flex items-start relative">
@@ -1993,13 +2047,7 @@ const ChatMessages = ({
                               />
                             )}
                           </div>
-                          <button
-                            onClick={() => handleCopy(msg)}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                            title="Copy"
-                          >
-                            <Copy size={11} />
-                          </button>
+
                           {isSent && (
                             <button
                               onClick={() =>
@@ -2052,6 +2100,14 @@ const ChatMessages = ({
                               <Trash2 size={11} />
                             </button>
                           )}
+
+                          <button
+                            onClick={() => handleCopy(msg)}
+                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                            title="Copy"
+                          >
+                            <Copy size={11} />
+                          </button>
                         </div>
                       </div>
                     )}
@@ -2061,9 +2117,7 @@ const ChatMessages = ({
             </div>
           ))
         )}
-        {isTyping && (
-          <TypingIndicator />
-        )}
+        {isTyping && <TypingIndicator />}
         <div>
           <AnimatePresence>
             {showScrollToBottom && (

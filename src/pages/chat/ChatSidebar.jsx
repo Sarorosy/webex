@@ -15,6 +15,8 @@ import {
   Circle,
   CircleMinus,
   Volume2,
+  Cake,
+  RefreshCcw,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -204,6 +206,7 @@ const ChatSidebar = ({
       const updatedChats = await Promise.all(
         chatList.map(async (chat) => {
           let logged_in_status = true;
+          let is_birthday = false;
 
           if (chat.type === "user" && chat.user_type !== "admin") {
             try {
@@ -231,6 +234,10 @@ const ChatSidebar = ({
                 } else {
                   logged_in_status = false;
                 }
+
+                if (result.is_birthday && result.is_birthday == true) {
+                  is_birthday = true;
+                }
               }
             } catch (err) {
               console.error("Error checking status for", chat.email, err);
@@ -240,6 +247,7 @@ const ChatSidebar = ({
           return {
             ...chat,
             logged_in_status,
+            is_birthday,
           };
         })
       );
@@ -424,13 +432,13 @@ const ChatSidebar = ({
       const isRelevant =
         msg.user_type === "group"
           ? (() => {
-              console.log("Available chats:", chats);
+              // console.log("Available chats:", chats);
 
               const matchingChat = chatsRef.current.find(
                 (chat) => chat.id == otherUserId && chat.type === otherChatType
               );
 
-              console.log("Matched group chat:", matchingChat);
+              // console.log("Matched group chat:", matchingChat);
 
               return !!matchingChat;
             })()
@@ -563,6 +571,32 @@ const ChatSidebar = ({
     };
   }, [user, chats]);
 
+  const [hasUpdate, setHasUpdate] = useState(false);
+
+  useEffect(() => {
+    let currentVersion = null;
+
+    // Fetch current version on load
+    fetch("/version.json")
+      .then((res) => res.json())
+      .then((data) => {
+        currentVersion = data.version;
+      });
+
+    const interval = setInterval(() => {
+      fetch("/version.json", { cache: "no-store" }) // Avoid caching
+        .then((res) => res.json())
+        .then((data) => {
+          if (currentVersion && data.version !== currentVersion) {
+            setHasUpdate(true);
+            clearInterval(interval);
+          }
+        });
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -572,7 +606,9 @@ const ChatSidebar = ({
   }, [chats]);
 
   const unreadAtCount = useMemo(() => {
-    return chats.filter((chat) => chat.is_mentioned == true).length;
+    return chats.filter(
+      (chat) => chat.is_mentioned == true && chat.is_all == false
+    ).length;
   }, [chats]);
 
   const unreadForAllCount = useMemo(() => {
@@ -588,7 +624,9 @@ const ChatSidebar = ({
         (activeTab === "direct" && chat.type === "user") ||
         (activeTab === "group" && chat.type === "group") ||
         (activeTab === "unread" && chat.read_status === 1) ||
-        (activeTab === "@" && chat.is_mentioned == true) ||
+        (activeTab === "@" &&
+          chat.is_mentioned == true &&
+          chat.is_all == false) ||
         (activeTab === "forall" && chat.is_all == true);
 
       const matchesSearch = chat.name
@@ -776,6 +814,11 @@ const ChatSidebar = ({
         ${theme == "dark" ? "border-gray-400" : ""}  
       `}
       >
+        {hasUpdate && (
+          <div className=" w-full bg-yellow-500 text-white text-center px-2 py-2 mb-1 flex">
+            <RefreshCcw size={18} /> New updates are available. Please hard refresh (Ctrl + Shift + R)
+          </div>
+        )}
         <h1 className="text-2xl font-bold flex items-center justify-between cursor-pointer">
           {" "}
           {view_user_name && (
@@ -1072,6 +1115,16 @@ const ChatSidebar = ({
                     {chat.draft && (
                       <span className="text-xs text-gray-500 italic">
                         Draft
+                      </span>
+                    )}
+                    {chat.is_birthday && (
+                      <span className="text-xs text-gray-500 italic bday-badge">
+                        <Cake
+                          className={`${
+                            theme == "dark" ? "text-pink-300" : "text-pink-700"
+                          }`}
+                          size={19}
+                        />
                       </span>
                     )}
                   </div>

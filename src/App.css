@@ -365,3 +365,13 @@ div#commentsMention[placeholder]:empty:before {
     max-width: unset !important;
   }
 }
+
+.bday-badge {
+    /* background: #ff7839; */
+    padding: 5px;
+    border-radius: 19px;
+    /* position: absolute;
+    top: 0px;
+    left: 30px;
+    z-index: 999999999999999999999999999;*/
+} 

@@ -128,90 +128,99 @@ const ChatSend = ({
   };
 
   const fetchUsers = async () => {
-  try {
-    const res = await fetch(
-      `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
-    );
-    const data = await res.json();
-
-    if (data.status) {
-      const transformedUsers = data.members
-        .filter((member) => member.id != user?.id) // only exclude self here
-        .map((member) => ({
-          id: member.id,
-          userName: member.name,
-          userColor: "#6A0572",
-          seniority: member.seniority ?? "junior",
-          profilePic: member.profile_pic
-            ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
-            : null,
-          email: member.email,
-          user_panel: member.user_panel,
-        }));
-
-      // Include "All"
-      const allUser = {
-        id: "all",
-        userName: "All",
-        userColor: "#000000",
-        profilePic: null,
-        logged_in_status: true,
-      };
-
-      const fullList = [allUser, ...transformedUsers];
-
-      // Check login status and filter out "Leave"
-      const updatedUsers = await Promise.all(
-        fullList.map(async (u) => {
-          if (u.id === "all") return u;
-
-          let logged_in_status = true;
-          let isLeave = false;
-
-          try {
-            let url = "";
-
-            if (u.user_panel === "AP") {
-              url =
-                "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
-            } else if (u.user_panel === "SP") {
-              url =
-                "https://elementk.in/spbackend/api/login-history/check-login-status";
-            }
-
-            if (url) {
-              const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: u.email }),
-              });
-
-              const result = await res.json();
-              if (result.message === "Leave") {
-                isLeave = true;
-              } else {
-                logged_in_status = result.message === "Loggedin";
-              }
-            }
-          } catch (err) {
-            console.error("Login check failed for", u.email, err);
-            logged_in_status = false;
-          }
-
-          return isLeave ? null : { ...u, logged_in_status };
-        })
+    try {
+      const res = await fetch(
+        `https://webexback-06cc.onrender.com/api/groups/members/${userId}`
       );
+      const data = await res.json();
 
-      const filtered = updatedUsers.filter(Boolean); // remove nulls
-      setGroupUsers(filtered);
-    } else {
-      console.error(data.message || "Failed to fetch group members");
+      if (data.status) {
+        const transformedUsers = data.members
+          .filter((member) => member.id != user?.id) // only exclude self here
+          .map((member) => ({
+            id: member.id,
+            userName: member.name,
+            userColor: "#6A0572",
+            seniority: member.seniority ?? "junior",
+            profilePic: member.profile_pic
+              ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
+              : null,
+            email: member.email,
+            user_panel: member.user_panel,
+          }));
+
+        // Include "All"
+        const allUser = {
+          id: "all",
+          userName: "All",
+          userColor: "#000000",
+          profilePic: null,
+          logged_in_status: true,
+        };
+
+        let fullList;
+        if (
+          selectedUser &&
+          selectedUser?.type == "group" &&
+          selectedUser?.group_type == "team" &&
+          user?.seniority == "junior"
+        ) {
+          fullList = transformedUsers;
+        } else {
+          fullList = [allUser, ...transformedUsers];
+        }
+
+        // Check login status and filter out "Leave"
+        const updatedUsers = await Promise.all(
+          fullList.map(async (u) => {
+            if (u.id === "all") return u;
+
+            let logged_in_status = true;
+            let isLeave = false;
+
+            try {
+              let url = "";
+
+              if (u.user_panel === "AP") {
+                url =
+                  "https://www.thehrbulb.com/team-member-panel/api/checkLoggedInorNot";
+              } else if (u.user_panel === "SP") {
+                url =
+                  "https://elementk.in/spbackend/api/login-history/check-login-status";
+              }
+
+              if (url) {
+                const res = await fetch(url, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: u.email }),
+                });
+
+                const result = await res.json();
+                if (result.message === "Leave") {
+                  isLeave = true;
+                } else {
+                  logged_in_status = result.message === "Loggedin";
+                }
+              }
+            } catch (err) {
+              console.error("Login check failed for", u.email, err);
+              logged_in_status = false;
+            }
+
+            return isLeave ? null : { ...u, logged_in_status };
+          })
+        );
+
+        const filtered = updatedUsers.filter(Boolean); // remove nulls
+        setGroupUsers(filtered);
+      } else {
+        console.error(data.message || "Failed to fetch group members");
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
     }
-  } catch (err) {
-    console.error("Error fetching users:", err);
-  }
-};
-
+  };
 
   useEffect(() => {
     setValue("");
@@ -233,7 +242,7 @@ const ChatSend = ({
   }, [type, userId]);
 
   useEffect(() => {
-    console.log("Fetched Group Users:", groupUsers);
+    // console.log("Fetched Group Users:", groupUsers);
   }, [groupUsers]);
 
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
@@ -252,13 +261,6 @@ const ChatSend = ({
     }
   }, [selectedUsers, groupUsers]);
 
-  const onSearch = (event) => {
-    const query = event.query.toLowerCase();
-    const filteredUsers = users.filter((user) =>
-      user.nickname.toLowerCase().includes(query)
-    );
-    setSuggestions(filteredUsers);
-  };
   const itemTemplate = (data) => {
     const groupType = selectedUser?.group_type; // assumes selectedUser is available
     const isJunior = user?.seniority == "junior";
@@ -274,14 +276,15 @@ const ChatSend = ({
       isTaggingSenior
     ) {
       isDisabled = true;
-    } else if (
-      selectedUser?.type == "group" &&
-      groupType == "team" &&
-      isJunior &&
-      isTaggingJunior
-    ) {
-      isDisabled = true;
     }
+    // else if (
+    //   selectedUser?.type == "group" &&
+    //   groupType == "team" &&
+    //   isJunior &&
+    //   isTaggingJunior
+    // ) {
+    //   isDisabled = true;
+    // }
 
     return (
       <div
@@ -305,36 +308,10 @@ const ChatSend = ({
             {data.userName?.charAt(0).toUpperCase()}
           </div>
         )}
-        <span>
-          {data.userName}
-        </span>
+        <span>{data.userName}</span>
       </div>
     );
   };
-
-  const itemTemplatee = (data) => (
-    <div className="flex items-center gap-2 p-2">
-      {data.profilePic ? (
-        <img
-          src={data.profilePic}
-          alt={data.userName}
-          className="w-8 h-8 rounded-full object-cover"
-        />
-      ) : (
-        <div
-          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
-          style={{
-            backgroundColor: data.userColor,
-          }}
-        >
-          <span className="custom-margin">
-            {data.userName?.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <span>{data.userName}</span>
-    </div>
-  );
 
   // Select event handler
   const handleSelect = (e) => {
@@ -353,11 +330,11 @@ const ChatSend = ({
       return;
     }
 
-    if (groupType === "team" && isJunior && mentionSeniority === "junior") {
-      toast.error("You can't tag Associate");
-      e.cancel = true;
-      return;
-    }
+    // if (groupType === "team" && isJunior && mentionSeniority === "junior") {
+    //   toast.error("You can't tag Associate");
+    //   e.cancel = true;
+    //   return;
+    // }
 
     if (userId == "all") {
       const hasAll = selectedUsers.some((user) => user.id == "all");
@@ -415,6 +392,63 @@ const ChatSend = ({
       console.log(`Selected user ID: ${userId}, Name: ${userName}`);
     }, 0);
   };
+
+  useEffect(() => {
+  const chatInput = document.getElementById("chatInput");
+
+  const updateSelectedUsersFromDOM = () => {
+    if (!chatInput) return;
+
+    const chips = chatInput.querySelectorAll(".e-mention-chip");
+    const chipNames = Array.from(chips).map((chip) =>
+      chip.textContent.trim()
+    );
+
+    // 💡 If "All" is mentioned, include all group users
+    if (chipNames.includes("All")) {
+      setSelectedUsers([
+        { id: "all", name: "All" },
+        ...groupUsers.map((u) => ({
+          id: u.id,
+          name: u.userName,
+        })),
+      ]);
+    } else {
+      // Normal filtering logic
+      const updatedUsers = selectedUsers.filter((u) =>
+        chipNames.includes(u.name)
+      );
+
+      // Prevent unnecessary state updates
+      if (updatedUsers.length !== selectedUsers.length) {
+        setSelectedUsers(updatedUsers);
+      }
+    }
+  };
+
+  const observer = new MutationObserver(() => {
+    updateSelectedUsersFromDOM();
+  });
+
+  if (chatInput) {
+    observer.observe(chatInput, {
+      childList: true,
+      subtree: true,
+    });
+
+    chatInput.addEventListener("input", updateSelectedUsersFromDOM);
+    chatInput.addEventListener("blur", updateSelectedUsersFromDOM);
+  }
+
+  return () => {
+    observer.disconnect();
+    if (chatInput) {
+      chatInput.removeEventListener("input", updateSelectedUsersFromDOM);
+      chatInput.removeEventListener("blur", updateSelectedUsersFromDOM);
+    }
+  };
+}, [selectedUsers, groupUsers]);
+
 
   const handleSelectt = (e) => {
     const selectedUser = e.itemData;
@@ -477,6 +511,30 @@ const ChatSend = ({
       console.log(`Selected user ID: ${userId}, Name: ${userName}`);
     }, 0);
   };
+
+  const itemTemplatee = (data) => (
+    <div className="flex items-center gap-2 p-2">
+      {data.profilePic ? (
+        <img
+          src={data.profilePic}
+          alt={data.userName}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+      ) : (
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-start text-white font-semibold text-sm "
+          style={{
+            backgroundColor: data.userColor,
+          }}
+        >
+          <span className="custom-margin">
+            {data.userName?.charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+      <span>{data.userName}</span>
+    </div>
+  );
 
   const [isSending, setIsSending] = useState(false);
   const handleSend = async () => {
@@ -543,10 +601,13 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/send", {
-        method: "POST",
-        body: formData, // No need for headers, browser sets Content-Type with boundary
-      });
+      const res = await fetch(
+        "https://webexback-06cc.onrender.com/api/chats/send",
+        {
+          method: "POST",
+          body: formData, // No need for headers, browser sets Content-Type with boundary
+        }
+      );
 
       if (!res.ok) throw new Error("Message send failed");
 

@@ -46,7 +46,8 @@ import notificationsound from "../assets/notification-sound.mp3";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
-  const { user, login, logout, theme, updateTheme , updateAvailability} = useAuth();
+  const { user, login, logout, theme, updateTheme, updateAvailability } =
+    useAuth();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
@@ -85,7 +86,7 @@ export default function Header() {
           // Now, get the token with the custom service worker registration
           const currentToken = await getToken(messaging, {
             vapidKey:
-              "BFEh52B2gdCHFyKNo71vgG3Vg5crEdg2H4b2FLLjiAizybXHlwy73MQTUI0FVA9h1PH3Oy9dtc1wSJ6FVmj7MUE", // Your VAPID key here
+              "BJjfdYHLOsWrNn6I2ii3nyKW_tzzIi94tL2cprgJzM9uqcG2-wr-udlPkiJxgltAhyPaoEWV3WvjYkxuhmLsDs8", // Your VAPID key here
             serviceWorkerRegistration: registration, // Pass the custom service worker registration
           });
 
@@ -141,16 +142,16 @@ export default function Header() {
     }
   };
 
+  
+
   useEffect(() => {
     if (!user) return;
 
     connectSocket(user.id);
     const socket = getSocket();
 
-    
-
     const handleAvailabilityUpdated = ({ userId, availability_status }) => {
-      if(user?.id == userId ){
+      if (user?.id == userId) {
         updateAvailability(availability_status);
       }
     };
@@ -367,6 +368,8 @@ export default function Header() {
     };
   }, [user?.id, selectedUser]);
 
+
+
   return (
     <header
       className={`${
@@ -375,9 +378,11 @@ export default function Header() {
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
       }`}
     >
-      <div className={`${
-        theme == "dark" ? "border-gray-700" : ""
-      } mx-auto flex flex-col items-center justify-between px-2 py-4 h-full border-r`}>
+      <div
+        className={`${
+          theme == "dark" ? "border-gray-700" : ""
+        } mx-auto flex flex-col items-center justify-between px-2 py-4 h-full border-r`}
+      >
         {user ? (
           <div className="flex flex-col justify-between items-center gap-4 text-sm h-full">
             <div className="flex flex-col items-center gap-4 text-sm">
@@ -401,34 +406,42 @@ export default function Header() {
                 {user?.profile_pic ? (
                   <div>
                     <img
-                    src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full mx-auto object-cover border"
-                  />
+                      src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full mx-auto object-cover border"
+                    />
                   </div>
                 ) : (
                   <div className="w-8 h-8 rounded-full mx-auto object-cover border bg-blue-600 text-white flex items-center justify-center">
                     {user.name[0]}
                   </div>
                 )}
-                {onlineUserIds.includes(user?.id) &&( user?.availability != "busy" || user?.availability != "dnd") && (
-                  <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
-                )}
+                {onlineUserIds.includes(user?.id) &&
+                  (user?.availability != "busy" ||
+                    user?.availability != "dnd") && (
+                    <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
+                  )}
                 {user?.availability == "busy" && (
-                  <span 
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content="Busy"
-                  className="absolute bottom-[4px] right-[4px] bg-white " >
-                    <Circle size={8} strokeWidth={6} className="text-red-600"/>
+                  <span
+                    data-tooltip-id="my-tooltip"
+                    data-tooltip-content="Busy"
+                    className="absolute bottom-[4px] right-[4px] bg-white "
+                  >
+                    <Circle size={8} strokeWidth={6} className="text-red-600" />
                   </span>
                 )}
 
                 {user?.availability == "dnd" && (
-                  <span 
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content="Do Not Disturb"
-                  className="absolute bottom-[4px] right-[4px] bg-white" >
-                    <CircleMinus size={8} strokeWidth={5} className="text-red-600"/>
+                  <span
+                    data-tooltip-id="my-tooltip"
+                    data-tooltip-content="Do Not Disturb"
+                    className="absolute bottom-[4px] right-[4px] bg-white"
+                  >
+                    <CircleMinus
+                      size={8}
+                      strokeWidth={5}
+                      className="text-red-600"
+                    />
                   </span>
                 )}
               </button>
