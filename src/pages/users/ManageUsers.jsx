@@ -15,6 +15,7 @@ import {
   KeyRound,
   Check,
   Shield,
+  Bot,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
@@ -24,6 +25,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import { useNavigate } from "react-router-dom";
 import { encode } from "../../utils/encoder";
 import { useAuth } from "../../utils/idb";
+import UserBotSettings from "./UserBotSettings";
 
 const getRandomColor = (id) => {
   const colors = [
@@ -44,6 +46,7 @@ const ManageUsers = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const [botSettingsOpen, setBotSettingsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -96,10 +99,10 @@ const ManageUsers = ({ onClose }) => {
 
   // Filter users based on search input
   const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase())
-  );
+  (user) =>
+    (user.name?.toLowerCase() || "").includes(search.toLowerCase()) ||
+    (user.email?.toLowerCase() || "").includes(search.toLowerCase())
+);
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -121,6 +124,11 @@ const ManageUsers = ({ onClose }) => {
     // Reset to page 1 if filters change
     setCurrentPage(1);
   }, []);
+
+  const handleBotMessageClick = (user) => {
+    setSelectedUser(user);
+    setBotSettingsOpen(true);
+  };
 
   const handleEditClick = (id) => {
     setSelectedUser(id);
@@ -540,6 +548,15 @@ const ManageUsers = ({ onClose }) => {
                           ) : (
                             <div className="flex flex-col items-end justify-start gap-2">
                               <div className="flex justify-start gap-2">
+                                {(user?.user_type == "admin") && (
+                                  <button
+                                  title="Edit Bot Messages"
+                                    onClick={() => handleBotMessageClick(u)}
+                                    className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1 border rounded"
+                                  >
+                                    <Bot size={15} />
+                                  </button>
+                                )}
                                 {(user?.user_type == "admin" ||
                                   (user?.user_type == "subadmin" &&
                                     user?.edit_users == 1)) && (
@@ -654,6 +671,10 @@ const ManageUsers = ({ onClose }) => {
                 userId={selectedUser}
                 after={fetchUsers}
               />
+            )}
+
+            {botSettingsOpen && (
+              <UserBotSettings onClose={()=>{setBotSettingsOpen(false)}} user={selectedUser} />
             )}
           </AnimatePresence>
 

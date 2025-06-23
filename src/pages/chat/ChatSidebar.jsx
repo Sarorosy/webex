@@ -587,7 +587,7 @@ const ChatSidebar = ({
       fetch("/ccp/version.json", { cache: "no-store" }) // Avoid caching
         .then((res) => res.json())
         .then((data) => {
-          if (currentVersion && data.version !== currentVersion) {
+          if (currentVersion && data.version != currentVersion) {
             setHasUpdate(true);
             clearInterval(interval);
           }
@@ -963,12 +963,12 @@ const ChatSidebar = ({
                       ? null
                       : label}
                   </div>
-                  {tab === "direct" && (
+                  {tab === "direct" && unreadUserCount > 0 && (
                     <span className="user-count bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadUserCount > 99 ? "99+" : unreadUserCount}
                     </span>
                   )}
-                  {tab === "group" && (
+                  {tab === "group" && unreadGroupCount> 0 && (
                     <span className="group-count bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadGroupCount > 99 ? "99+" : unreadGroupCount}
                     </span>
