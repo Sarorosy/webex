@@ -472,7 +472,6 @@ const ChatMessages = ({
 
     const handleMessageDelete = (msgObj) => {
       const { msgId, type } = msgObj;
-      console.log(msgObj);
 
       if (type === "message") {
         setMessages((prevMessages) =>

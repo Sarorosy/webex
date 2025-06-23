@@ -577,14 +577,14 @@ const ChatSidebar = ({
     let currentVersion = null;
 
     // Fetch current version on load
-    fetch("/version.json")
+    fetch("/ccp/version.json")
       .then((res) => res.json())
       .then((data) => {
         currentVersion = data.version;
       });
 
     const interval = setInterval(() => {
-      fetch("/version.json", { cache: "no-store" }) // Avoid caching
+      fetch("/ccp/version.json", { cache: "no-store" }) // Avoid caching
         .then((res) => res.json())
         .then((data) => {
           if (currentVersion && data.version !== currentVersion) {
@@ -600,6 +600,18 @@ const ChatSidebar = ({
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
+
+  const unreadUserCount = useMemo(() => {
+    return chats.filter(
+      (chat) => chat.read_status === 1 && chat.type === "user"
+    ).length;
+  }, [chats]);
+
+  const unreadGroupCount = useMemo(() => {
+    return chats.filter(
+      (chat) => chat.read_status === 1 && chat.type === "group"
+    ).length;
+  }, [chats]);
 
   const unreadCount = useMemo(() => {
     return chats.filter((chat) => chat.read_status === 1).length;
@@ -816,7 +828,8 @@ const ChatSidebar = ({
       >
         {hasUpdate && (
           <div className=" w-full bg-yellow-500 text-white text-center px-2 py-2 mb-1 flex">
-            <RefreshCcw size={18} /> New updates are available. Please hard refresh (Ctrl + Shift + R)
+            <RefreshCcw size={18} /> New updates are available. Please hard
+            refresh (Ctrl + Shift + R)
           </div>
         )}
         <h1 className="text-2xl font-bold flex items-center justify-between cursor-pointer">
@@ -950,6 +963,17 @@ const ChatSidebar = ({
                       ? null
                       : label}
                   </div>
+                  {tab === "direct" && (
+                    <span className="user-count bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
+                      {unreadUserCount > 99 ? "99+" : unreadUserCount}
+                    </span>
+                  )}
+                  {tab === "group" && (
+                    <span className="group-count bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
+                      {unreadGroupCount > 99 ? "99+" : unreadGroupCount}
+                    </span>
+                  )}
+
                   {showCount && (
                     <span className="bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadCount > 99 ? "99+" : unreadCount}

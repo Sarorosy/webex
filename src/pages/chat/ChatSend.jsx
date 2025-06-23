@@ -242,7 +242,7 @@ const ChatSend = ({
   }, [type, userId]);
 
   useEffect(() => {
-    // console.log("Fetched Group Users:", groupUsers);
+     console.log("Fetched Group Users:", groupUsers);
   }, [groupUsers]);
 
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
