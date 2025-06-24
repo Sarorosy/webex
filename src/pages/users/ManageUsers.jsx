@@ -64,6 +64,7 @@ const ManageUsers = ({ onClose }) => {
     edit_users: false,
     delete_users: false,
     access_requests: false,
+    bot_settings: false,
   });
 
   const goToChat = (user) => {
@@ -89,7 +90,7 @@ const ManageUsers = ({ onClose }) => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -99,10 +100,10 @@ const ManageUsers = ({ onClose }) => {
 
   // Filter users based on search input
   const filteredUsers = users.filter(
-  (user) =>
-    (user.name?.toLowerCase() || "").includes(search.toLowerCase()) ||
-    (user.email?.toLowerCase() || "").includes(search.toLowerCase())
-);
+    (user) =>
+      (user.name?.toLowerCase() || "").includes(search.toLowerCase()) ||
+      (user.email?.toLowerCase() || "").includes(search.toLowerCase())
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -249,6 +250,7 @@ const ManageUsers = ({ onClose }) => {
       edit_users: user.edit_users == 1,
       delete_users: user.delete_users == 1,
       access_requests: user.access_requests == 1,
+      bot_settings: user.bot_settings == 1,
     });
   };
   return (
@@ -261,7 +263,7 @@ const ManageUsers = ({ onClose }) => {
         className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50"
       >
         <div className="">
-          {/* Header and Search */}
+          
           <div className="flex items-center justify-between  px-4 py-3 bg-gray-300 sticky top-0">
             <div className="">
               <h4 className="text-lg font-semibold">Users</h4>
@@ -348,7 +350,7 @@ const ManageUsers = ({ onClose }) => {
                                   u.trashed == 1 ? "line-through" : "",
                               }}
                             >
-                              {u.name} 
+                              {u.name}
                             </div>
                             <div
                               className="flex flex-col justify-start items-start"
@@ -388,7 +390,9 @@ const ManageUsers = ({ onClose }) => {
                                     u.trashed == 1 ? "line-through" : "",
                                 }}
                               >
-                                {u.seniority == "junior" ? "Associate" : "Sr. Associate"}
+                                {u.seniority == "junior"
+                                  ? "Associate"
+                                  : "Sr. Associate"}
                               </div>
                               <div
                                 className="flex items-center"
@@ -526,6 +530,24 @@ const ManageUsers = ({ onClose }) => {
                                       Access Requests
                                     </label>
                                   </div>
+
+                                  <div className="flex items-center">
+                                    <input
+                                      type="checkbox"
+                                      id="bot_settings"
+                                      checked={permissions.bot_settings}
+                                      onChange={() =>
+                                        handlePermissionChange("bot_settings")
+                                      }
+                                      className="mr-2"
+                                    />
+                                    <label
+                                      htmlFor="bot_settings"
+                                      className="text-sm"
+                                    >
+                                      Bot Settings
+                                    </label>
+                                  </div>
                                 </div>
 
                                 <div className="flex justify-end gap-2">
@@ -548,9 +570,11 @@ const ManageUsers = ({ onClose }) => {
                           ) : (
                             <div className="flex flex-col items-end justify-start gap-2">
                               <div className="flex justify-start gap-2">
-                                {(user?.user_type == "admin") && (
+                                {(user?.user_type == "admin" ||
+                                  (user?.user_type == "subadmin" &&
+                                    user?.bot_settings == 1)) && (
                                   <button
-                                  title="Edit Bot Messages"
+                                    title="Edit Bot Messages"
                                     onClick={() => handleBotMessageClick(u)}
                                     className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1 border rounded"
                                   >
@@ -614,7 +638,7 @@ const ManageUsers = ({ onClose }) => {
                         colSpan="5"
                         className="text-center p-3 text-gray-500"
                       >
-                        {loading  ? "Loading..." : "No users found"}
+                        {loading ? "Loading..." : "No users found"}
                       </div>
                     </div>
                   )}
@@ -674,7 +698,12 @@ const ManageUsers = ({ onClose }) => {
             )}
 
             {botSettingsOpen && (
-              <UserBotSettings onClose={()=>{setBotSettingsOpen(false)}} user={selectedUser} />
+              <UserBotSettings
+                onClose={() => {
+                  setBotSettingsOpen(false);
+                }}
+                user={selectedUser}
+              />
             )}
           </AnimatePresence>
 

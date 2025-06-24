@@ -581,6 +581,7 @@ const ChatSidebar = ({
       .then((res) => res.json())
       .then((data) => {
         currentVersion = data.version;
+        console.log("current version", data.version)
       });
 
     const interval = setInterval(() => {
@@ -588,6 +589,7 @@ const ChatSidebar = ({
         .then((res) => res.json())
         .then((data) => {
           if (currentVersion && data.version != currentVersion) {
+            console.log("new version " , data.version);
             setHasUpdate(true);
             clearInterval(interval);
           }
