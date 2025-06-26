@@ -10,14 +10,24 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-com
 // Initialize the Firebase app in the service worker by passing in
 // your app's Firebase config object.
 // https://firebase.google.com/docs/web/setup#config-object
+// firebase.initializeApp({
+//     apiKey: "AIzaSyDwenDeM3il8TIiFMUPb0GpyjMGUn1eC_U",
+//     authDomain: "dove0101.firebaseapp.com",
+//     projectId: "dove0101",
+//     storageBucket: "dove0101.firebasestorage.app",
+//     messagingSenderId: "206783732985",
+//     appId: "1:206783732985:web:f3e029c1664a39ee169628",
+//     measurementId: "G-BZYDVEXFP1"
+// });
+
 firebase.initializeApp({
-    apiKey: "AIzaSyDwenDeM3il8TIiFMUPb0GpyjMGUn1eC_U",
-    authDomain: "dove0101.firebaseapp.com",
-    projectId: "dove0101",
-    storageBucket: "dove0101.firebasestorage.app",
-    messagingSenderId: "206783732985",
-    appId: "1:206783732985:web:f3e029c1664a39ee169628",
-    measurementId: "G-BZYDVEXFP1"
+  apiKey: "AIzaSyBkq3ZrcwblJpOoQZ01cFo1E2TkEXBSAI0",
+  authDomain: "ccpp-a9267.firebaseapp.com",
+  projectId: "ccpp-a9267",
+  storageBucket: "ccpp-a9267.firebasestorage.app",
+  messagingSenderId: "737718191451",
+  appId: "1:737718191451:web:90ea044b468d225a37067e",
+  measurementId: "G-QZ52FV65DH"
 });
 
 // Retrieve an instance of Firebase Messaging so that it can handle background

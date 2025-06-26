@@ -85,8 +85,9 @@ export default function Header() {
 
           // Now, get the token with the custom service worker registration
           const currentToken = await getToken(messaging, {
-            vapidKey:
-              "BJjfdYHLOsWrNn6I2ii3nyKW_tzzIi94tL2cprgJzM9uqcG2-wr-udlPkiJxgltAhyPaoEWV3WvjYkxuhmLsDs8", // Your VAPID key here
+            vapidKey: "BCQM167jqNCyZ9L96wptzq6kaEQJHwKp85A5Q9OP_2RpYWIMStGUVrVoECjLumWpBLIujfE-5XAgaWZR0D-dFk0",
+            //vapidKey:
+            //  "BJjfdYHLOsWrNn6I2ii3nyKW_tzzIi94tL2cprgJzM9uqcG2-wr-udlPkiJxgltAhyPaoEWV3WvjYkxuhmLsDs8", // Your VAPID key here 
             serviceWorkerRegistration: registration, // Pass the custom service worker registration
           });
 

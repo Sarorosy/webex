@@ -19,6 +19,7 @@ import {
   Smile,
   QuoteIcon,
   Copy,
+  ArrowRight,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -28,6 +29,7 @@ import ReminderModal from "./ReminderModal";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import FileModal from "../../components/FileModal";
 import TypingIndicator from "./TypingIndicator";
+import PollResults from "../../components/PollResults";
 
 const ChatMessages = ({
   view_user_id,
@@ -567,19 +569,16 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch(
-        "https://webexback-06cc.onrender.com/api/messages/pin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            message_id: msgId,
-          }),
-        }
-      );
+      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          message_id: msgId,
+        }),
+      });
 
       const data = await response.json();
 
@@ -827,10 +826,22 @@ const ChatMessages = ({
       }
     };
 
+    const handleVoteUpdated = ({ msgId, pollOptions }) => {
+      console.log("Vote updated for:", msgId, pollOptions);
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id == msgId ? { ...msg, poll_options: pollOptions } : msg
+        )
+      );
+    };
+
     socket.on("reactions_updated", handleReactionsUpdated);
+    socket.on("vote_updated", handleVoteUpdated);
 
     return () => {
       socket.off("reactions_updated", handleReactionsUpdated);
+      socket.off("vote_updated", handleVoteUpdated);
     };
   }, [user.id]);
 
@@ -893,6 +904,22 @@ const ChatMessages = ({
     // Regex to match a single emoji
     const emojiRegex = /^(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)$/u;
     return emojiRegex.test(text);
+  };
+
+  const handlePollVote = (msgId, optionId) => {
+    const socket = getSocket();
+    connectSocket(user.id);
+    socket.emit("voted", {
+      msgId: msgId,
+      optId: optionId,
+      userId: user?.id,
+    });
+  };
+  const [msgForResults, setMsgForResults] = useState(null);
+  const [resultOpen, setResultOpen] = useState(false);
+  const handleResultBtnClick = (msg) => {
+    setMsgForResults(msg);
+    setResultOpen(true);
   };
 
   return (
@@ -973,6 +1000,124 @@ const ChatMessages = ({
                         <div className="text-[9px] opacity-70">
                           {formatTime(msg.created_at)}
                         </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                const wasSent = isValidViewUserId
+                  ? msg.sender_id == view_user_id
+                  : msg.sender_id == user.id;
+
+                if (msg.is_poll == 1) {
+                  const pollOptions = Array.isArray(msg.poll_options)
+                    ? msg.poll_options
+                    : JSON.parse(msg.poll_options || "[]");
+
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`w-full my-2 flex ${
+                        wasSent
+                          ? "flex-row-reverse items-start"
+                          : "justify-start"
+                      }`}
+                    >
+                      {/* Profile pic or initial */}
+                      {msg.profile_pic &&
+                      msg.profile_pic !== "null" &&
+                      msg.profile_pic !== "" ? (
+                        <img
+                          src={
+                            "https://rapidcollaborate.in/ccp" + msg.profile_pic
+                          }
+                          className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex justify-center items-center h-7 w-7 text-xs bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
+                          {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
+                        </div>
+                      )}
+
+                      {/* Poll Card */}
+                      <div
+                        className={`${
+                          wasSent ? "mr-2" : "ml-2"
+                        } bg-white border border-blue-200 p-4 rounded-2xl shadow-md max-w-[80%] w-fit`}
+                      >
+                        {/* Sender Name & Time */}
+                        <div
+                          className={`flex gap-2 items-center text-xs mb-2 ${
+                            wasSent ? "flex-row-reverse" : ""
+                          }`}
+                        >
+                          <span className="text-gray-700 font-medium">
+                            {wasSent && !view_user_id
+                              ? "You"
+                              : msg.sender_name ?? "Unknown User"}
+                          </span>
+                          <span className="text-[10px] text-gray-400">
+                            {formatTime(msg.created_at)}
+                          </span>
+                        </div>
+
+                        {/* Poll Question */}
+                        <div className="text-sm font-semibold text-gray-800 mb-3">
+                          📊 {msg.poll_question}
+                        </div>
+
+                        {/* Poll Options */}
+                        <div className="space-y-2">
+                          {pollOptions.map((opt) => {
+                            const hasVotedAny =
+                              msg.is_multiple_poll === 0 &&
+                              pollOptions.some((o) =>
+                                o.users.includes(user?.id)
+                              );
+                            const hasVotedThis = opt.users.includes(user?.id);
+                            const shouldDisable = hasVotedAny && !hasVotedThis;
+
+                            return (
+                              <button
+                                key={opt.id}
+                                onClick={() => handlePollVote(msg.id, opt.id)}
+                                disabled={shouldDisable}
+                                className={`w-full text-left 
+                                ${
+                                  hasVotedThis
+                                    ? "bg-blue-300"
+                                    : "bg-gray-100 hover:bg-blue-100"
+                                } 
+                                ${
+                                  shouldDisable
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                } 
+                                active:bg-blue-200 transition-all duration-150 border border-gray-200 px-4 py-2 rounded-lg flex flex-col justify-between items-center group`}
+                              >
+                                <span className="text-sm text-gray-800 group-hover:text-blue-800">
+                                  {opt.option}
+                                </span>
+                                {msg.sender_id == user?.id && (
+                                  <span className="text-xs text-gray-900 group-hover:text-blue-700">
+                                    {opt.users?.length || 0} votes
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {msg.sender_id == user?.id && (
+                          <button
+                            onClick={() => {
+                              handleResultBtnClick(msg);
+                            }}
+                            className="flex items-center text-orange-600 mt-1 justify-end hover:underline"
+                          >
+                            View Results{" "}
+                            <ArrowRight size={13} className="ml-2" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -2125,7 +2270,7 @@ const ChatMessages = ({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 10 }}
                 onClick={scrollToBottom}
-                className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all z-10 flex items-center justify-center"
+                className="down-btn-set transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all  flex items-center justify-center"
               >
                 <ArrowDown size={20} />
               </motion.button>
@@ -2164,6 +2309,14 @@ const ChatMessages = ({
             senderName={openFileModal.sender_name}
             time={openFileModal.time}
             onClose={() => setOpenFileModal(null)}
+          />
+        )}
+        {resultOpen && (
+          <PollResults
+            msg={msgForResults}
+            onClose={() => {
+              setResultOpen(false);
+            }}
           />
         )}
       </AnimatePresence>

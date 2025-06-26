@@ -7,10 +7,20 @@ import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
-import { File, Paperclip, QuoteIcon, Send, X } from "lucide-react";
+import {
+  BarChart2,
+  File,
+  Paperclip,
+  Plus,
+  QuoteIcon,
+  Send,
+  X,
+} from "lucide-react";
 import { ScaleLoader } from "react-spinners";
 import EmojiPicker from "emoji-picker-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import CreatePoll from "./CreatePoll";
 
 const ChatSend = ({
   type,
@@ -32,6 +42,8 @@ const ChatSend = ({
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const [selectedFile, setSelectedFile] = useState(null);
+  const [isToolbarOpen, setIsToolbarOpen] = useState(false);
+  const [isPollOpen, setIsPollOpen] = useState(false);
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
@@ -242,7 +254,7 @@ const ChatSend = ({
   }, [type, userId]);
 
   useEffect(() => {
-     console.log("Fetched Group Users:", groupUsers);
+    console.log("Fetched Group Users:", groupUsers);
   }, [groupUsers]);
 
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
@@ -394,61 +406,60 @@ const ChatSend = ({
   };
 
   useEffect(() => {
-  const chatInput = document.getElementById("chatInput");
+    const chatInput = document.getElementById("chatInput");
 
-  const updateSelectedUsersFromDOM = () => {
-    if (!chatInput) return;
+    const updateSelectedUsersFromDOM = () => {
+      if (!chatInput) return;
 
-    const chips = chatInput.querySelectorAll(".e-mention-chip");
-    const chipNames = Array.from(chips).map((chip) =>
-      chip.textContent.trim()
-    );
-
-    // 💡 If "All" is mentioned, include all group users
-    if (chipNames.includes("All")) {
-      setSelectedUsers([
-        { id: "all", name: "All" },
-        ...groupUsers.map((u) => ({
-          id: u.id,
-          name: u.userName,
-        })),
-      ]);
-    } else {
-      // Normal filtering logic
-      const updatedUsers = selectedUsers.filter((u) =>
-        chipNames.includes(u.name)
+      const chips = chatInput.querySelectorAll(".e-mention-chip");
+      const chipNames = Array.from(chips).map((chip) =>
+        chip.textContent.trim()
       );
 
-      // Prevent unnecessary state updates
-      if (updatedUsers.length !== selectedUsers.length) {
-        setSelectedUsers(updatedUsers);
+      // 💡 If "All" is mentioned, include all group users
+      if (chipNames.includes("All")) {
+        setSelectedUsers([
+          { id: "all", name: "All" },
+          ...groupUsers.map((u) => ({
+            id: u.id,
+            name: u.userName,
+          })),
+        ]);
+      } else {
+        // Normal filtering logic
+        const updatedUsers = selectedUsers.filter((u) =>
+          chipNames.includes(u.name)
+        );
+
+        // Prevent unnecessary state updates
+        if (updatedUsers.length !== selectedUsers.length) {
+          setSelectedUsers(updatedUsers);
+        }
       }
-    }
-  };
+    };
 
-  const observer = new MutationObserver(() => {
-    updateSelectedUsersFromDOM();
-  });
-
-  if (chatInput) {
-    observer.observe(chatInput, {
-      childList: true,
-      subtree: true,
+    const observer = new MutationObserver(() => {
+      updateSelectedUsersFromDOM();
     });
 
-    chatInput.addEventListener("input", updateSelectedUsersFromDOM);
-    chatInput.addEventListener("blur", updateSelectedUsersFromDOM);
-  }
-
-  return () => {
-    observer.disconnect();
     if (chatInput) {
-      chatInput.removeEventListener("input", updateSelectedUsersFromDOM);
-      chatInput.removeEventListener("blur", updateSelectedUsersFromDOM);
-    }
-  };
-}, [selectedUsers, groupUsers]);
+      observer.observe(chatInput, {
+        childList: true,
+        subtree: true,
+      });
 
+      chatInput.addEventListener("input", updateSelectedUsersFromDOM);
+      chatInput.addEventListener("blur", updateSelectedUsersFromDOM);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (chatInput) {
+        chatInput.removeEventListener("input", updateSelectedUsersFromDOM);
+        chatInput.removeEventListener("blur", updateSelectedUsersFromDOM);
+      }
+    };
+  }, [selectedUsers, groupUsers]);
 
   const handleSelectt = (e) => {
     const selectedUser = e.itemData;
@@ -822,6 +833,14 @@ const ChatSend = ({
     };
   }, [userId, type]);
 
+
+  const [question, setQuestion] = useState("");
+  const [options, setOptions] = useState(["", ""]);
+  const [allowMultiple, setAllowMultiple] = useState(false);
+  const [showEmojiPickerIndex, setShowEmojiPickerIndex] = useState(null);
+
+
+
   return (
     <>
       {isReply && (
@@ -907,14 +926,63 @@ const ChatSend = ({
           } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded`}
         >
           <div className="flex flex-col items-center gap-2 h-fill">
-            <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition ">
-              <Paperclip size={14} />
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => setSelectedFile(e.target.files[0])}
-              />
-            </label>
+            {user?.user_type == "admin" ? (
+              <div className="relative">
+                {/* Toggle Button */}
+                <button
+                  onClick={() => setIsToolbarOpen(!isToolbarOpen)}
+                  className={`p-1 rounded-full hover:bg-orange-100 text-orange-500 transition-all duration-200 ${isToolbarOpen ? "rotate-45" : ""}`}
+                >
+                  <Plus size={20} />
+                </button>
+
+                {/* Floating Toolbar */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={
+                    isToolbarOpen
+                      ? { opacity: 1, scale: 1 }
+                      : { opacity: 0, scale: 0.95 }
+                  }
+                  transition={{ duration: 0.2 }}
+                  style={{height: "100px"}}
+                  className="absolute z-10 bg-white h-8 max-h-8 shadow-md rounded-md p-2 flex items-center gap-2 top-[-40px] left-0"
+                >
+                  {/* File Upload */}
+                  <label className="h-6 cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-2 py-1 rounded hover:bg-orange-600 transition flex items-center gap-1">
+                    <Paperclip size={14} />
+                    <span className="text-sm hidden sm:inline">File</span>
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => setSelectedFile(e.target.files[0])}
+                    />
+                  </label>
+
+                  {/* Poll Toggle */}
+                  <button
+                    onClick={() => setIsPollOpen((prev) => !prev)}
+                    className={`h-6 border px-2 py-1 rounded flex items-center gap-1 transition text-sm ${
+                      isPollOpen
+                        ? "bg-orange-600 text-white border-orange-600 "
+                        : "text-orange-500 border-orange-500 hover:bg-orange-600 hover:text-white"
+                    }`}
+                  >
+                    <BarChart2 size={14} />
+                    <span className="hidden sm:inline">Poll</span>
+                  </button>
+                </motion.div>
+              </div>
+            ) : (
+              <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition ">
+                <Paperclip size={14} />
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                />
+              </label>
+            )}
 
             <button
               type="button"
@@ -1058,8 +1126,24 @@ const ChatSend = ({
             </button>
           </div>
         </div>
+        
       </div>
+      {isPollOpen && (
+          <CreatePoll onClose={()=>{setIsPollOpen(false)}}
+          question={question}
+          setQuestion={setQuestion}
+          options={options}
+          setOptions={setOptions}
+          allowMultiple={allowMultiple}
+          setAllowMultiple={setAllowMultiple}
+          showEmojiPickerIndex={showEmojiPickerIndex}
+          setShowEmojiPickerIndex={setShowEmojiPickerIndex}
+          userId={userId}
+          type={type}
+          />
+        )}
     </>
+    
   );
 };
 
