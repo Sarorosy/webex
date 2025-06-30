@@ -71,15 +71,54 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const updateTheme =  (theme) => {
+  const updateTheme = (theme) => {
     setTheme(theme);
     localStorage.setItem("Theme", theme);
+  };
 
+  const trackMessagedUser = async (newUserId) => {
+    setUser((prev) => {
+      const prevMessagedUserIds = prev.messagedUserIds || [];
+      const alreadyMessaged = prevMessagedUserIds.includes(newUserId);
+
+      let updatedMessagedUserIds = [...prevMessagedUserIds];
+      let updatedMessageCount = prev.message_count || 0;
+
+      if (!alreadyMessaged) {
+        updatedMessagedUserIds.push(newUserId);
+        updatedMessageCount += 1;
+      }
+
+      if (updatedMessageCount > 5) {
+        updatedMessagedUserIds = [];
+        updatedMessageCount = 0;
+      }
+
+      const updatedUser = {
+        ...prev,
+        messagedUserIds: updatedMessagedUserIds,
+        message_count: updatedMessageCount,
+      };
+
+      set("User", updatedUser);
+      return updatedUser;
+    });
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, setFavourites, theme, updateTheme, updateNotifications, updateAvailability }}
+      value={{
+        user,
+        login,
+        logout,
+        loading,
+        setFavourites,
+        theme,
+        updateTheme,
+        updateNotifications,
+        updateAvailability,
+        trackMessagedUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -208,12 +208,19 @@ const ChatSend = ({
                   body: JSON.stringify({ email: u.email }),
                 });
 
+                // if (!res.ok) {
+                //   isLeave = true;
+                //   logged_in_status = false;
+                // } else {
+                  
+                // }
+
                 const result = await res.json();
-                if (result.message === "Leave") {
-                  isLeave = true;
-                } else {
-                  logged_in_status = result.message === "Loggedin";
-                }
+                  if (result.message === "Leave") {
+                    isLeave = true;
+                  } else {
+                    logged_in_status = result.message === "Loggedin";
+                  }
               }
             } catch (err) {
               console.error("Login check failed for", u.email, err);
@@ -260,7 +267,7 @@ const ChatSend = ({
   const [selectedUsers, setSelectedUsers] = useState([]); // State to track selected users
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const { user, theme } = useAuth(); // Get sender_id
+  const { user, theme, trackMessagedUser } = useAuth(); // Get sender_id
 
   useEffect(() => {
     console.log("selected Users:", selectedUsers);
@@ -581,6 +588,53 @@ const ChatSend = ({
       return emails[parseInt(index)];
     });
 
+    if (type == "user" && user?.seniority == "junior") {
+      const prevMessagedUserIds = user?.messagedUserIds || [];
+      console.log("prevMessagedUserIds", prevMessagedUserIds);
+      const isNewUser = !prevMessagedUserIds.includes(userId);
+      console.log("isNewUser", isNewUser);
+      console.log("message_count", user?.message_count || 0);
+
+      if (isNewUser && (user?.message_count || 0) >= 5) {
+        toast.custom(
+          (t) => (
+            <div
+              className={`max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl pointer-events-auto ring-1 ring-black ring-opacity-5 p-4 flex items-start space-x-4 ${
+                t.visible ? "animate-enter" : "animate-leave"
+              }`}
+            >
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Message Limit Reached
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  You've messaged 5 different users. Please continue the
+                  conversation in a group instead.
+                </p>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="text-gray-500 hover:text-gray-800 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ),
+          {
+            duration: 6000,
+            position: "top-right",
+            id: "one-to-one-limit",
+            ariaProps: {
+              role: "status",
+              "aria-live": "polite",
+            },
+          }
+        );
+      }
+
+      await trackMessagedUser(userId);
+    }
+
     try {
       setIsSending(true);
       setSubmitBtnDisabled(true);
@@ -833,13 +887,10 @@ const ChatSend = ({
     };
   }, [userId, type]);
 
-
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
   const [showEmojiPickerIndex, setShowEmojiPickerIndex] = useState(null);
-
-
 
   return (
     <>
@@ -931,7 +982,9 @@ const ChatSend = ({
                 {/* Toggle Button */}
                 <button
                   onClick={() => setIsToolbarOpen(!isToolbarOpen)}
-                  className={`p-1 rounded-full hover:bg-orange-100 text-orange-500 transition-all duration-200 ${isToolbarOpen ? "rotate-45" : ""}`}
+                  className={`p-1 rounded-full hover:bg-orange-100 text-orange-500 transition-all duration-200 ${
+                    isToolbarOpen ? "rotate-45" : ""
+                  }`}
                 >
                   <Plus size={20} />
                 </button>
@@ -945,7 +998,7 @@ const ChatSend = ({
                       : { opacity: 0, scale: 0.95 }
                   }
                   transition={{ duration: 0.2 }}
-                  style={{height: "100px"}}
+                  style={{ height: "100px" }}
                   className="absolute z-10 bg-white h-8 max-h-8 shadow-md rounded-md p-2 flex items-center gap-2 top-[-40px] left-0"
                 >
                   {/* File Upload */}
@@ -1126,10 +1179,12 @@ const ChatSend = ({
             </button>
           </div>
         </div>
-        
       </div>
       {isPollOpen && (
-          <CreatePoll onClose={()=>{setIsPollOpen(false)}}
+        <CreatePoll
+          onClose={() => {
+            setIsPollOpen(false);
+          }}
           question={question}
           setQuestion={setQuestion}
           options={options}
@@ -1140,10 +1195,9 @@ const ChatSend = ({
           setShowEmojiPickerIndex={setShowEmojiPickerIndex}
           userId={userId}
           type={type}
-          />
-        )}
+        />
+      )}
     </>
-    
   );
 };
 

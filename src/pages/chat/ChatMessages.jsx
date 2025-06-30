@@ -1098,7 +1098,7 @@ const ChatMessages = ({
                                 <span className="text-sm text-gray-800 group-hover:text-blue-800">
                                   {opt.option}
                                 </span>
-                                {msg.sender_id == user?.id && (
+                                {user?.user_type == "admin" && (
                                   <span className="text-xs text-gray-900 group-hover:text-blue-700">
                                     {opt.users?.length || 0} votes
                                   </span>
@@ -1107,7 +1107,7 @@ const ChatMessages = ({
                             );
                           })}
                         </div>
-                        {msg.sender_id == user?.id && (
+                        { user?.user_type == "admin" && (
                           <button
                             onClick={() => {
                               handleResultBtnClick(msg);

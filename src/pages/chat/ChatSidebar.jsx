@@ -478,6 +478,7 @@ const ChatSidebar = ({
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
+          last_message: msg.message ?? null,
           read_status:
             msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
               ? 1
@@ -495,6 +496,7 @@ const ChatSidebar = ({
             : updatedChats[index]?.is_all ||
               (Array.isArray(msg.mentioned_users) &&
                 msg.mentioned_users.includes("all")),
+          
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -581,7 +583,7 @@ const ChatSidebar = ({
       .then((res) => res.json())
       .then((data) => {
         currentVersion = data.version;
-        console.log("current version", data.version)
+        console.log("current version", data.version);
       });
 
     const interval = setInterval(() => {
@@ -589,7 +591,7 @@ const ChatSidebar = ({
         .then((res) => res.json())
         .then((data) => {
           if (currentVersion && data.version != currentVersion) {
-            console.log("new version " , data.version);
+            console.log("new version ", data.version);
             setHasUpdate(true);
             clearInterval(interval);
           }
@@ -803,6 +805,22 @@ const ChatSidebar = ({
     };
   }, [isResizing]);
 
+  const getPlainPreview = (html, limit = 30) => {
+    if (!html) return "";
+
+    // If HTML contains an <img> tag, return a default message
+    if (/<img[\s\S]*?>/i.test(html)) {
+      return "Sent an image";
+    }
+
+    const decoded = html
+      .replace(/<[^>]*>/g, "") // Remove all HTML tags
+      .replace(/&[a-z]+;/gi, " ") // Replace HTML entities like &nbsp;
+      .trim(); // Remove leading/trailing spaces
+
+    return decoded.slice(0, limit);
+  };
+
   return (
     <div
       className={` ${
@@ -970,7 +988,7 @@ const ChatSidebar = ({
                       {unreadUserCount > 99 ? "99+" : unreadUserCount}
                     </span>
                   )}
-                  {tab === "group" && unreadGroupCount> 0 && (
+                  {tab === "group" && unreadGroupCount > 0 && (
                     <span className="group-count bg-red-500 text-white f-11 rounded-full w-5 h-5 flex items-center justify-center absolute top-[-10px] right-[-8px]">
                       {unreadGroupCount > 99 ? "99+" : unreadGroupCount}
                     </span>
@@ -1040,24 +1058,25 @@ const ChatSidebar = ({
                   !JSON.parse(nextChat.favourites || "[]").includes(user.id));
 
               const ChatContent = (
-                <div
-                  onClick={() => {
-                    onSelect(chat);
-                    const updatedChats = chats.map((c) => {
-                      if (c.id === chat.id && c.type === chat.type) {
-                        return {
-                          ...c,
-                          read_status: 0,
-                          unread_count: 0,
-                          is_mentioned: false,
-                          is_all: false,
-                        };
-                      }
-                      return c;
-                    });
-                    setChats(updatedChats);
-                  }}
-                  className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer mb-1 overflow-hidden
+                <>
+                  <div
+                    onClick={() => {
+                      onSelect(chat);
+                      const updatedChats = chats.map((c) => {
+                        if (c.id === chat.id && c.type === chat.type) {
+                          return {
+                            ...c,
+                            read_status: 0,
+                            unread_count: 0,
+                            is_mentioned: false,
+                            is_all: false,
+                          };
+                        }
+                        return c;
+                      });
+                      setChats(updatedChats);
+                    }}
+                    className={`flex items-center justify-between space-x-2 p-2 relative rounded-full cursor-pointer mb-1 overflow-hidden
                     ${
                       selectedUser?.id === chat.id &&
                       selectedUser?.type === chat.type
@@ -1072,102 +1091,114 @@ const ChatSidebar = ({
                         ? "hover:bg-gray-600 hover:text-white text-gray-300"
                         : "hover:bg-gray-300 hover:text-black"
                     }`}
-                >
-                  <div className="flex items-center gap-2 overflow-hidden">
-                    <div>
-                      <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                        {chat.profile_pic ? (
-                          <img
-                            src={
-                              "https://rapidcollaborate.in/ccp" +
-                              chat.profile_pic
-                            }
-                            alt="Profile"
-                            className="w-8 h-8 rounded-full mx-auto object-cover border"
-                          />
-                        ) : (
-                          chat.name[0]
-                        )}
-                        {onlineUserIds.includes(chat.id) &&
-                          !chat.availability &&
-                          chat.type == "user" && (
-                            <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <div>
+                        <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
+                          {chat.profile_pic ? (
+                            <img
+                              src={
+                                "https://rapidcollaborate.in/ccp" +
+                                chat.profile_pic
+                              }
+                              alt="Profile"
+                              className="w-8 h-8 rounded-full mx-auto object-cover border"
+                            />
+                          ) : (
+                            chat.name[0]
                           )}
-                        {chat.availability &&
-                          chat.availability == "busy" &&
-                          chat.type == "user" && (
-                            <span
-                              data-tooltip-id="my-tooltip"
-                              data-tooltip-content="Busy"
-                              className="absolute bottom-0 right-0 bg-white "
-                            >
-                              <Circle
-                                size={8}
-                                strokeWidth={6}
-                                className="text-red-600"
-                              />
-                            </span>
-                          )}
-                        {chat.availability &&
-                          chat.availability == "dnd" &&
-                          chat.type == "user" && (
-                            <span
-                              data-tooltip-id="my-tooltip"
-                              data-tooltip-content="Do Not Disturb"
-                              className="absolute bottom-0 right-0 bg-white "
-                            >
-                              <CircleMinus
-                                size={8}
-                                strokeWidth={6}
-                                className="text-red-600"
-                              />
-                            </span>
-                          )}
+                          {onlineUserIds.includes(chat.id) &&
+                            !chat.availability &&
+                            chat.type == "user" && (
+                              <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                            )}
+                          {chat.availability &&
+                            chat.availability == "busy" &&
+                            chat.type == "user" && (
+                              <span
+                                data-tooltip-id="my-tooltip"
+                                data-tooltip-content="Busy"
+                                className="absolute bottom-0 right-0 bg-white "
+                              >
+                                <Circle
+                                  size={8}
+                                  strokeWidth={6}
+                                  className="text-red-600"
+                                />
+                              </span>
+                            )}
+                          {chat.availability &&
+                            chat.availability == "dnd" &&
+                            chat.type == "user" && (
+                              <span
+                                data-tooltip-id="my-tooltip"
+                                data-tooltip-content="Do Not Disturb"
+                                className="absolute bottom-0 right-0 bg-white "
+                              >
+                                <CircleMinus
+                                  size={8}
+                                  strokeWidth={6}
+                                  className="text-red-600"
+                                />
+                              </span>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                    <span
-                      className={`truncate  w-100 ${
-                        chat.logged_in_status === true ||
-                        chat.logged_in_status === null
-                          ? ""
-                          : "text-red-500"
-                      }`}
-                    >
-                      {chat.id == user?.id && chat.type == "user"
-                        ? chat.name + " (You)"
-                        : chat.name}
-                    </span>
+                      <span
+                        className={`truncate  w-100 ${
+                          chat.logged_in_status === true ||
+                          chat.logged_in_status === null
+                            ? ""
+                            : "text-red-500"
+                        }`}
+                      >
+                        {chat.id == user?.id && chat.type == "user"
+                          ? chat.name + " (You)"
+                          : chat.name}
+                        <p
+                          title={getPlainPreview(
+                            chat.last_message,
+                            100000000000000
+                          )}
+                          className={`f-10 ${theme == "light" ? "text-gray-800" : "text-gray-400"}`}
+                        >
+                          {getPlainPreview(chat.last_message)}
+                        </p>
+                      </span>
 
-                    {chat.draft && (
-                      <span className="text-xs text-gray-500 italic">
-                        Draft
-                      </span>
-                    )}
-                    {chat.is_birthday && (
-                      <span className="text-xs text-gray-500 italic bday-badge">
-                        <Cake
-                          className={`${
-                            theme == "dark" ? "text-pink-300" : "text-pink-700"
-                          }`}
-                          size={19}
-                        />
-                      </span>
+                      {chat.draft && (
+                        <span className="text-xs text-gray-500 italic">
+                          Draft
+                        </span>
+                      )}
+                      {chat.is_birthday && (
+                        <span className="text-xs text-gray-500 italic bday-badge">
+                          <Cake
+                            className={`${
+                              theme == "dark"
+                                ? "text-pink-300"
+                                : "text-pink-700"
+                            }`}
+                            size={19}
+                          />
+                        </span>
+                      )}
+                    </div>
+                    {chat.read_status == 1 && (
+                      <div className="flex items-center space-x-1 absolute right-2 bg-white p-1 rounded-full">
+                        <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
+                          {chat.unread_count ?? 1}
+                        </div>
+                        {chat.is_mentioned && !chat.is_all && (
+                          <AtSign className="text-orange-500" size={16} />
+                        )}
+                        {chat.is_all && (
+                          <Volume2 className="text-orange-500" size={16} />
+                        )}
+                      </div>
                     )}
                   </div>
-                  {chat.read_status == 1 && (
-                    <div className="flex items-center space-x-1 absolute right-2 bg-white p-1 rounded-full">
-                      <div className="w-4 h-4 bg-orange-500 text-white rounded-full  flex items-center justify-center text-[9px] p-1">
-                        {chat.unread_count ?? 1}
-                      </div>
-                      {chat.is_mentioned && !chat.is_all && (
-                        <AtSign className="text-orange-500" size={16} />
-                      )}
-                      {chat.is_all && (
-                        <Volume2 className="text-orange-500" size={16} />
-                      )}
-                    </div>
-                  )}
-                </div>
+                </>
               );
 
               return (

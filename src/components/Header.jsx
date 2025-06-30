@@ -20,6 +20,7 @@ import {
   X,
   Circle,
   CircleMinus,
+  Target,
 } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
@@ -43,6 +44,7 @@ import "./toast.css";
 import TotalSearch from "../pages/chat/TotalSearch.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
 import notificationsound from "../assets/notification-sound.mp3";
+import StatusPage from "../pages/status/StatusPage.jsx";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -369,6 +371,8 @@ export default function Header() {
     };
   }, [user?.id, selectedUser]);
 
+  const [statusPageOpen, setStatusPageOpen] = useState(false)
+
 
 
   return (
@@ -519,6 +523,19 @@ export default function Header() {
                   {/* Manage Users */}
                 </button>
               )}
+
+              {/* <button
+                  onClick={() => setStatusPageOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Status"
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
+                >
+                  <Target size={17} className="" />
+                </button> */}
             </div>
             <div className="flex items-center flex-col gap-3" ref={dropdownRef}>
               {theme == "dark" ? (
@@ -610,6 +627,10 @@ export default function Header() {
             searchResults={[]}
           />
         )} */}
+
+        {statusPageOpen && (
+          <StatusPage onClose={()=>{setStatusPageOpen(false)}} />
+        )}
         <ReminderPopup />
       </AnimatePresence>
     </header>
