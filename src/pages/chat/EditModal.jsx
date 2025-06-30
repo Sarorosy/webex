@@ -20,7 +20,7 @@ const EditModal = ({
   const [value, setValue] = useState(message);
   const [submitBtnDisabled, setSubmitBtnDisabled] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const chatInputRef = useRef(null);
 
   useEffect(() => {
@@ -247,13 +247,15 @@ const EditModal = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="bg-white rounded-md shadow-lg w-full max-w-md"
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  rounded-md w-full max-w-md`}
       >
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
           <h2 className="text-lg font-semibold text-white">Edit Message</h2>
           <div>
             <button
-              className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+              className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
               onClick={onClose} // Close modal without doing anything
             >
               <X size={15} />
@@ -272,7 +274,12 @@ const EditModal = ({
                 id="chatInput"
                 ref={chatInputRef}
                 contentEditable
-                className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
+                className={`
+                  ${
+                      theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none
+              `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange} // Track changes in the input
               ></div>
@@ -307,7 +314,12 @@ const EditModal = ({
                 id="chatInput"
                 ref={chatInputRef}
                 contentEditable
-                className="w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none"
+                className={`
+                  ${
+                      theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none
+              `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange} // Track changes in the input
               ></div>

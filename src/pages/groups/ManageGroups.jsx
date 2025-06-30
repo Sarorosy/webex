@@ -17,6 +17,7 @@ import GroupInfo from "./GroupInfo";
 import EditGroup from "./EditGroup";
 import toast from "react-hot-toast";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { useAuth } from "../../utils/idb";
 
 const ManageGroups = ({onClose}) => {
   const [groups, setGroups] = useState([]);
@@ -24,7 +25,7 @@ const ManageGroups = ({onClose}) => {
   const [expandedGroupId, setExpandedGroupId] = useState(null);
   const [loading, setLoading]= useState(false);
   const [search, setSearch] = useState("");
-
+  const {theme} = useAuth();
   useEffect(() => {
     fetchGroups();
   }, []);
@@ -116,7 +117,7 @@ const ManageGroups = ({onClose}) => {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="relative w-full max-w-[400px] h-screen bg-white shadow-xl "
+        className={`relative w-full max-w-[400px] h-screen ${theme == "dark" ? "bg-gray-800 text-white mw-dark" : "bg-white text-black"}  shadow-xl `}
       >
         {loading ? (
           <div className="h-full flex items-center justify-center text-lg font-semibold">
@@ -125,15 +126,20 @@ const ManageGroups = ({onClose}) => {
         ) : (
           <>
             {/* HEADER */}
-            <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-200">
+            <div className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
+            ${theme == "dark" ? "bg-gray-500 text-white mw-dark" : "bg-gray-300 text-black"}
+          `}>
               <h4 className="text-lg font-semibold">Manage Groups</h4>
-              <button onClick={onClose} className="p-1 rounded hover:bg-gray-200">
-                <X className="w-5 h-5" />
+              <button
+                onClick={onClose}
+                className="text-sm text-white bg-orange-600 px-1 py-1 rounded hover:bg-orange-800"
+              >
+                <X size={13}/>
               </button>
             </div>
 
             {/* ACTION BUTTONS */}
-            <div className="flex gap-2 mb-3 justify-end px-4">
+            <div className="flex gap-2 mb-3 justify-end items-center px-4 pt-4">
                <div className="flex items-center gap-2 border rounded-md px-2 py-1 bg-gray-100">
                 <Search size={13} className="text-gray-500" />
                 <input
@@ -144,31 +150,38 @@ const ManageGroups = ({onClose}) => {
                   onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
+              <div>
               <button
                 onClick={fetchGroups}
-                className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+                className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-11"
               >
                 <RefreshCcw size={12} />
                 Refresh
               </button>
+              </div>
+              <div>
               <button
                 onClick={() => setAddGroup(true)}
-                className="flex items-center gap-1 bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500 f-13"
+                className="flex items-center gap-1 bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 f-11"
               >
                 <Plus size={12} />
                 Create 
               </button>
+              </div>
             </div>
 
             {/* GROUP LIST */}
-            <div className="space-y-3 px-4 pb-4 overflow-y-auto h-[86vh]">
+            <div className="space-y-3 px-3 pb-4 overflow-y-auto h-[86vh]">
               {paginatedGroups.map((group) => (
                 <div key={group.group_id} className="border px-2 py-2 rounded">
                   <div className="flex justify-between items-end gap-2">
                     <div>
                       <p className="font-medium text-md">{group.group_name}</p>
                       <div className="flex items-center mt-2">
-                        <p className="f-13 text-gray-600 border rounded-full px-1 py-0.5">
+                        <p 
+                          className="f-11 text-gray-600 border rounded-full px-1 py-0.5"
+                          style={{color : `${theme == "dark" ? "#fff" : ""}`}}
+                        >
                           {group.members?.length || 0} members
                         </p>
                         {group.members?.length > 0 && (
@@ -190,13 +203,15 @@ const ManageGroups = ({onClose}) => {
                     <div className="flex justify-end items-end gap-2">
                       <button
                         onClick={() => handleViewGroup(group)}
-                        className="p-2 border rounded hover:bg-blue-200 text-blue-800"
+                        className="p-1 border rounded hover:bg-blue-200 text-blue-800"
+                        style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                       >
                         <Info size={11} />
                       </button>
                       <button
                         onClick={() => handleEditGroup(group)}
-                        className="p-2 border rounded hover:bg-orange-200 text-orange-800"
+                        className="p-1 border rounded hover:bg-orange-200 text-orange-800"
+                        style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                       >
                         <Pencil size={11} />
                       </button>
@@ -205,7 +220,8 @@ const ManageGroups = ({onClose}) => {
                           setSelectedGroup(group);
                           setDeleteOpen(true);
                         }}
-                        className="p-2 border rounded hover:bg-red-200 text-red-800"
+                        className="p-1 border rounded hover:bg-red-200 text-red-800"
+                        style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                       >
                         <Trash2 size={11} />
                       </button>
@@ -248,7 +264,7 @@ const ManageGroups = ({onClose}) => {
               ))}
 
               {totalPages > 1 && (
-                  <div className="w-full flex justify-start items-center mb-12 gap-2 overflow-x-auto">
+                  <div className="w-full flex justify-start items-center white-space-nowrap pb-4 pt-3 gap-2 overflow-x-auto">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage == 1}

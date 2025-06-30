@@ -161,14 +161,14 @@ const AddGroup = ({ onClose, finalFunction }) => {
 
   return (
     <motion.div
-      className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <div
         className={`${
-          theme == "dark" ? "bg-gray-500 " : "bg-white text-gray-700"
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
         }  max-w-4xl  rounded-lg`}
       >
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
@@ -186,7 +186,7 @@ const AddGroup = ({ onClose, finalFunction }) => {
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium   mb-1"
+                className="block text-sm font-medium mb-1"
               >
                 Group Name
               </label>
@@ -196,9 +196,39 @@ const AddGroup = ({ onClose, finalFunction }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Group name"
-                className="w-full p-2 border rounded-md"
+                className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 border rounded-md
+                `}
                 required
               />
+            </div>
+            <div>
+              <label
+                htmlFor="group_type"
+                className="block text-sm font-medium mb-1"
+              >
+                Group Type
+              </label>
+              <select
+                name="group_type"
+                id="group_type"
+                value={groupType}
+                onChange={(e) => {
+                  setGroupType(e.target.value);
+                }}
+                className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 px-3 border rounded-md
+                `}
+              >
+                <option value="work">Work Group</option>
+                <option value="team">Team Group</option>
+              </select>
             </div>
 
             {user?.user_type != "user" && (
@@ -228,26 +258,7 @@ const AddGroup = ({ onClose, finalFunction }) => {
                 </div>
               </div>
             )}
-            <div>
-              <label
-                htmlFor="group_type"
-                className="block text-sm font-medium mb-2"
-              >
-                Group Type
-              </label>
-              <select
-                name="group_type"
-                id="group_type"
-                value={groupType}
-                onChange={(e) => {
-                  setGroupType(e.target.value);
-                }}
-                className="p-2 border rounded py-1"
-              >
-                <option value="work">Work Group</option>
-                <option value="team">Team Group</option>
-              </select>
-            </div>
+            
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium  mb-1">
@@ -268,7 +279,13 @@ const AddGroup = ({ onClose, finalFunction }) => {
                 onChange={(selected) => {
                   setSelectedMembers(selected.map((item) => item.value));
                 }}
-                className="w-full"
+                
+                className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400" : ""
+                  }
+                  w-full rounded-md
+                `}
                 components={{
                   Option: CustomOption,
                   MultiValue: CustomMultiValue,

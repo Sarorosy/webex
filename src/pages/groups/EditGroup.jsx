@@ -6,7 +6,7 @@ import { useAuth } from "../../utils/idb";
 import toast from "react-hot-toast";
 
 const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const [name, setName] = useState("");
   const [groupType, setGroupType] = useState("");
   const [description, setDescription] = useState("");
@@ -82,17 +82,21 @@ const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
 
   return (
     <motion.div
-      className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-gray-800 bg-opacity-80 flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white w-full max-w-md h-auto overflow-y-auto rounded-lg">
+      <div
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  max-w-4xl  rounded-lg w-[384px]`}
+      >
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
           <h2 className="text-lg font-semibold text-white">Edit Group</h2>
           <div>
             <button
-              className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+              className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
               onClick={onClose} // Close modal without doing anything
             >
               <X size={15} />
@@ -100,7 +104,8 @@ const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="p-4  ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label
               htmlFor="name"
@@ -114,13 +119,43 @@ const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Group name"
-              className="w-full p-2 py-1 border rounded-md"
+              className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 border rounded-md
+                `}
               required
             />
           </div>
+          <div>
+            <label
+              htmlFor="group_type"
+              className="block text-sm font-medium mb-1"
+            >
+              Group Type
+            </label>
+            <select
+              name="group_type"
+              id="group_type"
+              value={groupType}
+              onChange={(e) => {
+                setGroupType(e.target.value);
+              }}
+              className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 border rounded-md
+                `}
+            >
+              <option value="work">Work Group</option>
+              <option value="team">Team Group</option>
+            </select>
+          </div>
 
           {user?.user_type != "user" && (
-            <div>
+            <div className="md:col-span-2">
               <label
                 htmlFor="memberLimit"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -147,27 +182,8 @@ const EditGroup = ({ selectedGroup, onClose, finalFunction }) => {
             </div>
           )}
 
-          <div>
-            <label
-              htmlFor="group_type"
-              className="block text-sm font-medium mb-2"
-            >
-              Group Type
-            </label>
-            <select
-              name="group_type"
-              id="group_type"
-              value={groupType}
-              onChange={(e) => {
-                setGroupType(e.target.value);
-              }}
-              className="p-2 border rounded py-1"
-            >
-              <option value="work">Work Group</option>
-              <option value="team">Team Group</option>
-            </select>
+          
           </div>
-
           <div className="flex justify-end gap-2">
             {/* <button
               type="button"

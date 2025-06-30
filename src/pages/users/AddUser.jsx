@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Plus, Minus, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../../utils/idb";
 
 const AddUser = ({ onClose, after }) => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const AddUser = ({ onClose, after }) => {
   });
   const [adding, setAdding] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const {theme} = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -70,13 +72,15 @@ const AddUser = ({ onClose, after }) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
-        className="bg-white rounded-lg shadow-lg w-[600px]"
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  rounded-lg w-[600px]`}
       >
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
           <h2 className="text-lg font-semibold text-white">Add User</h2>
           <div>
             <button
-              className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+              className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
               onClick={onClose} // Close modal without doing anything
             >
               <X size={15} />
@@ -88,7 +92,12 @@ const AddUser = ({ onClose, after }) => {
             type="text"
             name="name"
             placeholder="Name"
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
             value={formData.name}
             onChange={handleChange}
           />
@@ -96,7 +105,12 @@ const AddUser = ({ onClose, after }) => {
             type="email"
             name="email"
             placeholder="Email"
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
             value={formData.email}
             onChange={handleChange}
           />
@@ -106,7 +120,12 @@ const AddUser = ({ onClose, after }) => {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
-              className="p-2 border rounded py-1 w-full"
+              className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
               value={formData.password}
               onChange={handleChange}
             />
@@ -122,7 +141,12 @@ const AddUser = ({ onClose, after }) => {
             name="user_panel"
             value={formData.user_panel}
             onChange={handleChange}
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
           >
             <option value="SP">Service Panel</option>
             <option value="AP">Attendance Panel</option>
@@ -131,7 +155,12 @@ const AddUser = ({ onClose, after }) => {
             name="seniority"
             value={formData.seniority}
             onChange={handleChange}
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
           >
             <option value="junior">Associate</option>
             <option value="senior">Sr. Associate</option>
@@ -141,7 +170,12 @@ const AddUser = ({ onClose, after }) => {
             type="text"
             name="office_name"
             placeholder="Office Name"
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
             value={formData.office_name}
             onChange={handleChange}
           />
@@ -149,40 +183,51 @@ const AddUser = ({ onClose, after }) => {
             type="text"
             name="city_name"
             placeholder="City Name"
-            className="p-2 border rounded py-1"
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-1 rounded-md
+            `}
             value={formData.city_name}
             onChange={handleChange}
           />
 
           {/* Max Group Count full width row */}
-          <div className=" flex items-center justify-between border rounded p-2 py-1">
+          <div className=" flex flex-col gap-2 justify-between ">
             <span className="text-gray-700">Max Group Count</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={decrementGroupCount}
-                className="p-1  rounded border hover:bg-gray-100"
+                className={`
+                    ${ theme == "dark" ? "bg-gray-800 hover:bg-gray-700 text-gray-50" : "bg-gray-200 hover:bg-gray-300" }
+                    px-2 py-1 rounded 
+                `}
               >
                 <Minus size={13} />
               </button>
-              <span className="w-6 text-center">
+              <span className="w-10 text-center">
                 {formData.max_group_count}
               </span>
               <button
                 type="button"
                 onClick={incrementGroupCount}
-                className="p-1  rounded border hover:bg-gray-100"
+                className={`
+                    ${ theme == "dark" ? "bg-gray-800 hover:bg-gray-700 text-gray-50" : "bg-gray-200 hover:bg-gray-300" }
+                    px-2 py-1 rounded 
+                `}
               >
                 <Plus size={13} />
               </button>
             </div>
           </div>
 
-          <div className="flex justify-end items-end">
+          <div className="flex justify-end items-end md:col-span-2">
             <button
               type="submit"
               disabled={adding}
-              className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 f-11"
+              className="bg-green-700 text-white px-2 py-1 rounded hover:bg-green-800 f-11"
             >
               Add User
             </button>

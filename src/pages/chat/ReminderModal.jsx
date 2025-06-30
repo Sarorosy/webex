@@ -4,11 +4,12 @@ import axios from 'axios';
 import moment from 'moment';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
+import { useAuth } from "../../utils/idb";
 
 const ReminderModal = ({ msgId, userId, onClose }) => {
   const [selectedTime, setSelectedTime] = useState('30 minutes');
   const [error, setError] = useState('');
-
+  const {  theme } = useAuth();
   // Calculate the appropriate date-time value based on the selected time
   const calculateReminderTime = (timeOption) => {
     const currentTime = moment();
@@ -55,7 +56,9 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
       style={{zIndex:60}}
     >
       <motion.div
-        className="bg-white rounded-lg shadow-lg w-[400px]"
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  rounded-lg  w-[400px] max-w-md`}
         initial={{ scale: 0.9 }}
         animate={{ scale: 1 }}
         exit={{ scale: 0.9 }}
@@ -67,7 +70,7 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
           <h2 className="text-lg font-semibold text-white">Set Reminder for Message</h2>
           <div>
             <button
-            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
             onClick={onClose} // Close modal without doing anything
           >
             <X size={15}  />
@@ -76,9 +79,14 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
         </div>
         
         <div className=" p-4">
-          <label className="block text-sm font-medium text-gray-700">Select Reminder Time</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Select Reminder Time</label>
           <select
-            className="mt-2 p-2 w-full border rounded "
+            className={`
+                ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                }
+                w-full border p-2 py-2 rounded-md
+            `}
             value={selectedTime}
             onChange={(e) => setSelectedTime(e.target.value)}
           >
@@ -94,7 +102,7 @@ const ReminderModal = ({ msgId, userId, onClose }) => {
             
             <div>
               <button
-                className="px-4 py-1 rounded border border-orange-500 hover:text-white hover:bg-orange-500 f-13"
+                className="px-2 py-1 rounded bg-orange-600 hover:bg-orange-700 f-12 text-white"
                 onClick={handleSubmit} // Submit the reminder
               >
                 Set Reminder

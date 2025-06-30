@@ -83,7 +83,7 @@ const EditProfile = ({ onClose }) => {
   };
 
   return (
-    <div className={` rounded-lg p-2 pb-0 pt-2 w-full relative`}>
+    <div className={` rounded-lg p-3 w-full relative ${theme == "dark" ? "bg-gray-300" : "bg-gray-100"} `}>
       <div className="">
         <form onSubmit={handleSubmit}>
           <label className={`block text-sm font-medium ${theme == "dark" ? "text-black" : "text-gray-700"}  mb-4`}>
@@ -139,7 +139,12 @@ const EditProfile = ({ onClose }) => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full border py-1 px-2 rounded-md"
+                className={`
+                    ${
+                        theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                    }
+                    w-full border py-1 px-2 rounded-md
+                `}
                 placeholder="Enter your name"
               />
             </div>
@@ -151,7 +156,12 @@ const EditProfile = ({ onClose }) => {
                 type="text"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border py-1 px-2 rounded-md"
+                className={`
+                    ${
+                        theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                    }
+                    w-full border py-1 px-2 rounded-md
+                `}
                 placeholder="Enter password"
               />
             </div>
@@ -185,11 +195,11 @@ const EditProfile = ({ onClose }) => {
             </div> */}
           </div>
 
-          <div className="flex justify-end gap-2 mt-3">
+          <div className="flex justify-end gap-2 mt-4">
             {/* Save Button */}
             <button
               onClick={handleSubmit}
-              className="bg-black text-white px-2 py-1 rounded-md f-13 hover:bg-gray-600"
+              className="bg-green-700 text-white px-2 py-1 rounded-md f-13 hover:bg-green-800"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>

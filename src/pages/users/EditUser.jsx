@@ -6,7 +6,7 @@ import { useAuth } from "../../utils/idb";
 import { X } from "lucide-react";
 
 const EditUser = ({ userId, onClose, after }) => {
-    const { login } = useAuth();
+    const { login ,theme } = useAuth();
     const [fetching, setFetching] = useState(false)
     const [userData, setUserData] = useState({
         name: "",
@@ -118,12 +118,16 @@ const EditUser = ({ userId, onClose, after }) => {
     return (
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-lg w-full max-w-lg shadow-lg relative">
+            <div
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  rounded-lg w-full max-w-lg`}
+      >
                 <div className='flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg'>
                     <h2 className="text-lg font-semibold text-white">Edit User</h2>
                     <div>
                     <button
-                    className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+                    className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
                     onClick={onClose} // Close modal without doing anything
                     >
                     <X size={15}  />
@@ -140,7 +144,7 @@ const EditUser = ({ userId, onClose, after }) => {
                     <form onSubmit={handleSubmit} className="scrollbar-none p-4">
                         <div className="flex justify-start gap-2 items-center mb-4">
                             {userData.profilePic ? (
-                                <img src={userData.profilePic instanceof File ? URL.createObjectURL(userData.profilePic) : userData.profilePic} alt="Profile" className="w-24 h-24 rounded-full border border-gray-300 shadow-md object-cover" />
+                                <img src={userData.profilePic instanceof File ? URL.createObjectURL(userData.profilePic) : userData.profilePic} alt="Profile" className="w-20 h-20 rounded-full border border-gray-300 shadow-md object-cover" />
                             ) : (
                                 <div className="w-20 h-20 flex items-center justify-center bg-gray-200 text-gray-500 text-3xl font-semibold rounded-full shadow-md mb-2">
                                     {userData.name.charAt(0).toUpperCase()}
@@ -152,14 +156,49 @@ const EditUser = ({ userId, onClose, after }) => {
                             </label>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" name="name" value={userData.name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter your name" />
-                            <input type="email" name="email" value={userData.email} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter your email" />
+                            <input type="text" name="name" value={userData.name} onChange={handleChange} 
+                            className={`
+                                ${
+                                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                }
+                                w-full border p-2 py-1 rounded-md
+                            `}
+                             placeholder="Enter your name" />
+                            <input type="email" name="email" value={userData.email} onChange={handleChange} 
+                                className={`
+                                ${
+                                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                }
+                                w-full border p-2 py-1 rounded-md
+                            `}
+                             placeholder="Enter your email" />
                             
-                            <input type="text" name="password" value={userData.password} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Enter password" />
+                            <input type="text" name="password" value={userData.password} onChange={handleChange} 
+                            className={`
+                                ${
+                                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                }
+                                w-full border p-2 py-1 rounded-md
+                            `}
+                            placeholder="Enter password" />
                             {/* <input type="text" name="pronouns" value={userData.pronouns} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Pronouns" /> */}
 
-                            <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="Office Name" />
-                            <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} className="w-full border p-2 py-1 rounded-md" placeholder="City Name" />
+                            <input type="text" name="office_name" value={userData.office_name} onChange={handleChange} 
+                            className={`
+                                ${
+                                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                }
+                                w-full border p-2 py-1 rounded-md
+                            `}
+                            placeholder="Office Name" />
+                            <input type="text" name="city_name" value={userData.city_name} onChange={handleChange} 
+                            className={`
+                                ${
+                                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                }
+                                w-full border p-2 py-1 rounded-md
+                            `}
+                            placeholder="City Name" />
 
                             {/* <textarea name="bio" value={userData.bio} onChange={handleChange} className="col-span-1 md:col-span-2 border p-2 py-1 rounded-md" placeholder="Bio"></textarea> */}
                             <div className="flex flex-col">
@@ -168,7 +207,12 @@ const EditUser = ({ userId, onClose, after }) => {
                                     name="user_panel"
                                     value={userData.user_panel}
                                     onChange={handleChange}
-                                    className="border p-2 py-1 rounded-md w-full"
+                                    className={`
+                                        ${
+                                            theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                        }
+                                        w-full border p-2 py-1 rounded-md
+                                    `}
                                 >
                                     <option value="AP">Attendance Panel</option>
                                     <option value="SP">Service Panel</option>
@@ -180,39 +224,52 @@ const EditUser = ({ userId, onClose, after }) => {
                                     name="seniority"
                                     value={userData.seniority}
                                     onChange={handleChange}
-                                    className="border p-2 py-1 rounded-md w-full"
+                                    className={`
+                                        ${
+                                            theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                                        }
+                                        w-full border p-2 py-1 rounded-md
+                                    `}
                                 >
                                     <option value="junior">Associate</option>
                                     <option value="senior">Sr. Associate</option>
                                 </select>
                             </div>
-                            <div className="flex gap-2 mt-3 items-center ">
+                            <div className="flex flex-col gap-1">
                                 <label className="font-medium">Max Group Count:</label>
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setUserData((prev) => ({
-                                            ...prev,
-                                            max_group_count: Math.max(1, prev.max_group_count - 1)
-                                        }))
-                                    }
-                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                                >
-                                    -
-                                </button>
-                                <span className="w-8 text-center">{userData.max_group_count}</span>
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        setUserData((prev) => ({
-                                            ...prev,
-                                            max_group_count: prev.max_group_count + 1
-                                        }))
-                                    }
-                                    className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                                >
-                                    +
-                                </button>
+                                <div className="flex gap-3 items-center ">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setUserData((prev) => ({
+                                                ...prev,
+                                                max_group_count: Math.max(1, prev.max_group_count - 1)
+                                            }))
+                                        }
+                                        className={`
+                                            ${ theme == "dark" ? "bg-gray-800 hover:bg-gray-700 text-gray-50" : "bg-gray-200 hover:bg-gray-300" }
+                                            px-2 py-1 rounded 
+                                        `}
+                                    >
+                                        -
+                                    </button>
+                                    <span className="w-8 text-center">{userData.max_group_count}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setUserData((prev) => ({
+                                                ...prev,
+                                                max_group_count: prev.max_group_count + 1
+                                            }))
+                                        }
+                                        className={`
+                                            ${ theme == "dark" ? "bg-gray-800 hover:bg-gray-700 text-gray-50" : "bg-gray-200 hover:bg-gray-300" }
+                                                px-2 py-1 bg-gray-200 rounded hover:bg-gray-300
+                                            `}
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -221,7 +278,7 @@ const EditUser = ({ userId, onClose, after }) => {
                         
 
                         <div className="flex justify-end">
-                            <button type="submit" className="mt-5 bg-black text-white py-1 px-2 rounded f-13">
+                            <button type="submit" className="mt-5 bg-green-600 hover:bg-green-700 text-white py-1 px-2 rounded f-13">
                                 {loading ? "Saving..." : "Save Changes"}
                             </button>
                         </div>

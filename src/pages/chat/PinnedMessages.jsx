@@ -37,18 +37,20 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
           transition={{ type: "tween", duration: 0.3 }}
          className={`fixed top-0 left-0 w-[24.6%] h-[100vh] ${theme == "dark" ? "bg-gray-800 text-white mw-dark" : "bg-white text-black"} shadow-xl border-l border-gray-300 z-[100] overflow-y-auto prose`}
         >
-          <div className="p-4 border-b font-semibold text-lg bg-gray-300 flex justify-between items-center">
+          <div className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
+            ${theme == "dark" ? "bg-gray-500 text-white mw-dark" : "bg-gray-300 text-black"}
+          `}>
             <span>Pinned Messages</span>
             <button
               onClick={onClose}
-              className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
+              className="text-sm text-white bg-orange-600 px-1 py-1 rounded  hover:bg-orange-800"
             >
               <X size={13}/>
             </button>
           </div>
 
           {loading ? (
-            <div className="p-4 text-sm ">Loading...</div>
+            <div className="p-4 ">Loading...</div>
           ) : messages.length > 0 ? (
             messages.map((msg) => (
               <div
@@ -57,7 +59,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                     console.log("Clicked pinned message:", msg)
                     setSelectedMessage(msg)
                 }}
-                className={`p-3  border-b text-sm ${theme == "dark" ? " text-white hover:bg-gray-700" : "text-gray-800 hover:bg-gray-100"} cursor-pointer mw-dark`}
+                className={`p-3 f-13 border-b  ${theme == "dark" ? " text-white hover:bg-gray-700  mw-dark" : "text-gray-800 hover:bg-gray-100"} cursor-pointer `}
               >
                 <div className="flex items-center gap-2 mb-1">
                   {msg.profile_pic ? (
@@ -77,13 +79,13 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                   </div>
                 </div>
                 <div
-                  className="text-sm"
+                  className=""
                   dangerouslySetInnerHTML={{ __html: msg.message }}
                 />
               </div>
             ))
           ) : (
-            <div className="p-4 text-sm text-gray-500 italic">
+            <div className="p-4 text-gray-500 italic">
               No pinned messages found.
             </div>
           )}

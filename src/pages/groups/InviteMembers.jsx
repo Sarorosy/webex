@@ -150,7 +150,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
           <h2 className="text-lg font-semibold text-white">Invite Members</h2>
           <div>
             <button
-            className="hover:bg-gray-100 text-white hover:text-black py-1 px-2 rounded"
+            className="hover:bg-gray-100 text-white hover:text-black py-1 px-1 rounded"
             onClick={onClose} // Close modal without doing anything
           >
             <X size={15}  />

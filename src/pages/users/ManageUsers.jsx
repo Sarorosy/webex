@@ -53,7 +53,7 @@ const ManageUsers = ({ onClose }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { user } = useAuth();
+  const { user,theme } = useAuth();
 
   // Subadmin permissions state
   const [markingSubadmin, setMarkingSubadmin] = useState(false);
@@ -260,11 +260,13 @@ const ManageUsers = ({ onClose }) => {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "tween", duration: 0.3 }}
-        className="fixed top-0 left-0 h-full bg-white shadow-lg max-w-xl w-full z-50"
+        className={`fixed top-0 left-0 w-[40%]  ${theme == "dark" ? "bg-gray-800 text-white mw-dark" : "bg-white text-black"} shadow-xl border-r border-gray-300 z-[100] overflow-y-auto prose`}
       >
-        <div className="">
+        
           
-          <div className="flex items-center justify-between  px-4 py-3 bg-gray-300 sticky top-0">
+           <div className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
+            ${theme == "dark" ? "bg-gray-500 text-white mw-dark" : "bg-gray-300 text-black"}
+          `}>
             <div className="">
               <h4 className="text-lg font-semibold">Users</h4>
             </div>
@@ -285,7 +287,7 @@ const ManageUsers = ({ onClose }) => {
                 <input
                   type="text"
                   placeholder="Search users..."
-                  className="bg-transparent outline-none f-13"
+                  className="bg-transparent outline-none f-13 text-gray-800"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -314,7 +316,10 @@ const ManageUsers = ({ onClose }) => {
                           markingSubadmin && markingUserId !== u.id
                             ? "hidden"
                             : ""
-                        }`}
+                          }
+                          ${theme == "dark" ? "bg-gray-700 " : "bg-white text-black"} 
+                        
+                        `}
                       >
                         <div className="flex gap-2">
                           <div className="text-center">
@@ -343,22 +348,15 @@ const ManageUsers = ({ onClose }) => {
                           </div>
                           <div className="flex flex-col gap-2">
                             <div
-                              className="font-medium"
-                              style={{
-                                color: u.trashed == 1 ? "red" : "#4b5563",
-                                textDecoration:
-                                  u.trashed == 1 ? "line-through" : "",
-                              }}
+                              
+                              className={`${theme == "dark" ? "text-white" : ""} font-medium `}
+                              
                             >
                               {u.name}
                             </div>
                             <div
                               className="flex flex-col justify-start items-start"
-                              style={{
-                                color: u.trashed == 1 ? "red" : "#4b5563",
-                                textDecoration:
-                                  u.trashed == 1 ? "line-through" : "",
-                              }}
+                              
                             >
                               <span className="flex items-center f-11">
                                 <Mail size={13} className="mr-2 font-bold" />{" "}
@@ -374,21 +372,13 @@ const ManageUsers = ({ onClose }) => {
                                     : "Service Provider"
                                 }
                                 className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
-                                style={{
-                                  color: u.trashed == 1 ? "red" : "#fff",
-                                  textDecoration:
-                                    u.trashed == 1 ? "line-through" : "",
-                                }}
+                                
                               >
                                 {u.user_panel}
                               </div>
                               <div
                                 className="bg-green-600 text-white px-1 py-0.5 rounded f-11"
-                                style={{
-                                  color: u.trashed == 1 ? "red" : "#fff",
-                                  textDecoration:
-                                    u.trashed == 1 ? "line-through" : "",
-                                }}
+                                
                               >
                                 {u.seniority == "junior"
                                   ? "Associate"
@@ -396,11 +386,7 @@ const ManageUsers = ({ onClose }) => {
                               </div>
                               <div
                                 className="flex items-center"
-                                style={{
-                                  color: u.trashed == 1 ? "red" : "#4b5563",
-                                  textDecoration:
-                                    u.trashed == 1 ? "line-through" : "",
-                                }}
+                                
                               >
                                 {u.user_type}
 
@@ -577,6 +563,7 @@ const ManageUsers = ({ onClose }) => {
                                     title="Edit Bot Messages"
                                     onClick={() => handleBotMessageClick(u)}
                                     className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1 border rounded"
+                                    style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                                   >
                                     <Bot size={15} />
                                   </button>
@@ -587,6 +574,7 @@ const ManageUsers = ({ onClose }) => {
                                   <button
                                     onClick={() => handleEditClick(u.id)}
                                     className="text-blue-500 hover:text-blue-700 p-1 border rounded"
+                                    style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                                   >
                                     <Pencil size={13} />
                                   </button>
@@ -597,6 +585,7 @@ const ManageUsers = ({ onClose }) => {
                                   <button
                                     onClick={() => handleDelete(u.id)}
                                     className="text-red-500 hover:text-red-700 p-1 border rounded"
+                                    style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                                   >
                                     <Trash size={13} />
                                   </button>
@@ -610,6 +599,7 @@ const ManageUsers = ({ onClose }) => {
                                       goToChat(u);
                                     }}
                                     className="text-orange-500 hover:text-orange-700 flex items-center gap-1 border p-1 rounded f-11"
+                                    style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                                   >
                                     <MessagesSquare size={11} /> View Chats
                                   </button>
@@ -620,6 +610,7 @@ const ManageUsers = ({ onClose }) => {
                                       toggleUserType(u.id, u.user_type)
                                     }
                                     className="text-purple-500 hover:text-purple-700 border p-1 rounded f-11"
+                                    style={{background : `${theme == "dark" ? "#f6f6f6" : ""}`}}
                                   >
                                     {u.user_type === "user"
                                       ? "Mark as Subadmin"
@@ -644,7 +635,7 @@ const ManageUsers = ({ onClose }) => {
                   )}
                 </div>
                 {totalPages > 1 && (
-                  <div className="w-full flex justify-start items-center mb-12 gap-2 overflow-x-auto">
+                  <div className="w-full flex justify-start items-center gap-2 overflow-x-auto white-space-nowrap pb-4 pt-3">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage == 1}
@@ -715,7 +706,7 @@ const ManageUsers = ({ onClose }) => {
               onClose={() => setIsModalOpen(false)}
             />
           )}
-        </div>
+        
       </motion.div>
     </AnimatePresence>
   );

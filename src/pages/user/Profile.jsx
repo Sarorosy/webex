@@ -26,19 +26,19 @@ const Profile = ({ onClose }) => {
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ duration: 0.2 }}
         className={`relative w-full max-w-3xl max-h-[90vh] ${
-          theme == "dark" ? "bg-gray-500 text-black" : "bg-white"
-        } rounded shadow-xl overflow-y-auto `}
+          theme == "dark" ? "bg-gray-200 text-black" : "bg-white"
+        } rounded-lg shadow-xl overflow-y-auto `}
       >
         {/* HEADER */}
         <div
-          className={`flex items-center justify-between mb-2 px-4 py-3 bg-gray-300  sticky top-0 z-50`}
+          className={`flex justify-between items-center px-4 py-3 bg-orange-500  rounded-t-lg`}
         >
           <h4 className="text-md  flex gap-2">
             <button
               className={`px-2 flex items-center py-1 rounded-lg transition duration-200 
                 ${
                   tab === "profile"
-                    ? "bg-orange-600 text-white font-semibold"
+                    ? "bg-gray-800 text-white font-semibold"
                     : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"
                 }`}
               onClick={() => setTab("profile")}
@@ -49,7 +49,7 @@ const Profile = ({ onClose }) => {
               className={`px-2 flex items-center py-1 rounded-lg transition duration-200 
                 ${
                   tab === "settings"
-                    ? "bg-orange-600 text-white font-semibold "
+                    ? "bg-gray-800 text-white font-semibold "
                     : "bg-gray-100 text-gray-800 font-light hover:bg-gray-200"
                 }`}
               onClick={() => setTab("settings")}
@@ -60,13 +60,13 @@ const Profile = ({ onClose }) => {
 
           <button
             onClick={onClose}
-            className="text-sm text-white bg-orange-600 px-1 py-1 rounded"
+            className="text-sm text-black bg-gray-100 hover:text-white hover:bg-gray-900 px-1 py-1 rounded"
           >
             <X size={13} />
           </button>
         </div>
         {tab == "profile" ? (
-          <div className="flex items-start justify-center p-3 gap-2 h-lg min-h-lg max-h-lg">
+          <div className="flex items-start justify-center p-4 gap-2 h-lg min-h-lg max-h-lg">
             <div className="flex flex-col w-[400px] border h-full">
               <div className="profile-bg-set"></div>
               <div className="bg-white p-6 pb-4 flex flex-col items-center text-center ">
