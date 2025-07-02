@@ -45,6 +45,7 @@ import TotalSearch from "../pages/chat/TotalSearch.jsx";
 import ConfirmationModal from "./ConfirmationModal.jsx";
 import notificationsound from "../assets/notification-sound.mp3";
 import StatusPage from "../pages/status/StatusPage.jsx";
+import AddStatus from "../pages/status/AddStatus.jsx";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -371,7 +372,10 @@ export default function Header() {
     };
   }, [user?.id, selectedUser]);
 
-  const [statusPageOpen, setStatusPageOpen] = useState(false)
+  const {addStatusOpen, setAddStatusOpen} = useSelectedUser();
+  const { selectedStatus, setSelectedStatus } = useSelectedUser();
+  const { selectedGroupForStatus, setSelectedGroupForStatus } = useSelectedUser();
+
 
 
 
@@ -628,8 +632,11 @@ export default function Header() {
           />
         )} */}
 
-        {statusPageOpen && (
-          <StatusPage onClose={()=>{setStatusPageOpen(false)}} />
+        {addStatusOpen && (
+          <AddStatus onClose={()=>{setAddStatusOpen(false)}} />
+        )}
+        {selectedStatus && (
+          <StatusPage onClose={()=>{setSelectedStatus(null)}} statuses={selectedStatus} selectedGroupForStatus={selectedGroupForStatus} />
         )}
         <ReminderPopup />
       </AnimatePresence>

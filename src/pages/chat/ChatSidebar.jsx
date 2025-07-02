@@ -17,6 +17,7 @@ import {
   Volume2,
   Cake,
   RefreshCcw,
+  Ban,
 } from "lucide-react"; // Lucide icons
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
@@ -39,6 +40,9 @@ const ChatSidebar = ({
   setNotificationClickUser,
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { selectedStatus, setSelectedStatus } = useSelectedUser();
+  const { selectedGroupForStatus, setSelectedGroupForStatus } =
+    useSelectedUser();
   const { searchOpen, setSearchOpen } = useSelectedUser();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -496,7 +500,6 @@ const ChatSidebar = ({
             : updatedChats[index]?.is_all ||
               (Array.isArray(msg.mentioned_users) &&
                 msg.mentioned_users.includes("all")),
-          
         };
 
         const updated = updatedChats.splice(index, 1)[0];
@@ -558,6 +561,77 @@ const ChatSidebar = ({
       }
     };
 
+    const handleNewStatus = (incomingStatus) => {
+      if (!incomingStatus || !incomingStatus.id) return;
+      // Clone status data (ensures no mutation)
+      const statusData = { ...incomingStatus };
+
+      setChats((prevChats) => {
+        const updatedChats = prevChats.map((chat) => {
+          const chatIdStr = String(chat.id);
+          const groupIdStr = String(statusData.group_id);
+
+          if (chat.type === "group" && chatIdStr === groupIdStr) {
+            const updatedStatuses = [...(chat.status || []), statusData];
+
+            const updatedChat = {
+              ...chat,
+              is_status: 1,
+              status_count: (chat.status_count || 0) + 1,
+              status: updatedStatuses,
+            };
+            return updatedChat;
+          }
+
+          return chat;
+        });
+
+        return updatedChats;
+      });
+    };
+
+    const handleStatusDeleted = ({ id, group_id }) => {
+      if (!id || !group_id) return;
+
+      console.log("Status dleted", id, group_id);
+
+      setChats((prevChats) => {
+        return prevChats.map((chat) => {
+          if (chat.type === "group" && String(chat.id) === String(group_id)) {
+            const updatedStatuses = (chat.status || []).filter(
+              (status) => String(status.id) !== String(id)
+            );
+
+            return {
+              ...chat,
+              status: updatedStatuses,
+              status_count:
+                (chat.status_count || 0) > 0 ? chat.status_count - 1 : 0,
+              is_status: updatedStatuses.length > 0 ? 1 : 0,
+            };
+          }
+          return chat;
+        });
+      });
+    };
+
+    const handleChatOpened = ({ chatId, chatType, userId }) => {
+      setChats((prevChats) =>
+        prevChats.map((chat) => {
+          if (chat.id === chatId && chat.type === chatType) {
+            return {
+              ...chat,
+              read_status: 0,
+              unread_count: 0,
+              is_mentioned: false,
+              is_all: false,
+            };
+          }
+          return chat;
+        })
+      );
+    };
+
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
     });
@@ -565,11 +639,17 @@ const ChatSidebar = ({
     socket.on("user_loggedin", handleUserLoggedIn);
     socket.on("availability_updated", handleAvailabilityUpdated);
     socket.on("group_members_added", handleGroupMembersAdded);
+    socket.on("new_status", handleNewStatus);
+    socket.on("status_deleted", handleStatusDeleted);
+    socket.on("chat_opened", handleChatOpened);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
       socket.off("availability_updated", handleAvailabilityUpdated);
       socket.off("group_members_added", handleGroupMembersAdded);
+      socket.off("new_status", handleNewStatus);
+      socket.off("status_deleted", handleStatusDeleted);
+      socket.off("chat_opened", handleChatOpened);
     };
   }, [user, chats]);
 
@@ -1062,6 +1142,13 @@ const ChatSidebar = ({
                   <div
                     onClick={() => {
                       onSelect(chat);
+
+                      const socket = getSocket();
+                      socket.emit("chat_opened", {
+                        chatId: chat.id,
+                        chatType: chat.type,
+                        userId: user.id,
+                      });
                       const updatedChats = chats.map((c) => {
                         if (c.id === chat.id && c.type === chat.type) {
                           return {
@@ -1095,18 +1182,40 @@ const ChatSidebar = ({
                     <div className="flex items-center gap-2 overflow-hidden">
                       <div>
                         <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center relative">
-                          {chat.profile_pic ? (
-                            <img
-                              src={
-                                "https://rapidcollaborate.in/ccp" +
-                                chat.profile_pic
+                          <div
+                            className={`relative w-8 h-8 flex items-center justify-center rounded-full
+                              ${
+                                chat.type === "group" && chat.is_status === 1
+                                  ? "border-2 border-blue-500 cursor-pointer"
+                                  : ""
                               }
-                              alt="Profile"
-                              className="w-8 h-8 rounded-full mx-auto object-cover border"
-                            />
-                          ) : (
-                            chat.name[0]
-                          )}
+                            `}
+                            onClick={(e) => {
+                              if (
+                                chat.type === "group" &&
+                                chat.is_status === 1
+                              ) {
+                                e.stopPropagation();
+                                setSelectedStatus(chat.status ?? []);
+                                setSelectedGroupForStatus(chat.id);
+                              }
+                            }}
+                          >
+                            {chat.profile_pic ? (
+                              <img
+                                src={
+                                  "https://rapidcollaborate.in/ccp" +
+                                  chat.profile_pic
+                                }
+                                alt="Profile"
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-sm">
+                                {chat.name[0].toUpperCase()}
+                              </span>
+                            )}
+                          </div>
                           {onlineUserIds.includes(chat.id) &&
                             !chat.availability &&
                             chat.type == "user" && (
@@ -1142,6 +1251,19 @@ const ChatSidebar = ({
                                 />
                               </span>
                             )}
+
+                          {chat.type === "group" && chat.is_status === 1 && (
+                            <span
+                              className="absolute top-0 -right-1 w-3 h-3 border-2 border-white rounded-full bg-blue-600 cursor-pointer z-10"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent parent's onClick
+                                setSelectedStatus(chat.status ?? []);
+                                setSelectedGroupForStatus(chat.id);
+                              }}
+                              data-tooltip-id="my-tooltip"
+                              data-tooltip-content="Group has a announcement"
+                            />
+                          )}
                         </div>
                       </div>
                       <span
@@ -1156,13 +1278,25 @@ const ChatSidebar = ({
                           ? chat.name + " (You)"
                           : chat.name}
                         <p
-                          title={getPlainPreview(
-                            chat.last_message,
-                            100000000000000
-                          )}
-                          className={`f-10 ${theme == "light" ? "text-gray-800" : "text-gray-400"}`}
+                          title={
+                            chat.last_message_deleted == 1
+                              ? "message deleted"
+                              : getPlainPreview(
+                                  chat.last_message,
+                                  100000000000000
+                                )
+                          }
+                          className={`f-10 ${
+                            theme == "light" ? "text-gray-800" : "text-gray-400"
+                          }`}
                         >
-                          {getPlainPreview(chat.last_message)}
+                          {chat.last_message_deleted == 1 ? (
+                            <p className="flex items-center">
+                              <Ban size={8} className="mr-1" /> message deleted{" "}
+                            </p>
+                          ) : (
+                            getPlainPreview(chat.last_message)
+                          )}
                         </p>
                       </span>
 

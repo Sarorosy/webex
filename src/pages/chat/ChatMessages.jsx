@@ -668,11 +668,11 @@ const ChatMessages = ({
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
-            selmsg.sender_id
+            selmsg.receiver_id
           );
           fetchAroundMessageUrl.searchParams.append(
             "user_type",
-            selmsg.group_id ? "group" : "user"
+            selmsg.user_type ?? selmsg.group_id ? "group" : "user"
           );
           fetchAroundMessageUrl.searchParams.append(
             "receiver_id",

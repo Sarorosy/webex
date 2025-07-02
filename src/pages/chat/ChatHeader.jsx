@@ -18,7 +18,7 @@ import { connectSocket, getSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import axios from "axios";
 import ScreenSharing from "../../components/ScreenSharing";
-import TypingIndicator from './TypingIndicator';
+import TypingIndicator from "./TypingIndicator";
 
 const ChatHeader = ({
   selectedUser,
@@ -34,8 +34,7 @@ const ChatHeader = ({
   setLeftGroupOpen,
   chatTab,
   setChatTab,
-  setSearchLoading
-  
+  setSearchLoading,
 }) => {
   const { user, theme } = useAuth();
 
@@ -43,6 +42,8 @@ const ChatHeader = ({
 
   const [isFavourite, setIsFavourite] = useState(false);
   const { setSelectedUser } = useSelectedUser();
+   const { selectedStatus, setSelectedStatus } = useSelectedUser();
+   const { selectedGroupForStatus, setSelectedGroupForStatus } = useSelectedUser();
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -53,7 +54,7 @@ const ChatHeader = ({
         setSelectedUser((prev) => ({
           ...prev,
           name: data.name,
-          group_type:data.group_type
+          group_type: data.group_type,
         }));
       }
     };
@@ -87,20 +88,17 @@ const ChatHeader = ({
       }
 
       try {
-        setSearchLoading(true)
-        const res = await fetch(
-          "https://webexback-06cc.onrender.com/api/messages/find",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: selectedUser?.type,
-              query,
-              logged_in_userid: user.id,
-              find_in_userid: selectedUser?.id,
-            }),
-          }
-        );
+        setSearchLoading(true);
+        const res = await fetch("https://webexback-06cc.onrender.com/api/messages/find", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: selectedUser?.type,
+            query,
+            logged_in_userid: user.id,
+            find_in_userid: selectedUser?.id,
+          }),
+        });
 
         const data = await res.json();
         if (res.ok) {
@@ -108,7 +106,7 @@ const ChatHeader = ({
         }
       } catch (err) {
         console.error(err);
-      }finally{
+      } finally {
         setSearchLoading(false);
       }
     };
@@ -119,18 +117,15 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/favourite",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: selectedUser?.id,
-            user_id: user.id,
-            type: selectedUser?.type,
-          }),
-        }
-      );
+      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/favourite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selectedUser?.id,
+          user_id: user.id,
+          type: selectedUser?.type,
+        }),
+      });
 
       const data = await res.json();
       if (res.ok) {
@@ -160,7 +155,7 @@ const ChatHeader = ({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div className="absolute w-full z-[99]">
+    <div className="absolute w-full z-[98]">
       {/* HEADER */}
       <div
         className={`flex flex-col md:flex-row items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
@@ -170,23 +165,56 @@ const ChatHeader = ({
         }  shadow-inner`}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {selectedUser?.profile_pic ? (
-              <img
-                src={
-                  selectedUser.profile_pic.startsWith("http")
-                    ? selectedUser.profile_pic
-                    : "https://rapidcollaborate.in/ccp" +
-                      selectedUser.profile_pic
+          <div className="flex items-center gap-2 relative">
+            <div
+              className={`relative w-8 h-8 flex items-center justify-center rounded-full z-49
+      ${
+        selectedUser?.type === "group" && selectedUser?.is_status === 1
+          ? "border-2 border-blue-500 cursor-pointer"
+          : ""
+      }
+    `}
+              onClick={(e) => {
+                if (
+                  selectedUser?.type === "group" &&
+                  selectedUser?.is_status === 1
+                ) {
+                  e.stopPropagation();
+                  setSelectedStatus(selectedUser?.status ?? []);
+                  setSelectedGroupForStatus(selectedUser?.id)
                 }
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border"
-              />
-            ) : (
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-400 text-white text-lg font-bold shadow">
-                {selectedUser?.name?.charAt(0).toUpperCase() || "U"}
-              </div>
-            )}
+              }}
+            >
+              {selectedUser?.profile_pic ? (
+                <img
+                  src={
+                    selectedUser.profile_pic.startsWith("http")
+                      ? selectedUser.profile_pic
+                      : "https://rapidcollaborate.in/ccp" +
+                        selectedUser.profile_pic
+                  }
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className={`flex items-center justify-center ${
+                    selectedUser?.type === "group" &&
+                    selectedUser?.is_status === 1
+                      ? "w-7 h-7"
+                      : "w-8 h-8"
+                  } rounded-full bg-orange-500 text-white text-lg font-bold shadow`}
+                >
+                  {selectedUser?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+              )}
+
+              {/* Small status dot */}
+              {selectedUser?.type === "group" &&
+                selectedUser?.is_status === 1 && (
+                  <span className="absolute top-0 -right-1 w-3 h-3 border-2 border-white rounded-full bg-blue-600 cursor-pointer z-50" />
+                )}
+            </div>
           </div>
 
           <h2 className="text-lg font-bold  tracking-wide flex flex-col ml-2">
@@ -210,8 +238,6 @@ const ChatHeader = ({
               // <TypingIndicator />
             )} */}
             {/* <AgoraCall /> */}
-
-            
           </h2>
 
           {/* {selectedUser?.office_name && selectedUser?.city_name && (
@@ -221,15 +247,17 @@ const ChatHeader = ({
               {selectedUser?.city_name ? ", " + selectedUser?.city_name : null}
             </p>
           )} */}
-          
-          
         </div>
 
         {/* Right Section */}
         <div className="flex justify-between items-center gap-3">
           {selectedUser?.type == "group" && selectedUser?.group_type && (
-              <div className={`typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11 text-black`}>{selectedUser?.group_type} group</div>
-            )}
+            <div
+              className={`typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11 text-black`}
+            >
+              {selectedUser?.group_type} group
+            </div>
+          )}
           {searchOpen ? (
             <div className="flex items-center">
               <input
@@ -282,14 +310,14 @@ const ChatHeader = ({
               </button>
             </div>
           )}
-          {selectedUser?.type == "user"  && (
+          {selectedUser?.type == "user" && (
             <button
               onClick={sendScreenShareRequest}
               data-tooltip-id="my-tooltip"
-                data-tooltip-content="Share your screen"
+              data-tooltip-content="Share your screen"
               className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
             >
-              <ScreenShare size={13}  />
+              <ScreenShare size={13} />
             </button>
           )}
 

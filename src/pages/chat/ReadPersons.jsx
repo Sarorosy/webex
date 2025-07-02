@@ -2,14 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { getSocket, connectSocket } from "../../utils/Socket";
 import { useAuth } from "../../utils/idb";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 
 const ReadPersons = ({ messageId }) => {
   const [readUsers, setReadUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const { user, theme } = useAuth();
-  const hoverRef = useRef(null);
-  const [hovering, setHovering] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const triggerRef = useRef(null);
 
   const fetchReadUsers = async (load = true) => {
     try {
@@ -26,51 +27,56 @@ const ReadPersons = ({ messageId }) => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (!messageId) return;
-
     fetchReadUsers(true);
   }, [messageId]);
 
   useEffect(() => {
     if (!messageId) return;
-
     connectSocket(user?.id);
     const socket = getSocket();
 
     const handleReadMessage = (payload) => {
-      // If the read message affects this messageId, refetch
       if (payload?.message_ids?.includes(messageId)) {
         fetchReadUsers(false);
       }
     };
 
     socket.on("read_message", handleReadMessage);
-
     return () => {
       socket.off("read_message", handleReadMessage);
     };
   }, [messageId]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        !triggerRef.current?.contains(event.target)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const formatReadTime = (readAt) => {
     if (!readAt) return "";
-
     const readDate = new Date(readAt);
     const now = new Date();
     const diffInSeconds = (now - readDate) / 1000;
-
-    if (diffInSeconds < 60) {
-      return "just now";
-    } else {
-      // Example: Jun 2, 4:58 PM
-      return format(readDate, "MMM d, h:mm a");
-    }
+    return diffInSeconds < 60 ? "just now" : format(readDate, "MMM d, h:mm a");
   };
 
   if (loading) return <p className="text-gray-500 text-sm text-center">...</p>;
-  const otherUsers = readUsers.filter((u) => u.id !== user?.id);
 
+  const otherUsers = readUsers.filter((u) => u.id !== user?.id);
   if (otherUsers.length === 0) return null;
+
   const displayUsers = otherUsers.slice(0, 10);
   const remainingUsers = otherUsers.slice(10);
 
@@ -81,10 +87,10 @@ const ReadPersons = ({ messageId }) => {
         {displayUsers.map((user) => (
           <div
             key={user.id}
-             data-tooltip-id="my-tooltip"
-              data-tooltip-content={`${user.name} . ${formatReadTime(user.read_at)}`}
             className="w-6 h-6 rounded-full overflow-hidden border border-gray-900"
             title={`${user.name} • ${formatReadTime(user.read_at)}`}
+            data-tooltip-content={`${user.name} • ${formatReadTime(user.read_at)}`}
+            data-tooltip-id="my-tooltip"
           >
             {user.profile_pic ? (
               <img
@@ -102,15 +108,19 @@ const ReadPersons = ({ messageId }) => {
 
         {remainingUsers.length > 0 && (
           <div
+            ref={triggerRef}
             className="relative w-6 h-6 rounded-full bg-gray-300 text-xs flex items-center justify-center cursor-pointer border border-gray-900"
-            onMouseEnter={() => setHovering(true)}
-            onMouseLeave={() => setHovering(false)}
+            onClick={() => setShowDropdown((prev) => !prev)}
           >
             +{remainingUsers.length}
-            {hovering && (
+            {showDropdown && (
               <div
-                ref={hoverRef}
-                className={` absolute bottom-8 -right-20 ${theme == "dark" ? "bg-gray-500 text-white" : "bg-white"} border border-gray-300 shadow-lg rounded-md w-48 max-h-64 overflow-y-auto z-50 p-2`}
+                ref={dropdownRef}
+                className={`absolute bottom-8 -right-20 z-50 w-48 max-h-64 overflow-y-auto p-2 rounded-md border shadow-lg ${
+                  theme === "dark"
+                    ? "bg-gray-600 text-white border-gray-400"
+                    : "bg-white border-gray-300"
+                }`}
               >
                 {remainingUsers.map((user) => (
                   <div key={user.id} className="flex items-center gap-2 mb-2">
@@ -129,7 +139,11 @@ const ReadPersons = ({ messageId }) => {
                     </div>
                     <div className="text-xs">
                       <p className="font-medium">{user.name}</p>
-                      <p className={` ${theme == "dark" ? "text-gray-300" : "text-gray-500"}`}>
+                      <p
+                        className={`${
+                          theme === "dark" ? "text-gray-300" : "text-gray-500"
+                        }`}
+                      >
                         {formatReadTime(user.read_at)}
                       </p>
                     </div>

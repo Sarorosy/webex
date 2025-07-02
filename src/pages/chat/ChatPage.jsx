@@ -10,6 +10,7 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 import toast from "react-hot-toast";
 import StartConversation from "./StartConversation";
 import ScreenSharing from "../../components/ScreenSharing";
+import { getSocket, connectSocket } from "../../utils/Socket";
 
 const ChatPage = () => {
   const { selectedUser, setSelectedUser } = useSelectedUser();
@@ -48,7 +49,7 @@ const ChatPage = () => {
     const handleMsg = (event) => {
       if (event.data?.type === "open_chat") {
         const data = event.data.payload;
-        console.log(data)
+        console.log(data);
         setNotificationClickUser({
           id: data.receiver_id || data.sender_id,
           type: data.receiver_id ? "group" : "user",
@@ -64,6 +65,67 @@ const ChatPage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user || !selectedUser) return;
+
+    connectSocket(user.id);
+    const socket = getSocket();
+
+    const handleNewStatus = (incomingStatus) => {
+
+      if (!incomingStatus || !incomingStatus.id) return;
+      // Clone status data (ensures no mutation)
+      const statusData = { ...incomingStatus };
+
+      if (
+        selectedUser &&
+        selectedUser.type === "group" &&
+        String(selectedUser.id) === String(statusData.group_id)
+      ) {
+        const updatedSelected = {
+          ...selectedUser,
+          is_status: 1,
+          status_count: (selectedUser.status_count || 0) + 1,
+          status: [...(selectedUser.status || []), statusData],
+        };
+
+        setSelectedUser(updatedSelected);
+      } else {
+      }
+    };
+
+    const handleStatusDeleted = ({ id, group_id }) => {
+    if (
+      selectedUser &&
+      selectedUser.type === "group" &&
+      String(selectedUser.id) === String(group_id)
+    ) {
+      const updatedStatuses = (selectedUser.status || []).filter(
+        (status) => String(status.id) !== String(id)
+      );
+
+      const updatedSelected = {
+        ...selectedUser,
+        status: updatedStatuses,
+        status_count:
+          (selectedUser.status_count || 0) > 0
+            ? selectedUser.status_count - 1
+            : 0,
+        is_status: updatedStatuses.length > 0 ? 1 : 0,
+      };
+
+      setSelectedUser(updatedSelected);
+    }
+  };
+
+    socket.on("new_status", handleNewStatus);
+    socket.on("status_deleted", handleStatusDeleted);
+
+    return () => {
+      socket.off("new_status", handleNewStatus);
+      socket.off("status_deleted", handleStatusDeleted);
+    };
+  }, [user, selectedUser]);
 
   const [leftGroupOpen, setLeftGroupOpen] = useState(false);
 
@@ -80,7 +142,7 @@ const ChatPage = () => {
             delete_user_name: user?.name,
             user_id: user?.id,
             user_name: user?.name,
-            post_user_id : user?.id,
+            post_user_id: user?.id,
             own: true,
             group_id: selectedUser?.id,
           }),
@@ -91,8 +153,8 @@ const ChatPage = () => {
         setLeftGroupOpen(false);
         setSelectedUser(null);
         toast.success("Success");
-      }else{
-        toast.error(data.message  ||"Error");
+      } else {
+        toast.error(data.message || "Error");
       }
     } catch (err) {
       console.error(err);
@@ -119,9 +181,13 @@ const ChatPage = () => {
             setLeftGroupOpen={setLeftGroupOpen}
           />
         ) : (
-          <div className={`flex flex-col flex-1 ${theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"} rounded m-2 justify-between`}>
-           <StartConversation />
-            </div>
+          <div
+            className={`flex flex-col flex-1 ${
+              theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"
+            } rounded m-2 justify-between`}
+          >
+            <StartConversation />
+          </div>
         )}
       </div>
 

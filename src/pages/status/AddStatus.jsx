@@ -1,18 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import EmojiPicker from 'emoji-picker-react';
-import { Smile, Send, Palette, X } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import EmojiPicker from "emoji-picker-react";
+import { Smile, Send, Palette, X, ImagePlus, ImageOff } from "lucide-react";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
+import toast from "react-hot-toast";
+import { useAuth } from "../../utils/idb";
 
-const COLORS = ['#1e1e1e', '#075E54', '#128C7E', '#25D366', '#ECE5DD', '#FFC107', '#FF5722'];
+const COLORS = [
+  "#1e1e1e",
+  "#075E54",
+  "#128C7E",
+  "#25D366",
+  "#ECE5DD",
+  "#FFC107",
+  "#FF5722",
+];
 
 const AddStatus = ({ onClose }) => {
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
-  const [bgColor, setBgColor] = useState('#075E54');
+  const [bgColor, setBgColor] = useState("#075E54");
+  const [image, setImage] = useState(null);
+  const [isFile, setIsFile] = useState(false);
+  const [imageFile, setImageFile] = useState(null); // real file
+  const { user } = useAuth();
 
+  const { selectedGroupForStatus, setSelectedGroupForStatus } =
+    useSelectedUser();
   const emojiRef = useRef(null);
 
-  // Close emoji picker on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (emojiRef.current && !emojiRef.current.contains(e.target)) {
@@ -21,11 +37,11 @@ const AddStatus = ({ onClose }) => {
     };
 
     if (showEmoji) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showEmoji]);
 
@@ -33,10 +49,46 @@ const AddStatus = ({ onClose }) => {
     setStatus((prev) => prev + emojiData.emoji);
   };
 
-  const handleSend = () => {
-    if (status.trim()) {
-      console.log('Sending status:', status);
-      onClose();
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      setImageFile(file); // store the file object for backend
+      setImage(URL.createObjectURL(file)); // preview only
+      setIsFile(true);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!status.trim() || !isFile) {
+      toast.error("Cant add empty status");
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("sender_id", user?.id);
+      formData.append("sender_name", user?.name);
+      formData.append("profile_pic", user?.profile_pic);
+      formData.append("group_id", selectedGroupForStatus);
+      formData.append("is_file", isFile ? 1 : 0);
+      if (isFile && imageFile) {
+        formData.append("file", imageFile); // Correct field name for multer
+      }
+      formData.append("announcement", status);
+      formData.append("bgcolor", bgColor);
+
+      const response = await fetch("https://webexback-06cc.onrender.com/api/status/add", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.status) {
+        toast.success("Added");
+        onClose();
+      } else {
+        toast.error(data.message || "Failed to add");
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -45,23 +97,54 @@ const AddStatus = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed inset-0 z-50"
+      transition={{ type: "tween", duration: 0.3 }}
+      className="fixed inset-0 z-[999]"
     >
-      <div className="w-full h-full relative" style={{ backgroundColor: bgColor }}>
+      <div
+        className="w-full h-full relative z-[99999]"
+        style={{ backgroundColor: bgColor }}
+      >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-white text-2xl z-20"
+          className="absolute top-4 left-4 text-white text-2xl"
         >
           <X />
         </button>
 
         {/* Top Controls */}
-        <div className="absolute top-4 right-4 flex items-center gap-4 z-20">
-          <button onClick={() => setShowEmoji((prev) => !prev)} className="text-white">
+        <div className="absolute top-4 right-4 flex items-center gap-4">
+          {isFile ? (
+            <button
+              onClick={() => {
+                URL.revokeObjectURL(image); // free memory
+                setImage(null);
+                setImageFile(null);
+                setIsFile(false);
+              }}
+              className=" text-red-600 rounded-full transition"
+            >
+              <ImageOff size={24} />
+            </button>
+          ) : (
+            <label className="text-white cursor-pointer">
+              <ImagePlus />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </label>
+          )}
+
+          <button
+            onClick={() => setShowEmoji((prev) => !prev)}
+            className="text-white"
+          >
             <Smile />
           </button>
+
           <div className="relative group">
             <button className="text-white">
               <Palette />
@@ -81,22 +164,32 @@ const AddStatus = ({ onClose }) => {
 
         {/* Emoji Picker */}
         {showEmoji && (
-          <div
-            className="absolute bottom-24 right-4 z-30"
-            ref={emojiRef}
-          >
+          <div className="absolute bottom-24 right-4" ref={emojiRef}>
             <EmojiPicker theme="dark" onEmojiClick={handleEmojiClick} />
           </div>
         )}
 
-        {/* Status Input */}
-        <div className="flex items-center justify-center h-full px-4 ios">
-          <textarea
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            placeholder="Type a status"
-            className="text-center text-white text-3xl w-full h-2/3 bg-transparent outline-none resize-none placeholder:text-gray-400"
-          />
+        {/* Main Content */}
+        <div className="flex items-center justify-center h-full px-4 ios gap-4">
+          {isFile && image && (
+            <div className="w-1/2 h-[60vh]">
+              <img
+                src={image}
+                alt="Selected"
+                className="w-full h-full object-contain rounded-md"
+              />
+            </div>
+          )}
+
+          <div className={`${isFile ? "w-1/2" : "w-full"}`}>
+            <textarea
+              value={status}
+              rows={10}
+              onChange={(e) => setStatus(e.target.value)}
+              placeholder="Type a status"
+              className="text-white text-3xl w-full h-full bg-transparent outline-none resize-none placeholder:text-gray-400 text-center"
+            />
+          </div>
         </div>
 
         {/* Send Button */}

@@ -10,10 +10,12 @@ import { useSelectedUser } from "../../utils/SelectedUserContext";
 import {
   BarChart2,
   File,
+  Megaphone,
   Paperclip,
   Plus,
   QuoteIcon,
   Send,
+  Target,
   X,
 } from "lucide-react";
 import { ScaleLoader } from "react-spinners";
@@ -21,6 +23,7 @@ import EmojiPicker from "emoji-picker-react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import CreatePoll from "./CreatePoll";
+import AddStatus from "../status/AddStatus";
 
 const ChatSend = ({
   type,
@@ -44,6 +47,8 @@ const ChatSend = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [isToolbarOpen, setIsToolbarOpen] = useState(false);
   const [isPollOpen, setIsPollOpen] = useState(false);
+  const {addStatusOpen, setAddStatusOpen} = useSelectedUser();
+  const {selectedGroupForStatus, setSelectedGroupForStatus} = useSelectedUser();
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
@@ -1024,6 +1029,22 @@ const ChatSend = ({
                     <BarChart2 size={14} />
                     <span className="hidden sm:inline">Poll</span>
                   </button>
+
+
+                  <button
+                    onClick={() => {
+                      setSelectedGroupForStatus(userId)
+                      setAddStatusOpen((prev) => !prev)
+                    }}
+                    className={`h-6 border px-2 py-1 rounded flex items-center gap-1 transition text-sm ${
+                      addStatusOpen
+                        ? "bg-orange-600 text-white border-orange-600 "
+                        : "text-orange-500 border-orange-500 hover:bg-orange-600 hover:text-white"
+                    }`}
+                  >
+                    <Megaphone size={14} />
+                    <span className="hidden sm:inline">Announcement</span>
+                  </button>
                 </motion.div>
               </div>
             ) : (
@@ -1197,6 +1218,8 @@ const ChatSend = ({
           type={type}
         />
       )}
+
+      
     </>
   );
 };
