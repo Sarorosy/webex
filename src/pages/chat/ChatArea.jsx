@@ -11,6 +11,7 @@ import SearchResults from "./SearchResults";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import PinnedMessages from "./PinnedMessages";
 import ChatFiles from "./ChatFiles";
+import PollMessages from "./PollMessages";
 const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -80,6 +81,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [pinMessagesOpen, setPinMessagesOpen] = useState(false);
+  const [pollMessagesOpen, setPollMessagesOpen] = useState(false);
 
   // const [selectedMessage, setSelectedMessage] = useState(null);
   const [query, setQuery] = useState("");
@@ -112,6 +114,9 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
             setPinMessagesOpen={setPinMessagesOpen}
             setLeftGroupOpen={setLeftGroupOpen}
             setSearchLoading={setSearchLoading}
+
+            
+            setPollMessagesOpen={setPollMessagesOpen}
 
             chatTab={chatTab}
             setChatTab={setChatTab}
@@ -206,6 +211,18 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
           type={selectedUser?.type}
           onClose={() => {
             setPinMessagesOpen(false);
+          }}
+          setSelectedMessage={setSelectedMessage}
+        />
+      )}
+
+      {pollMessagesOpen && (
+        <PollMessages
+          userId={user?.id}
+          searchUserId={selectedUser?.id}
+          type={selectedUser?.type}
+          onClose={() => {
+            setPollMessagesOpen(false);
           }}
           setSelectedMessage={setSelectedMessage}
         />

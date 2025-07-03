@@ -15,8 +15,13 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
   const searchRef = useRef(null);
 
   const [results, setResults] = useState([]);
+  const [spaces, setSpaces] = useState([]);
+  const [messages, setMessages] = useState([]);
+
   const [activeTab, setActiveTab] = useState("spaces"); //spaces, messages
   const [resultsLoading, setResultsLoading] = useState(false);
+  const [spaceLoading, setSpaceLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
 
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { selectedUser, setSelectedUser } = useSelectedUser();
@@ -24,6 +29,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
+      setSpaces([]);
+      setMessages([]);
       return;
     }
 
@@ -32,7 +39,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "https://webexback-06cc.onrender.com/api/messages/totalfind",
+          "http://localhost:5000/api/messages/totalfind",
           {
             method: "POST",
             headers: {
@@ -53,8 +60,60 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       }
     };
 
+    const fetchSpaces = async () => {
+      try {
+        setSpaceLoading(true);
+        const res = await fetch(
+          "http://localhost:5000/api/messages/searchUsersAndGroups",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sender_id: user?.id, query }),
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+        setSpaces(data.results ?? []);
+      } catch (err) {
+        if (err.name !== "AbortError") console.error("Search error:", err);
+      } finally {
+        setSpaceLoading(false);
+      }
+    };
+
+    const fetchMessages = async () => {
+      try {
+        setMessageLoading(true);
+        const res = await fetch(
+          "http://localhost:5000/api/messages/searchMessages",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ sender_id: user?.id, query }),
+            signal: controller.signal,
+          }
+        );
+
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+        setMessages(data.messages ?? []); 
+      } catch (err) {
+        if (err.name !== "AbortError") console.error("Search error:", err);
+      } finally {
+        setMessageLoading(false);
+      }
+    };
+
     const delayDebounce = setTimeout(() => {
-      fetchResults();
+      // fetchResults();
+      fetchSpaces();
+      fetchMessages();
     }, 300); // debounce
 
     return () => {
@@ -128,7 +187,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                   </button>
                 </div>
 
-                {resultsLoading ? (
+                {spaceLoading ? (
                   <div className="mx-auto flex justify-center w-full py-4">
                     <ScaleLoader
                       className="mx-auto"
@@ -141,8 +200,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                   </div>
                 ) : activeTab === "spaces" ? (
                   <div className="max-h-[85vh] overflow-y-auto">
-                    {results?.results?.length > 0 ? (
-                      results.results.map((user) => (
+                    {spaces.length > 0 ? (
+                      spaces.map((user) => (
                         <div
                           key={user.id}
                           className={`flex items-center gap-3 p-2 me-1 ${
@@ -185,8 +244,8 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                   </div>
                 ) : (
                   <div className="max-h-[85vh] overflow-y-auto f-12">
-                    {results?.messages?.length > 0 ? (
-                      results.messages.map((msg) => (
+                    {messages?.length > 0 ? (
+                      messages.map((msg) => (
                         <div
                           key={msg.id}
                           className={`p-2 me-1 border-b  last:border-b-0 ${
@@ -247,7 +306,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                       ))
                     ) : (
                       <p className="text-gray-50 p-2">
-                        {!query ? "Search Messages" : " No messages found."}
+                        {!query ? "Search Messages" : messageLoading ? "Loading..." : " No messages found."}
                       </p>
                     )}
                   </div>

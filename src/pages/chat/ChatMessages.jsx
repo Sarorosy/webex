@@ -83,7 +83,7 @@ const ChatMessages = ({
       setMessageLoading(true);
 
       const res = await fetch(
-        `https://webexback-06cc.onrender.com/api/chats/messagesnew?sender_id=${
+        `http://localhost:5000/api/chats/messagesnew?sender_id=${
           view_user_id ?? user.id
         }&receiver_id=${userId}&skip=${skipCount}&limit=${limit}&user_type=${userType}`
       );
@@ -569,7 +569,7 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
+      const response = await fetch("http://localhost:5000/api/messages/pin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -644,6 +644,7 @@ const ChatMessages = ({
       let existingMessage = messages.find((msg) => msg.id == selmsg.id);
       let needtofetch = false;
 
+
       if (!existingMessage) {
         // Search in replies of each message
         for (let msg of messages) {
@@ -664,7 +665,7 @@ const ChatMessages = ({
         try {
           // First, try to fetch messages around the selected message's timestamp
           const fetchAroundMessageUrl = new URL(
-            "https://webexback-06cc.onrender.com/api/chats/messagesnew"
+            "http://localhost:5000/api/chats/messagesnew"
           );
           fetchAroundMessageUrl.searchParams.append(
             "sender_id",
@@ -867,7 +868,7 @@ const ChatMessages = ({
 
     try {
       const res = await fetch(
-        `https://webexback-06cc.onrender.com/api/messages/${msg.id}/reactions`
+        `http://localhost:5000/api/messages/${msg.id}/reactions`
       );
       const users = await res.json();
       setReactionUsers(users);
@@ -1017,11 +1018,12 @@ const ChatMessages = ({
                   return (
                     <div
                       key={msg.id}
+                      ref={(el) => (messageRefs.current[msg.id] = el)}
                       className={`w-full my-2 flex ${
                         wasSent
                           ? "flex-row-reverse items-start"
                           : "justify-start"
-                      }`}
+                      } `}
                     >
                       {/* Profile pic or initial */}
                       {msg.profile_pic &&
@@ -1043,7 +1045,11 @@ const ChatMessages = ({
                       <div
                         className={`${
                           wasSent ? "mr-2" : "ml-2"
-                        } bg-white border border-blue-200 p-4 rounded-2xl shadow-md max-w-[80%] w-fit`}
+                        } ${
+                      highlightedMessageId == msg.id
+                        ? "animate-pulse-highlight bg-blue-100 p-2"
+                        : "bg-white"
+                    }  border border-blue-200 p-4 rounded-2xl shadow-md max-w-[80%] w-fit`}
                       >
                         {/* Sender Name & Time */}
                         <div

@@ -59,7 +59,7 @@ const AddStatus = ({ onClose }) => {
   };
 
   const handleSend = async () => {
-    if (!status.trim() || !isFile) {
+    if (!status.trim()) {
       toast.error("Cant add empty status");
       return;
     }
@@ -76,7 +76,7 @@ const AddStatus = ({ onClose }) => {
       formData.append("announcement", status);
       formData.append("bgcolor", bgColor);
 
-      const response = await fetch("https://webexback-06cc.onrender.com/api/status/add", {
+      const response = await fetch("http://localhost:5000/api/status/add", {
         method: "POST",
         body: formData,
       });

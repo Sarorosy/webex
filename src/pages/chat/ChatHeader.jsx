@@ -1,4 +1,5 @@
 import {
+  BarChart2,
   Building,
   CircleMinus,
   DoorOpen,
@@ -35,6 +36,7 @@ const ChatHeader = ({
   chatTab,
   setChatTab,
   setSearchLoading,
+  setPollMessagesOpen
 }) => {
   const { user, theme } = useAuth();
 
@@ -89,7 +91,7 @@ const ChatHeader = ({
 
       try {
         setSearchLoading(true);
-        const res = await fetch("https://webexback-06cc.onrender.com/api/messages/find", {
+        const res = await fetch("http://localhost:5000/api/messages/find", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -117,7 +119,7 @@ const ChatHeader = ({
 
   const handleFavourite = async () => {
     try {
-      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/favourite", {
+      const res = await fetch("http://localhost:5000/api/chats/favourite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -160,7 +162,7 @@ const ChatHeader = ({
       <div
         className={`flex flex-col md:flex-row items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${
           theme == "dark"
-            ? "chat-header-bg-dark text-white"
+            ? "chat-header-bg-dark text-white bg-orange-600"
             : "chat-header-bg text-gray-800"
         }  shadow-inner`}
       >
@@ -329,6 +331,16 @@ const ChatHeader = ({
           >
             <MoreVertical size={13} />
           </button>
+          {selectedUser?.type == "group" && (
+          <button
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Polls"
+            onClick={() => setPollMessagesOpen(true)}
+            className="p-2 bg-gray-100 text-black f-13 rounded-full hover:bg-gray-300 transition"
+          >
+            <BarChart2 size={13} />
+          </button>
+          )}
           <button
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Pinned Messages"

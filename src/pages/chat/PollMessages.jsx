@@ -4,7 +4,7 @@ import axios from "axios";
 import { X } from "lucide-react";
 import { useAuth } from "../../utils/idb";
 
-const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClose }) => {
+const PollMessages = ({ userId, searchUserId, type, setSelectedMessage, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const {theme} = useAuth();
@@ -13,7 +13,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
 
     setLoading(true);
     axios
-      .post("http://localhost:5000/api/messages/pinned-messages", {
+      .post("http://localhost:5000/api/messages/poll-messages", {
         user_id: userId,
         search_user_id: searchUserId,
         type,
@@ -22,7 +22,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
         setMessages(res.data.messages || []);
       })
       .catch((err) => {
-        console.error("Failed to fetch pinned messages:", err);
+        console.error("Failed to fetch polls:", err);
       })
       .finally(() => setLoading(false));
   }, [userId, searchUserId, type]);
@@ -40,7 +40,7 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
           <div className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
             ${theme == "dark" ? "bg-gray-500 text-white mw-dark" : "bg-gray-300 text-black"}
           `}>
-            <span>Pinned Messages</span>
+            <span>Polls</span>
             <button
               onClick={onClose}
               className="text-sm text-white bg-orange-600 px-1 py-1 rounded  hover:bg-orange-800"
@@ -80,13 +80,15 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
                 </div>
                 <div
                   className=""
-                  dangerouslySetInnerHTML={{ __html: msg.message }}
-                />
+                  
+                >
+                    📊 {msg.poll_question}
+                </div>
               </div>
             ))
           ) : (
             <div className="p-4 text-gray-500 italic">
-              No pinned messages found.
+              No polls found.
             </div>
           )}
         </motion.div>
@@ -95,4 +97,4 @@ const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClos
   );
 };
 
-export default PinnedMessages;
+export default PollMessages;

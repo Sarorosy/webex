@@ -75,7 +75,7 @@ const CreatePoll = ({
         type,
       };
 
-      const response = await fetch("https://webexback-06cc.onrender.com/api/poll/create", {
+      const response = await fetch("http://localhost:5000/api/poll/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

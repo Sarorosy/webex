@@ -14,14 +14,13 @@ const UserBotSettings = ({ onClose, user }) => {
   useEffect(() => {
     if (user?.id) {
       fetchGroups();
-      fetchUserGroupSettings();
     }
   }, [user]);
 
   const fetchGroups = async () => {
     try {
       const res = await axios.get(
-        `https://webexback-06cc.onrender.com/api/groups/user-present-groups/${user?.id}`
+        `http://localhost:5000/api/groups/user-present-groups/${user?.id}`
       );
       setGroups(res.data.groups || []);
       setSelectedGroups(res.data.existing_ids || [])
@@ -30,14 +29,6 @@ const UserBotSettings = ({ onClose, user }) => {
     }
   };
 
-  const fetchUserGroupSettings = async () => {
-    try {
-      const res = await axios.get(`/api/bot-settings/${user.id}`);
-      setSelectedGroups(res.data.group_ids || []);
-    } catch (err) {
-      console.error("Error fetching bot settings", err);
-    }
-  };
 
   const handleToggleGroup = (groupId) => {
     setSelectedGroups((prev) =>
@@ -54,7 +45,7 @@ const UserBotSettings = ({ onClose, user }) => {
         return;
       }
       const response = await fetch(
-        "https://webexback-06cc.onrender.com/api/users/bot-settings",
+        "http://localhost:5000/api/users/bot-settings",
         {
           method: "POST",
           headers: {

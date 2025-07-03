@@ -176,7 +176,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
+        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -483,6 +483,7 @@ const ChatSidebar = ({
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
           last_message: msg.message ?? null,
+          last_message_deleted: 0,
           read_status:
             msg.sender_id != user?.id && selectedUser?.id != msg.sender_id
               ? 1
@@ -615,22 +616,22 @@ const ChatSidebar = ({
       });
     };
 
-    const handleChatOpened = ({ chatId, chatType, userId }) => {
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.id === chatId && chat.type === chatType) {
-            return {
-              ...chat,
-              read_status: 0,
-              unread_count: 0,
-              is_mentioned: false,
-              is_all: false,
-            };
-          }
-          return chat;
-        })
-      );
-    };
+    // const handleChatOpened = ({ chatId, chatType, userId }) => {
+    //   setChats((prevChats) =>
+    //     prevChats.map((chat) => {
+    //       if (chat.id === chatId && chat.type === chatType) {
+    //         return {
+    //           ...chat,
+    //           read_status: 0,
+    //           unread_count: 0,
+    //           is_mentioned: false,
+    //           is_all: false,
+    //         };
+    //       }
+    //       return chat;
+    //     })
+    //   );
+    // };
 
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
@@ -641,7 +642,7 @@ const ChatSidebar = ({
     socket.on("group_members_added", handleGroupMembersAdded);
     socket.on("new_status", handleNewStatus);
     socket.on("status_deleted", handleStatusDeleted);
-    socket.on("chat_opened", handleChatOpened);
+    //socket.on("chat_opened", handleChatOpened);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
@@ -649,7 +650,7 @@ const ChatSidebar = ({
       socket.off("group_members_added", handleGroupMembersAdded);
       socket.off("new_status", handleNewStatus);
       socket.off("status_deleted", handleStatusDeleted);
-      socket.off("chat_opened", handleChatOpened);
+      //socket.off("chat_opened", handleChatOpened);
     };
   }, [user, chats]);
 
@@ -998,7 +999,7 @@ const ChatSidebar = ({
             {[
               "all",
               "direct",
-              "group",
+              // "group",
               ...(unreadCount > 0 ? ["unread"] : []),
               ...(unreadAtCount > 0 ? ["@"] : []),
               ...(unreadForAllCount > 0 ? ["forall"] : []),
