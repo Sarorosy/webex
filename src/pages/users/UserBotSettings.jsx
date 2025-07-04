@@ -20,7 +20,7 @@ const UserBotSettings = ({ onClose, user }) => {
   const fetchGroups = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/groups/user-present-groups/${user?.id}`
+        `https://webexback-06cc.onrender.com/api/groups/user-present-groups/${user?.id}`
       );
       setGroups(res.data.groups || []);
       setSelectedGroups(res.data.existing_ids || [])
@@ -45,7 +45,7 @@ const UserBotSettings = ({ onClose, user }) => {
         return;
       }
       const response = await fetch(
-        "http://localhost:5000/api/users/bot-settings",
+        "https://webexback-06cc.onrender.com/api/users/bot-settings",
         {
           method: "POST",
           headers: {

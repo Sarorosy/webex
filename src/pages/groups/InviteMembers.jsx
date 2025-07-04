@@ -23,7 +23,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
         // Step 2: Fetch users excluding these IDs
         const userRes = await fetch(
-          "http://localhost:5000/api/users/getusersexcluding",
+          "https://webexback-06cc.onrender.com/api/users/getusersexcluding",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -63,7 +63,7 @@ const InviteMembers = ({ groupId, onClose, members }) => {
 
     try {
       setInviting(true);
-      const res = await fetch("http://localhost:5000/api/userlimit/send", {
+      const res = await fetch("https://webexback-06cc.onrender.com/api/userlimit/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

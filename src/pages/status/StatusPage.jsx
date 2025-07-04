@@ -71,7 +71,7 @@ const currentStatus = validStatuses[currentIndex];
 
   const deleteStatus = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/status/delete/", {
+      const response = await fetch("https://webexback-06cc.onrender.com/api/status/delete/", {
         method: "DELETE",
         headers: {
           "Content-type": "application/json",

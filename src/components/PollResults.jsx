@@ -9,7 +9,7 @@ const PollResults = ({ msg, onClose }) => {
 
   const fetchPollResults = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/poll/get-results/${msg.id}`);
+      const res = await fetch(`https://webexback-06cc.onrender.com/api/poll/get-results/${msg.id}`);
       const data = await res.json();
       if (data.status) {
         setPollData(data);

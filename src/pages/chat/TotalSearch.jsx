@@ -39,7 +39,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setResultsLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/messages/totalfind",
+          "https://webexback-06cc.onrender.com/api/messages/totalfind",
           {
             method: "POST",
             headers: {
@@ -64,7 +64,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setSpaceLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/messages/searchUsersAndGroups",
+          "https://webexback-06cc.onrender.com/api/messages/searchUsersAndGroups",
           {
             method: "POST",
             headers: {
@@ -89,7 +89,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
       try {
         setMessageLoading(true);
         const res = await fetch(
-          "http://localhost:5000/api/messages/searchMessages",
+          "https://webexback-06cc.onrender.com/api/messages/searchMessages",
           {
             method: "POST",
             headers: {

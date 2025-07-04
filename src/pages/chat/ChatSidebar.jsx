@@ -176,7 +176,7 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       const res = await fetch(
-        "http://localhost:5000/api/chats/getGroupsAndUsersInteracted",
+        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
         {
           method: "POST",
           headers: {
@@ -919,7 +919,7 @@ const ChatSidebar = ({
     >
       <div
         onMouseDown={handleMouseDown}
-        className="absolute top-0 right-0 h-full w-0.5 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-1"
+        className="absolute top-0 right-0 h-full w-2 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-2"
       ></div>
 
       <div
