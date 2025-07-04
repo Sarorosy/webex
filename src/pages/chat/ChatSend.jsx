@@ -47,8 +47,9 @@ const ChatSend = ({
   const [selectedFile, setSelectedFile] = useState(null);
   const [isToolbarOpen, setIsToolbarOpen] = useState(false);
   const [isPollOpen, setIsPollOpen] = useState(false);
-  const {addStatusOpen, setAddStatusOpen} = useSelectedUser();
-  const {selectedGroupForStatus, setSelectedGroupForStatus} = useSelectedUser();
+  const { addStatusOpen, setAddStatusOpen } = useSelectedUser();
+  const { selectedGroupForStatus, setSelectedGroupForStatus } =
+    useSelectedUser();
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
@@ -217,15 +218,15 @@ const ChatSend = ({
                 //   isLeave = true;
                 //   logged_in_status = false;
                 // } else {
-                  
+
                 // }
 
                 const result = await res.json();
-                  if (result.message === "Leave") {
-                    isLeave = true;
-                  } else {
-                    logged_in_status = result.message === "Loggedin";
-                  }
+                if (result.message === "Leave") {
+                  isLeave = true;
+                } else {
+                  logged_in_status = result.message === "Loggedin";
+                }
               }
             } catch (err) {
               console.error("Login check failed for", u.email, err);
@@ -776,7 +777,7 @@ const ChatSend = ({
   };
 
   useEffect(() => {
-    console.log("Value updated:", value);
+    // console.log("Value updated:", value);
   }, [value]);
 
   // Input change handler to track value changes
@@ -897,6 +898,31 @@ const ChatSend = ({
   const [allowMultiple, setAllowMultiple] = useState(false);
   const [showEmojiPickerIndex, setShowEmojiPickerIndex] = useState(null);
 
+  const containerRef = useRef();
+  const [height, setHeight] = useState(100); // initial height
+
+  const startResizing = (e) => {
+    e.preventDefault();
+    const startY = e.clientY;
+    const startHeight = height;
+
+    const onMouseMove = (e) => {
+      const newHeight = startHeight - (e.clientY - startY);
+      if (newHeight > 70) {
+        // min height
+        setHeight(newHeight);
+      }
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
   return (
     <>
       {isReply && (
@@ -979,8 +1005,9 @@ const ChatSend = ({
         <div
           className={` ${
             theme == "dark" ? "bg-gray-700" : "bg-gray-100"
-          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded`}
+          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded absolute bottom-0`}
         >
+         
           <div className="flex flex-col items-center gap-2 h-fill">
             {user?.user_type == "admin" ? (
               <div className="relative">
@@ -1030,11 +1057,10 @@ const ChatSend = ({
                     <span className="hidden sm:inline">Poll</span>
                   </button>
 
-
                   <button
                     onClick={() => {
-                      setSelectedGroupForStatus(userId)
-                      setAddStatusOpen((prev) => !prev)
+                      setSelectedGroupForStatus(userId);
+                      setAddStatusOpen((prev) => !prev);
                     }}
                     className={`h-6 border px-2 py-1 rounded flex items-center gap-1 transition text-sm ${
                       addStatusOpen
@@ -1103,6 +1129,7 @@ const ChatSend = ({
               </div>
             </div>
           )}
+
           {type === "group" ? (
             <div className="relative w-full">
               {value.trim() === "" && (
@@ -1110,35 +1137,51 @@ const ChatSend = ({
                   Type @ to mention someone...
                 </div>
               )}
+               <div
+        onMouseDown={startResizing}
+        className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
+        title="Drag to resize"
+      ></div>
+
               <div
-                id="chatInput"
-                ref={inputRef}
-                contentEditable
-                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                ref={containerRef}
+                style={{ height }}
+                className={`overflow-auto border rounded-b ${
+                  theme === "dark"
+                    ? "bg-gray-600 border-gray-500"
+                    : "bg-white border-gray-300"
+                }`}
+              >
+                <div
+                  id="chatInput"
+                  ref={inputRef}
+                  contentEditable
+                  className={`w-full h-full overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
                   ${
                     theme == "dark"
                       ? "bg-gray-600 border-gray-500 text-gray-200"
                       : "bg-white border-gray-300"
                   }  
                 `}
-                placeholder="Type @ to mention someone..."
-                onInput={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-              ></div>
+                  placeholder="Type @ to mention someone..."
+                  onInput={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                ></div>
 
-              <MentionComponent
-                dataSource={groupUsers}
-                ref={mentionRef}
-                fields={{ text: "userName" }}
-                target="#chatInput"
-                mentionChar="@"
-                allowSpaces={true}
-                popupHeight="200px"
-                popupWidth="250px"
-                itemTemplate={itemTemplate}
-                select={handleSelect} // Attach the select event handler
-              />
+                <MentionComponent
+                  dataSource={groupUsers}
+                  ref={mentionRef}
+                  fields={{ text: "userName" }}
+                  target="#chatInput"
+                  mentionChar="@"
+                  allowSpaces={true}
+                  popupHeight="200px"
+                  popupWidth="250px"
+                  itemTemplate={itemTemplate}
+                  select={handleSelect} // Attach the select event handler
+                />
+              </div>
             </div>
           ) : (
             <div className="relative w-full">
@@ -1147,11 +1190,28 @@ const ChatSend = ({
                   Type your message...
                 </div>
               )}
+
+               <div
+        onMouseDown={startResizing}
+        className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
+        title="Drag to resize"
+      ></div>
+
+      <div
+                ref={containerRef}
+                style={{ height }}
+                className={`overflow-auto border rounded-b ${
+                  theme === "dark"
+                    ? "bg-gray-600 border-gray-500"
+                    : "bg-white border-gray-300"
+                }`}
+              >
+
               <div
                 id="chatInputuser"
                 ref={inputRef}
                 contentEditable
-                className={`w-full h-[70px] overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                className={`w-full h-full overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
                   ${
                     theme == "dark"
                       ? "bg-gray-600 border-gray-500 text-gray-200"
@@ -1176,6 +1236,7 @@ const ChatSend = ({
                 itemTemplate={itemTemplate}
                 select={handleSelect} // Attach the select event handler
               />
+              </div>
             </div>
           )}
           <div className="flex flex-col items-center gap-2">
@@ -1218,8 +1279,6 @@ const ChatSend = ({
           type={type}
         />
       )}
-
-      
     </>
   );
 };
