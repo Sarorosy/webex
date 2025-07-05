@@ -899,7 +899,7 @@ const ChatSend = ({
   const [showEmojiPickerIndex, setShowEmojiPickerIndex] = useState(null);
 
   const containerRef = useRef();
-  const [height, setHeight] = useState(100); // initial height
+  const [height, setHeight] = useState(90); // initial height
 
   const startResizing = (e) => {
     e.preventDefault();
@@ -927,7 +927,7 @@ const ChatSend = ({
     <>
       {isReply && (
         <div
-          className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          className={`ios p-3 rounded text-xs flex justify-between items-center mb-1 
           ${
             theme == "dark"
               ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
@@ -961,7 +961,7 @@ const ChatSend = ({
       )}
       {selectedQuoteMessage && (
         <div
-          className={`ios p-3 rounded text-xs flex justify-between items-center absolute top-[-68px] left- w-[99%] 
+          className={`ios p-3 rounded text-xs flex justify-between items-center mb-1   
           ${
             theme == "dark"
               ? "bg-gray-900 text-gray-50 border border-gray-700 border-1"
@@ -998,17 +998,55 @@ const ChatSend = ({
           </button>
         </div>
       )}
+      {selectedFile && (
+            <div className="flex items-end">
+              <div
+                className={` ${
+                  theme == "dark" ? "bg-gray-200" : "bg-gray-300"
+                } rounded chatfile text-[11px] flex  justify-center items-center relative px-2 py-1.5 gap-2 mb-1`}
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content={selectedFile.name}
+              >
+                <div>
+                  <File size={15} />
+                </div>
+                <div className="truncate max-w-[300px] text-center">
+                  {selectedFile.name}
+                </div>
+                <button
+                  onClick={() => setSelectedFile(null)}
+                  className={`
+                    ${
+                      theme == "dark" ? "text-gray-500 hover:text-red-500" : "text-gray-500 hover:text-red-500"
+                    }
+                    
+                    `}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            </div>
+          )}
 
       <div>
         {/* Paperclip icon (file input trigger) */}
-
         <div
+          onMouseDown={startResizing}
+          className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
+          title="Drag to resize"
+        >
+        </div>
+        <div
+          ref={containerRef}
+          style={{ height }}
+          
           className={` ${
             theme == "dark" ? "bg-gray-700" : "bg-gray-100"
-          } chat-send-container space-x-2 flex items-end justify-between mx-auto ios py-2 px-2 rounded absolute bottom-0`}
+          } chat-send-container space-x-2 flex items-end justify-between mx-auto max-h-[250px] min-h-[90px] ios py-2 px-2 rounded items-stretch`}
         >
+          
          
-          <div className="flex flex-col items-center gap-2 h-fill">
+          <div className="flex flex-col items-center justify-start gap-2 h-fill">
             {user?.user_type == "admin" ? (
               <div className="relative">
                 {/* Toggle Button */}
@@ -1105,48 +1143,20 @@ const ChatSend = ({
             )}
           </div>
           {/* Show selected file with X */}
-          {selectedFile && (
-            <div className="">
-              <div
-                className={` ${
-                  theme == "dark" ? "bg-gray-500" : "bg-gray-200"
-                } rounded chatfile text-[9px] flex flex-col justify-center items-center relative p-3 gap-2`}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content={selectedFile.name}
-              >
-                <div>
-                  <File />
-                </div>
-                <div className="truncate max-w-[150px] w-[60px] text-center">
-                  {selectedFile.name}
-                </div>
-                <button
-                  onClick={() => setSelectedFile(null)}
-                  className="text-gray-500 hover:text-red-500 absolute top-0 right-0 p-1"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-          )}
+          
 
           {type === "group" ? (
-            <div className="relative w-full">
+            <div className="relative w-full flex">
               {value.trim() === "" && (
                 <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
                   Type @ to mention someone...
                 </div>
               )}
-               <div
-        onMouseDown={startResizing}
-        className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
-        title="Drag to resize"
-      ></div>
+               
 
               <div
-                ref={containerRef}
-                style={{ height }}
-                className={`overflow-auto border rounded-b ${
+                
+                className={`overflow-auto border rounded-b w-full ${
                   theme === "dark"
                     ? "bg-gray-600 border-gray-500"
                     : "bg-white border-gray-300"
@@ -1184,23 +1194,18 @@ const ChatSend = ({
               </div>
             </div>
           ) : (
-            <div className="relative w-full">
+            <div className="relative w-full flex">
               {value.trim() === "" && (
                 <div className="absolute left-3 top-3 text-gray-400 pointer-events-none select-none">
                   Type your message...
                 </div>
               )}
 
-               <div
-        onMouseDown={startResizing}
-        className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
-        title="Drag to resize"
-      ></div>
+               
 
       <div
-                ref={containerRef}
-                style={{ height }}
-                className={`overflow-auto border rounded-b ${
+                
+                className={`overflow-auto border rounded-b w-full ${
                   theme === "dark"
                     ? "bg-gray-600 border-gray-500"
                     : "bg-white border-gray-300"
@@ -1239,7 +1244,7 @@ const ChatSend = ({
               </div>
             </div>
           )}
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 justify-end">
             <button
               onClick={handleSend}
               disabled={submitBtnDisabled}

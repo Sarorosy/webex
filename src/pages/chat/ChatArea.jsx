@@ -99,8 +99,8 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   };
 
   return (
-    <div className="w-full rounded-lg m-2 flex flex-col justify-between relative ">
-      <div>
+    <div className="w-full rounded-lg pl-1 flex flex-col justify-between relative h-screen">
+      
       <ChatHeader
             selectedUser={selectedUser}
             isTyping={isTyping}
@@ -159,7 +159,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
               containerRef={containerRef}
             />
           )}
-          </div>
+          
         
 
         {chatTab == "chats" && (

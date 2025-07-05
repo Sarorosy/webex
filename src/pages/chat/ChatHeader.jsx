@@ -157,7 +157,7 @@ const ChatHeader = ({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div className="absolute w-full z-[98]">
+    <div className="w-full z-[98]">
       {/* HEADER */}
       <div
         className={`flex flex-col md:flex-row items-center justify-between gap-3 border-b pb-4 px-3 py-6 ${

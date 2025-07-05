@@ -336,12 +336,13 @@ div#commentsMention[placeholder]:empty:before {
 
 
 .chat-headAmsg{
-  height: calc(100vh - 110px);
+  /* height: calc(100vh - 110px); */
   padding-top: 90px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  flex: 1;
 }
 .chat-text-n{
-    height: 100px;
+    /* height: 100px; */
     position: relative;
     z-index: 9;
     
@@ -352,7 +353,7 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 .message-file-selector{
-    position: absolute;
+    /* position: absolute; */
     width: 100%;
     background: #fff;
     padding: 10px 15px;
