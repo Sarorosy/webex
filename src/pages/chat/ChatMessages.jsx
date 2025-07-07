@@ -752,8 +752,12 @@ const ChatMessages = ({
   const isValidViewUserId =
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
-  const EmojiPopup = ({ onSelect }) => (
-    <div className="ios absolute bottom-5 flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10">
+  const EmojiPopup = ({ onSelect, isSent }) => (
+    <div className={`ios absolute bottom-6  flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10
+      ${
+        isSent ? "left-0" : "right-0"
+      }
+    `}>
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
@@ -1193,8 +1197,8 @@ const ChatMessages = ({
                       <div
                         className={`message-content`}
                       >
-                        <div  className={`flex flex-col justify-start w-full  ${hoveredMessageId == msg.id ? (theme == "dark" ? "bg-gray-700" : "bg-gray-200") : ""} rounded p-2 ${
-                          isSent ? "items-end" : "items-start"
+                        <div  className={`flex flex-col  w-full  ${hoveredMessageId == msg.id ? (theme == "dark" ? "bg-gray-700" : "bg-gray-200") : ""} rounded p-2 ${
+                          isSent ? "items-end justify-end" : "items-start justify-start"
                         }
                         ${
                           theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
@@ -1701,7 +1705,10 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
-                                    <div className={`flex flex-col justify-start relative w-full rounded p-2 items-start
+                                    <div className={`flex  relative w-full rounded p-2 items-start
+                                      ${
+                                        isSent ? "justify-end" : "justify-start"
+                                      }
                                       ${
                                         theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
                                       }
@@ -2100,6 +2107,7 @@ const ChatMessages = ({
                                                   );
                                                   setShowReplyEmojiPopup(false);
                                                 }}
+                                                isSent={isSent}
                                               />
                                             )}
                                           </div>
@@ -2225,6 +2233,7 @@ const ChatMessages = ({
                                   handleReact(msg.id, emoji, "message");
                                   setShowEmojiPopup(false);
                                 }}
+                                isSent={isSent}
                               />
                             )}
                           </div>
