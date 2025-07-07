@@ -960,7 +960,7 @@ const ChatMessages = ({
           </div>
         ) : (
           Object.entries(groupedMessages).map(([date, messages]) => (
-            <div key={date} className="space-y-5">
+            <div key={date} className="space-y-3">
               <div className="date-separator flex items-center text-center text-xs">
                 <div className="flex-grow border-t border-gray-200"></div>
                 <span className="px-4 py-1 bg-blue-100 text-blue-700 rounded-full font-medium shadow-sm">
@@ -1159,7 +1159,7 @@ const ChatMessages = ({
                     }  msg-number-${msg.id} ${isSent ? "" : ""} `}
                   >
                     <div
-                      className={`flex flex-col ${
+                      className={`py-2 flex flex-col ${
                         isSent ? "items-end " : "items-start "
                       } `}
                     >
@@ -1179,7 +1179,7 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative  max-w-[60%] min-w-[20%] ${
+                      className={`message relative w-full ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
@@ -1191,10 +1191,17 @@ const ChatMessages = ({
                       ) : null}
 
                       <div
-                        className={`message-content flex flex-col justify-start w-full ${
+                        className={`message-content`}
+                      >
+                        <div  className={`flex flex-col justify-start w-full hover:bg-gray-200 ${hoveredMessageId == msg.id ? "bg-gray-200" : ""} rounded p-2 ${
                           isSent ? "items-end" : "items-start"
                         }`}
-                      >
+                        onMouseEnter={() => {
+                            if (!emojiPopupLocked && msg.sender_id != 167)
+                              setHoveredMessageId(msg.id);
+                          }}
+                        >
+                        <div className="max-w-[60%] min-w-[20%]">
                         <div
                           style={{
                             opacity:
@@ -1210,7 +1217,7 @@ const ChatMessages = ({
                             transition:
                               "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                           }}
-                          className={`mbox px-3 py-2 w-full rounded-lg
+                          className={` px-3 py-2 w-full rounded-lg
                              ${
                                isSent
                                  ? `${
@@ -1230,10 +1237,7 @@ const ChatMessages = ({
                           : ""
                       }
                       `}
-                          onMouseEnter={() => {
-                            if (!emojiPopupLocked && msg.sender_id != 167)
-                              setHoveredMessageId(msg.id);
-                          }}
+                          
                           // onMouseLeave={() => {
                           //   if (!emojiPopupLocked) {
                           //     setHoveredMessageId(null);
@@ -1557,6 +1561,8 @@ const ChatMessages = ({
                             );
                           })()}
                         </div>
+                        </div>
+                        </div>
                         {(() => {
                           let pinned = [];
 
@@ -1672,7 +1678,7 @@ const ChatMessages = ({
                                         "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
                                     }}
                                   >
-                                    <div>
+                                    <div className="py-2">
                                       {reply.profile_pic &&
                                       reply.profile_pic != "null" &&
                                       reply.profile_pic != "" ? (
@@ -1691,6 +1697,25 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
+                                    <div className="flex flex-col justify-start relative w-full hover:bg-gray-200 rounded p-2 items-start"
+                                    onMouseEnter={() => {
+                                        setHoveredReplyMessageId(
+                                          `reply-${reply.id}`
+                                        );
+                                        if (!emojiPopupLocked) {
+                                          setHoveredMessageId(null);
+                                          clearHover();
+                                        }
+                                      }}
+                                      onMouseLeave={() => {
+                                        setHoveredReplyMessageId(null);
+                                        if (!emojiPopupLocked) {
+                                          setHoveredMessageId(null);
+                                          clearHover();
+                                        }
+                                      }}
+                                    >
+                                    <div className="max-w-[60%] min-w-[20%]">
                                     <div
                                       key={`${reply.id}-${reply.created_at}`}
                                       ref={(el) =>
@@ -1719,20 +1744,12 @@ const ChatMessages = ({
                                           } `
                                     }
                                     
-                                    border-blue-400 p-2  text-sm rounded-lg   hover:shadow-md transition-shadow relative`}
-                                      onMouseEnter={() => {
-                                        setHoveredReplyMessageId(
-                                          `reply-${reply.id}`
-                                        );
-                                        if (!emojiPopupLocked) {
-                                          setHoveredMessageId(null);
-                                          clearHover();
-                                        }
-                                      }}
-                                      onMouseLeave={() => {
-                                        setHoveredReplyMessageId(null);
-                                        clearReplyHover();
-                                      }}
+                                    border-blue-400 rounded-lg p-2 text-sm relative`}
+                                      
+                                      // onMouseLeave={() => {
+                                      //   setHoveredReplyMessageId(null);
+                                      //   clearReplyHover();
+                                      // }}
                                     >
                                       {reply.is_new &&
                                       reply.is_new == "1" &&
@@ -2038,15 +2055,17 @@ const ChatMessages = ({
                                       {formatTime(reply.created_at)}
                                     </div> */}
 
-                                      {/* Reply Actions */}
+                                      
+                                    </div>
+                                    </div>
+                                    {/* Reply Actions */}
                                       {hoveredReplyMessageId ==
                                         `reply-${reply.id}` && (
                                         <div
-                                          className={` ${
-                                            isSent
-                                              ? "left-[-150px]"
-                                              : "right-[-150px]"
-                                          } chat-funt-set message-actions absolute -top-0  bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200 shadow-md`}
+                                          className="chat-funt-set message-actions absolute -top-2 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                                          style={{
+                                            [isSent ? "left" : "right"]: "15px",
+                                          }}
                                         >
                                           <div
                                             className="relative action-button"
@@ -2158,6 +2177,7 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
+                                    
                                   </div>
                                 );
                               })}
@@ -2169,9 +2189,12 @@ const ChatMessages = ({
                     {hoveredMessageId === msg.id && (
                       <div className="flex items-start relative">
                         <div
-                          className="chat-funt-set message-actions absolute -top-0 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
+                          className="chat-funt-set message-actions absolute -top-2 bg-white rounded-full flex z-10 border border-gray-200 transition-all duration-200"
                           style={{
-                            [isSent ? "right" : "left"]: "-60px",
+                            [isSent ? "left" : "right"]: "15px",
+                          }}
+                          onMouseEnter={()=>{
+                            setHoveredMessageId(msg.id)
                           }}
                         >
                           <div

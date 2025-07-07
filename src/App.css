@@ -375,10 +375,12 @@ div#commentsMention[placeholder]:empty:before {
     /* background: #f3f3f3; */
 }
 
-.mw .mbox:hover {
+/* .mw .mbox:hover {
     background: #ddd;
+} */
+.mw .mbox:hover {
+    background: #fff5e7;
 }
-
 
 
 .messages-a-link {
