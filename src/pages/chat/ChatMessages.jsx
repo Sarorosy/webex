@@ -1619,7 +1619,7 @@ const ChatMessages = ({
 
                           return Array.isArray(replies) &&
                             replies.length > 0 ? (
-                            <div className="mt-2 space-y-2  w-full">
+                            <div className="mt-2 space-y-2  w-full mx-2">
                               {replies.map((reply) => {
                                 if (
                                   reply.is_deleted == 1 &&
@@ -1631,8 +1631,8 @@ const ChatMessages = ({
                                       className={`w-full flex  
                                         ${
                                           isSent
-                                            ? "justify-start"
-                                            : "justify-end"
+                                            ? "justify-end"
+                                            : "justify-start"
                                         }
                                       `}
                                     >
