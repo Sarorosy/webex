@@ -1193,9 +1193,13 @@ const ChatMessages = ({
                       <div
                         className={`message-content`}
                       >
-                        <div  className={`flex flex-col justify-start w-full hover:bg-gray-200 ${hoveredMessageId == msg.id ? "bg-gray-200" : ""} rounded p-2 ${
+                        <div  className={`flex flex-col justify-start w-full  ${hoveredMessageId == msg.id ? (theme == "dark" ? "bg-gray-700" : "bg-gray-200") : ""} rounded p-2 ${
                           isSent ? "items-end" : "items-start"
-                        }`}
+                        }
+                        ${
+                          theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                        }
+                        `}
                         onMouseEnter={() => {
                             if (!emojiPopupLocked && msg.sender_id != 167)
                               setHoveredMessageId(msg.id);
@@ -1697,7 +1701,11 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
-                                    <div className="flex flex-col justify-start relative w-full hover:bg-gray-200 rounded p-2 items-start"
+                                    <div className={`flex flex-col justify-start relative w-full rounded p-2 items-start
+                                      ${
+                                        theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                                      }
+                                    `}
                                     onMouseEnter={() => {
                                         setHoveredReplyMessageId(
                                           `reply-${reply.id}`

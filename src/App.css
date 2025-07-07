@@ -337,15 +337,15 @@ div#commentsMention[placeholder]:empty:before {
 
 .chat-headAmsg{
   /* height: calc(100vh - 110px); */
-  padding-top: 90px;
-  margin-bottom: 5px;
+  /* padding-top: 90px; */
+  /* margin-bottom: 5px; */
   flex: 1;
 }
 .chat-text-n{
     /* height: 100px; */
     position: relative;
     z-index: 9;
-    
+    margin: 5px;
 }
 
 .EmojiPickerReact {
