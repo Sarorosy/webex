@@ -15,7 +15,7 @@ import {
   ImageIcon,
   VideoIcon,
   FileSpreadsheet,
-  SquareArrowOutUpRightIcon,
+  PlayCircle,
   Smile,
   QuoteIcon,
   Copy,
@@ -1009,6 +1009,61 @@ const ChatMessages = ({
                     </div>
                   );
                 }
+
+                if (msg.voice_note) {
+  const wasSent = isValidViewUserId
+    ? msg.sender_id == view_user_id
+    : msg.sender_id == user.id;
+
+  return (
+    <div
+      key={`${msg.id}-${msg.created_at}`}
+      className={`w-full my-2 flex ${wasSent ? "flex-row-reverse items-start" : "justify-start"}`}
+    >
+      {/* Profile pic or initial */}
+      {msg.profile_pic && msg.profile_pic !== "null" && msg.profile_pic !== "" ? (
+        <img
+          src={"https://rapidcollaborate.in/ccp" + msg.profile_pic}
+          className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
+        />
+      ) : (
+        <div className="flex justify-center items-center h-7 w-7 text-xs bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
+          {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
+        </div>
+      )}
+
+      {/* Voice Note Card */}
+      <div
+        className={`${
+          wasSent ? "mr-2" : "ml-2"
+        } ${theme == "dark" ? "bg-gray-400" : "bg-blue-50 border border-blue-200"} px-3 py-1 rounded-2xl shadow-md max-w-[80%] w-fit`}
+      >
+        {/* Sender Name & Time */}
+        <div
+          className={`flex gap-2 items-center text-xs mb-2 ${
+            wasSent ? "flex-row-reverse" : ""
+          }`}
+        >
+          <span className="text-gray-700 font-medium">
+            {wasSent && !view_user_id ? "You" : msg.sender_name ?? "Unknown User"}
+          </span>
+          <span className="text-[10px] text-gray-400">
+            {formatTime(msg.created_at)}
+          </span>
+        </div>
+
+        {/* Voice Note */}
+        <div className="flex items-center space-x-2">
+          <PlayCircle size={20} className="text-blue-500" />
+          <audio controls className="h-8">
+            <source src={"https://rapidcollaborate.in/ccp" + msg.voice_note} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      </div>
+    </div>
+  );
+}
 
                 const wasSent = isValidViewUserId
                   ? msg.sender_id == view_user_id
