@@ -7,6 +7,8 @@ import "@syncfusion/ej2-react-dropdowns/styles/material.css";
 import { useAuth } from "../../utils/idb";
 import { connectSocket, getSocket } from "../../utils/Socket";
 import { X } from "lucide-react";
+import { useSelectedUser } from "../../utils/SelectedUserContext";
+import toast from "react-hot-toast";
 
 const EditModal = ({
   msgId,
@@ -22,6 +24,8 @@ const EditModal = ({
   const [suggestions, setSuggestions] = useState([]);
   const { user, theme } = useAuth();
   const chatInputRef = useRef(null);
+
+  const { selectedUser, setSelectedUser } = useSelectedUser();
 
   useEffect(() => {
     if (chatInputRef.current) {
@@ -90,7 +94,7 @@ const EditModal = ({
     setSuggestions(filteredUsers);
   };
 
-  const itemTemplate = (data) => (
+  const itemTemplateold = (data) => (
     <div className="flex items-center gap-2 p-2">
       {data.profilePic ? (
         <img
@@ -111,6 +115,58 @@ const EditModal = ({
       <span>{data.userName}</span>
     </div>
   );
+
+  const itemTemplate = (data) => {
+    const groupType = selectedUser?.group_type; // assumes selectedUser is available
+    const isJunior = user?.seniority == "junior";
+    const isTaggingJunior = data.seniority == "junior";
+    const isTaggingSenior = data.seniority == "senior";
+
+    let isDisabled = false;
+
+    if (
+      selectedUser?.type == "group" &&
+      groupType == "work" &&
+      isJunior &&
+      isTaggingSenior
+    ) {
+      isDisabled = true;
+    }
+    // else if (
+    //   selectedUser?.type == "group" &&
+    //   groupType == "team" &&
+    //   isJunior &&
+    //   isTaggingJunior
+    // ) {
+    //   isDisabled = true;
+    // }
+
+    return (
+      <div
+        className={`flex items-center gap-2 p-2 ${
+          isDisabled ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
+        {data.profilePic ? (
+          <img
+            src={data.profilePic}
+            alt={data.userName}
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        ) : (
+          <div
+            className={`w-8 h-8 rounded-full flex items-center justify-center text-white  font-semibold text-sm`}
+            style={{
+              backgroundColor: data.userColor,
+            }}
+          >
+            {data.userName?.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <span>{data.userName}</span>
+      </div>
+    );
+  };
 
   const handleEdit = async () => {
     if (!value.trim()) return;
@@ -147,9 +203,20 @@ const EditModal = ({
   }, [value]); // Runs every time value changes
 
   const handleSelect = (e) => {
-    const selectedUser = e.itemData;
-    const userId = selectedUser.id;
-    const userName = selectedUser.userName;
+    const selUser = e.itemData;
+    const userId = selUser.id;
+    const userName = selUser.userName;
+
+    const mentionSeniority = selUser.seniority;
+
+    const groupType = selectedUser?.group_type;
+    const isJunior = user?.seniority === "junior";
+
+    if (groupType === "work" && isJunior && mentionSeniority === "senior") {
+      toast.error("You can't tag Senior Associate");
+      e.cancel = true;
+      return;
+    }
 
     if (userId == "all") {
       const hasAll = selectedUsers.some((user) => user.id == "all");
@@ -248,7 +315,9 @@ const EditModal = ({
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ duration: 0.2 }}
         className={`${
-          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+          theme == "dark"
+            ? "bg-gray-300 text-gray-700"
+            : "bg-white text-gray-700"
         }  rounded-md w-full max-w-md`}
       >
         <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
@@ -276,7 +345,9 @@ const EditModal = ({
                 contentEditable
                 className={`
                   ${
-                      theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                    theme == "dark"
+                      ? "bg-gray-800 border-gray-400 text-gray-300"
+                      : ""
                   }
                   w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none
               `}
@@ -316,7 +387,9 @@ const EditModal = ({
                 contentEditable
                 className={`
                   ${
-                      theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                    theme == "dark"
+                      ? "bg-gray-800 border-gray-400 text-gray-300"
+                      : ""
                   }
                   w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none
               `}

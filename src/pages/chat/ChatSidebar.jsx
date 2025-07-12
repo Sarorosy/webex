@@ -58,6 +58,37 @@ const ChatSidebar = ({
     chatsRef.current = chats;
   }, [chats]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!chats || chats.length === 0) return;
+
+      const stripHtml = (html) => {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        return div.textContent || div.innerText || "";
+      };
+
+      const updatedChats = chats.map((chat) => {
+        const key = `chat_input_${chat.id}_type_${chat.type}`;
+        const savedDraft = localStorage.getItem(key);
+
+        const draft = savedDraft && stripHtml(savedDraft).trim() !== "";
+
+        if (chat.draft === draft) return chat; // no change
+
+        return { ...chat, draft };
+      });
+
+      const hasChanges = updatedChats.some(
+        (chat, i) => chat.draft !== chats[i].draft
+      );
+
+      if (hasChanges) setChats(updatedChats);
+    }, 1500); // every 1.5 seconds
+
+    return () => clearInterval(interval); // clean up on unmount
+  }, [chats]);
+
   const audioRef = useRef(new Audio(notificationsound));
 
   useEffect(() => {
@@ -261,35 +292,6 @@ const ChatSidebar = ({
       console.error("Error updating login status:", err);
     }
   };
-
-  useEffect(() => {
-    if (!chats || chats.length === 0) return;
-
-    const stripHtml = (html) => {
-      const div = document.createElement("div");
-      div.innerHTML = html;
-      return div.textContent || div.innerText || "";
-    };
-
-    // Only update draft flag without overwriting logged_in_status or others
-    const updatedChats = chats.map((chat) => {
-      const key = `chat_input_${chat.id}_type_${chat.type}`;
-      const savedDraft = localStorage.getItem(key);
-
-      const draft = savedDraft && stripHtml(savedDraft).trim() !== "";
-
-      if (chat.draft === draft) return chat; // no change
-
-      return { ...chat, draft };
-    });
-
-    // Check if any update happened
-    const hasChanges = updatedChats.some(
-      (chat, i) => chat.draft !== chats[i].draft
-    );
-
-    if (hasChanges) setChats(updatedChats);
-  }, [chats]);
 
   function updateFaviconWithCount(count) {
     const originalFaviconPath = faviconimg; // your favicon image path
@@ -616,22 +618,22 @@ const ChatSidebar = ({
       });
     };
 
-    const handleChatOpened = ({ chatId, chatType, userId }) => {
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.id === chatId && chat.type === chatType) {
-            return {
-              ...chat,
-              read_status: 0,
-              unread_count: 0,
-              is_mentioned: false,
-              is_all: false,
-            };
-          }
-          return chat;
-        })
-      );
-    };
+    // const handleChatOpened = ({ chatId, chatType, userId }) => {
+    //   setChats((prevChats) =>
+    //     prevChats.map((chat) => {
+    //       if (chat.id === chatId && chat.type === chatType) {
+    //         return {
+    //           ...chat,
+    //           read_status: 0,
+    //           unread_count: 0,
+    //           is_mentioned: false,
+    //           is_all: false,
+    //         };
+    //       }
+    //       return chat;
+    //     })
+    //   );
+    // };
 
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
@@ -642,7 +644,7 @@ const ChatSidebar = ({
     socket.on("group_members_added", handleGroupMembersAdded);
     socket.on("new_status", handleNewStatus);
     socket.on("status_deleted", handleStatusDeleted);
-    socket.on("chat_opened", handleChatOpened);
+    //socket.on("chat_opened", handleChatOpened);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
@@ -650,7 +652,7 @@ const ChatSidebar = ({
       socket.off("group_members_added", handleGroupMembersAdded);
       socket.off("new_status", handleNewStatus);
       socket.off("status_deleted", handleStatusDeleted);
-      socket.off("chat_opened", handleChatOpened);
+      //socket.off("chat_opened", handleChatOpened);
     };
   }, [user, chats]);
 

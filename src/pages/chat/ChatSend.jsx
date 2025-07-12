@@ -14,6 +14,7 @@ import {
   Paperclip,
   Plus,
   QuoteIcon,
+  Scaling,
   Send,
   Target,
   X,
@@ -1032,9 +1033,12 @@ const ChatSend = ({
         {/* Paperclip icon (file input trigger) */}
         <div
           onMouseDown={startResizing}
-          className="cursor-n-resize h-1 bg-gray-300 dark:bg-gray-600 rounded-t hover:bg-gray-400"
-          title="Drag to resize"
+          className="cursor-n-resize absolute top-2 right-11 z-50"
+          data-tooltip-id="my-tooltip"
+          data-tooltip-content="Drag to resize"
+          title=""
         >
+        <Scaling size={15} className={`${theme == "dark" ? "text-gray-100" : "text-gray-500"}`}/>
         </div>
         <div
           ref={containerRef}

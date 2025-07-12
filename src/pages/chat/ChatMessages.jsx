@@ -761,7 +761,10 @@ const ChatMessages = ({
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
-          onClick={() => onSelect(emoji)}
+          onClick={() => {
+            onSelect(emoji);
+            //setHoveredMessageId(null)
+          }}
           className="hover:bg-gray-100 hover:scale-125 px-1.5 py-0.5 rounded-full text-sm"
         >
           {emoji}
@@ -926,6 +929,31 @@ const ChatMessages = ({
     setMsgForResults(msg);
     setResultOpen(true);
   };
+
+ const removeTrailingEmptyDivs = (html) => {
+  // Use DOMParser to clean up divs
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const container = doc.body;
+
+  // Remove trailing empty or blank <div>s
+  while (
+    container.lastChild &&
+    container.lastChild.tagName === "DIV" &&
+    container.lastChild.innerHTML.trim().replace(/&nbsp;|<br\s*\/?>/gi, "") === ""
+  ) {
+    container.removeChild(container.lastChild);
+  }
+
+  let cleaned = container.innerHTML;
+
+  // Remove trailing <br> tags (including multiple)
+  cleaned = cleaned.replace(/(<br\s*\/?>\s*)+$/gi, "");
+
+  return cleaned;
+};
+
+
 
   return (
     <div
@@ -1523,7 +1551,7 @@ const ChatMessages = ({
                                   : "text-[13px]"
                               }`}
                               style={{}}
-                              dangerouslySetInnerHTML={{ __html: msg.message }}
+                              dangerouslySetInnerHTML={{ __html:  removeTrailingEmptyDivs(msg.message), }}
                             ></div>
                           </div>
                           {(() => {
@@ -2161,6 +2189,7 @@ const ChatMessages = ({
                                                     "reply"
                                                   );
                                                   setShowReplyEmojiPopup(false);
+                                                  setEmojiPopupLocked(false)
                                                 }}
                                                 isSent={isSent}
                                               />
@@ -2287,6 +2316,7 @@ const ChatMessages = ({
                                 onSelect={(emoji) => {
                                   handleReact(msg.id, emoji, "message");
                                   setShowEmojiPopup(false);
+                                  setEmojiPopupLocked(false);
                                 }}
                                 isSent={isSent}
                               />
