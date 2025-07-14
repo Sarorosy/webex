@@ -3,29 +3,61 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { X } from "lucide-react";
 import { useAuth } from "../../utils/idb";
+import { connectSocket, getSocket } from "../../utils/Socket";
 
 const PinnedMessages = ({ userId, searchUserId, type, setSelectedMessage, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const {theme} = useAuth();
+  const {user, theme} = useAuth();
 
-  useEffect(() => {
-
-    setLoading(true);
-    axios
-      .post("https://webexback-06cc.onrender.com/api/messages/pinned-messages", {
+  const fetchPinnedMessages = async (userId, searchUserId, type) => {
+  setLoading(true);
+  try {
+    const res = await axios.post(
+      "https://webexback-06cc.onrender.com/api/messages/pinned-messages",
+      {
         user_id: userId,
         search_user_id: searchUserId,
         type,
-      })
-      .then((res) => {
-        setMessages(res.data.messages || []);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch pinned messages:", err);
-      })
-      .finally(() => setLoading(false));
-  }, [userId, searchUserId, type]);
+      }
+    );
+    setMessages(res.data.messages || []);
+  } catch (err) {
+    console.error("Failed to fetch pinned messages:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchPinnedMessages(userId, searchUserId, type);
+}, [userId, searchUserId, type]);
+
+
+
+  useEffect(() => {
+      if (!user) return;
+  
+      connectSocket(user.id);
+      const socket = getSocket();
+  
+      
+  
+      const handlePinMsg = (msgObj) => {
+        const { user_id } = msgObj;
+  
+        // Update chats list if deleted message is the last message
+        if(user_id == userId){
+          fetchPinnedMessages(userId, searchUserId, type);
+        }
+      };
+  
+      socket.on("pinUpdated", handlePinMsg);
+  
+      return () => {
+        socket.off("pinUpdated", handlePinMsg);
+      };
+    }, [user]);
 
   return (
     <AnimatePresence>

@@ -147,14 +147,14 @@ const ChatSidebar = ({
 
     socket.on("group_left", handleGroupLeft);
     socket.on("group_updated", handleGroupUpdated);
-    socket.on("group_created", handleGroupCreated);
+    // socket.on("group_created", handleGroupCreated);
     socket.on("group_deleted", handleGroupDeleted);
     socket.on("online-users", handleOnlineUsers);
 
     return () => {
       socket.off("group_left", handleGroupLeft);
       socket.off("group_updated", handleGroupUpdated);
-      socket.off("group_created", handleGroupCreated);
+      // socket.off("group_created", handleGroupCreated);
       socket.off("group_deleted", handleGroupDeleted);
       socket.off("online-users", handleOnlineUsers);
     };
@@ -635,6 +635,18 @@ const ChatSidebar = ({
     //   );
     // };
 
+    const handleMessageDelete = (msgObj) => {
+      const { msgId, type } = msgObj;
+
+      // Update chats list if deleted message is the last message
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.last_message_id === msgId
+            ? { ...chat, last_message_deleted: 1 }
+            : chat
+        )
+      );
+    };
     socket.on("connect", () => {
       socket.emit("user_loggedin", user);
     });
@@ -644,6 +656,7 @@ const ChatSidebar = ({
     socket.on("group_members_added", handleGroupMembersAdded);
     socket.on("new_status", handleNewStatus);
     socket.on("status_deleted", handleStatusDeleted);
+    socket.on("message_delete", handleMessageDelete);
     //socket.on("chat_opened", handleChatOpened);
 
     return () => {
@@ -652,6 +665,7 @@ const ChatSidebar = ({
       socket.off("group_members_added", handleGroupMembersAdded);
       socket.off("new_status", handleNewStatus);
       socket.off("status_deleted", handleStatusDeleted);
+      socket.off("message_delete", handleMessageDelete);
       //socket.off("chat_opened", handleChatOpened);
     };
   }, [user, chats]);
@@ -834,7 +848,8 @@ const ChatSidebar = ({
         Array.isArray(group.selected_members) &&
         group.selected_members.includes(user?.id)
       ) {
-        fetchChats(false);
+        // fetchChats(false);
+        setChats((prevChats) => [group, ...prevChats]);
       }
     };
 

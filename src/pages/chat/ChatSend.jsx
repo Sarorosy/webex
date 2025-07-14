@@ -720,65 +720,132 @@ const ChatSend = ({
     }
   };
 
+   useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (!inputRef.current) return;
+
+      const value = inputRef.current.innerHTML.trim();
+
+      if (value && value !== "<br>") {
+        setValue(value);
+      }
+    });
+
+    if (inputRef.current) {
+      observer.observe(inputRef.current, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+
   const handlePaste = (e) => {
     e.preventDefault();
 
-    const clipboardData = e.clipboardData;
-    const items = clipboardData.items;
-    let imageFound = false;
+    const items = e.clipboardData.items;
+    const target = e.target;
+
+    const hasImage = target.querySelector("img"); // check if image already present
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.type.indexOf("image") !== -1) {
-        imageFound = true;
-        const file = item.getAsFile();
 
+      if (item.type.startsWith("image")) {
+        if (hasImage) {
+          setTimeout(() => {
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const space = document.createTextNode(" ");
+            range.insertNode(space);
+
+            const afterSpace = document.createRange();
+            afterSpace.setStartAfter(space);
+            afterSpace.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(afterSpace);
+
+            space.remove();
+
+            // Trigger event *after* cursor reposition and DOM update
+            triggerInputEvent(target);
+          }, 0); // shorter delay works just as well
+          return;
+        }
+
+        // If no image exists, insert image
+        const file = item.getAsFile();
         const reader = new FileReader();
-        reader.onload = function (event) {
+
+        reader.onload = (event) => {
           const img = document.createElement("img");
           img.src = event.target.result;
+          img.style.maxWidth = "100%";
+
+          const br = document.createElement("br");
 
           const selection = window.getSelection();
           if (!selection.rangeCount) return;
 
           const range = selection.getRangeAt(0);
+          range.deleteContents();
           range.insertNode(img);
 
-          // Optional: If you want a line break after the image
-          const br = document.createElement("br");
           range.setStartAfter(img);
           range.insertNode(br);
 
-          range.setStartAfter(br);
-          range.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(range);
+          // Move cursor after <br>
+          const newRange = document.createRange();
+          newRange.setStartAfter(br);
+          newRange.collapse(true);
 
-          triggerInputEvent(e.target);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+
+          // Insert space after 200ms to trigger update
+          setTimeout(() => {
+            const space = document.createTextNode(" ");
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const r = sel.getRangeAt(0);
+            r.insertNode(space);
+
+            const afterSpace = document.createRange();
+            afterSpace.setStartAfter(space);
+            afterSpace.collapse(true);
+
+            sel.removeAllRanges();
+            sel.addRange(afterSpace);
+
+            triggerInputEvent(target);
+          }, 200);
         };
+
         reader.readAsDataURL(file);
-        break;
+        return;
       }
     }
 
-    if (!imageFound) {
-      const text = clipboardData.getData("text/plain");
-      document.execCommand("insertText", false, text);
-      triggerInputEvent(e.target);
-    }
+    // If no image, insert plain text
+    const text = e.clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+    triggerInputEvent(target);
   };
 
   // 🔁 Helper to dispatch an input event manually
-  const triggerInputEvent = (el) => {
+  function triggerInputEvent(el) {
     const event = new Event("input", {
       bubbles: true,
       cancelable: true,
     });
     el.dispatchEvent(event);
-  };
+  }
 
   useEffect(() => {
-    // console.log("Value updated:", value);
+    console.log("Value updated:", value);
   }, [value]);
 
   // Input change handler to track value changes
@@ -1000,34 +1067,36 @@ const ChatSend = ({
         </div>
       )}
       {selectedFile && (
-            <div className="flex items-end">
-              <div
-                className={` ${
-                  theme == "dark" ? "bg-gray-200" : "bg-gray-300"
-                } rounded chatfile text-[11px] flex  justify-center items-center relative px-2 py-1.5 gap-2 mb-1`}
-                data-tooltip-id="my-tooltip"
-                data-tooltip-content={selectedFile.name}
-              >
-                <div>
-                  <File size={15} />
-                </div>
-                <div className="truncate max-w-[300px] text-center">
-                  {selectedFile.name}
-                </div>
-                <button
-                  onClick={() => setSelectedFile(null)}
-                  className={`
+        <div className="flex items-end">
+          <div
+            className={` ${
+              theme == "dark" ? "bg-gray-200" : "bg-gray-300"
+            } rounded chatfile text-[11px] flex  justify-center items-center relative px-2 py-1.5 gap-2 mb-1`}
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content={selectedFile.name}
+          >
+            <div>
+              <File size={15} />
+            </div>
+            <div className="truncate max-w-[300px] text-center">
+              {selectedFile.name}
+            </div>
+            <button
+              onClick={() => setSelectedFile(null)}
+              className={`
                     ${
-                      theme == "dark" ? "text-gray-500 hover:text-red-500" : "text-gray-500 hover:text-red-500"
+                      theme == "dark"
+                        ? "text-gray-500 hover:text-red-500"
+                        : "text-gray-500 hover:text-red-500"
                     }
                     
                     `}
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            </div>
-          )}
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div>
         {/* Paperclip icon (file input trigger) */}
@@ -1038,18 +1107,18 @@ const ChatSend = ({
           data-tooltip-content="Drag to resize"
           title=""
         >
-        <Scaling size={15} className={`${theme == "dark" ? "text-gray-100" : "text-gray-500"}`}/>
+          <Scaling
+            size={15}
+            className={`${theme == "dark" ? "text-gray-100" : "text-gray-500"}`}
+          />
         </div>
         <div
           ref={containerRef}
           style={{ height }}
-          
           className={` ${
             theme == "dark" ? "bg-gray-700" : "bg-gray-100"
           } chat-send-container space-x-2 flex items-end justify-between mx-auto max-h-[250px] min-h-[90px] ios py-2 px-2 rounded items-stretch`}
         >
-          
-         
           <div className="flex flex-col items-center justify-start gap-2 h-fill">
             {user?.user_type == "admin" ? (
               <div className="relative">
@@ -1147,7 +1216,6 @@ const ChatSend = ({
             )}
           </div>
           {/* Show selected file with X */}
-          
 
           {type === "group" ? (
             <div className="relative w-full flex">
@@ -1156,10 +1224,8 @@ const ChatSend = ({
                   Type @ to mention someone...
                 </div>
               )}
-               
 
               <div
-                
                 className={`overflow-auto border rounded-b w-full ${
                   theme === "dark"
                     ? "bg-gray-600 border-gray-500"
@@ -1205,46 +1271,42 @@ const ChatSend = ({
                 </div>
               )}
 
-               
-
-      <div
-                
+              <div
                 className={`overflow-auto border rounded-b w-full ${
                   theme === "dark"
                     ? "bg-gray-600 border-gray-500"
                     : "bg-white border-gray-300"
                 }`}
               >
-
-              <div
-                id="chatInputuser"
-                ref={inputRef}
-                contentEditable
-                className={`w-full h-full overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
+                <div
+                  id="chatInputuser"
+                  ref={inputRef}
+                  contentEditable
+                  className={`w-full h-full overflow-y-auto px-3 py-2 rounded border  focus:outline-none 
                   ${
                     theme == "dark"
                       ? "bg-gray-600 border-gray-500 text-gray-200"
                       : "bg-white border-gray-300"
                   }  
                 `}
-                placeholder="Type @ to mention someone..."
-                onInput={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-              ></div>
+                  placeholder="Type @ to mention someone..."
+                  onInput={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                ></div>
 
-              <MentionComponent
-                dataSource={[]}
-                ref={mentionRef}
-                fields={{ text: "userName" }}
-                target="#chatInputuser"
-                mentionChar="^"
-                allowSpaces={true}
-                popupHeight="200px"
-                popupWidth="250px"
-                itemTemplate={itemTemplate}
-                select={handleSelect} // Attach the select event handler
-              />
+                <MentionComponent
+                  dataSource={[]}
+                  ref={mentionRef}
+                  fields={{ text: "userName" }}
+                  target="#chatInputuser"
+                  mentionChar="^"
+                  allowSpaces={true}
+                  popupHeight="200px"
+                  popupWidth="250px"
+                  itemTemplate={itemTemplate}
+                  select={handleSelect} // Attach the select event handler
+                />
               </div>
             </div>
           )}

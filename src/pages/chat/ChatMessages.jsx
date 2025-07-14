@@ -314,11 +314,19 @@ const ChatMessages = ({
     };
   }, [skip, hasMore, isLoading]);
 
+  const [pendingReads, setPendingReads] = useState([]);
+
   useEffect(() => {
-    if (latestMessage) {
+    if (!latestMessage) return;
+
+    const isTabActive = document.visibilityState === "visible";
+    const isWindowFocused = document.hasFocus();
+
+    if (isTabActive && isWindowFocused) {
       const socket = getSocket();
       connectSocket(user?.id);
-      console.log("latestmessage", latestMessage);
+
+      console.log("✅ Message read in active tab", latestMessage);
 
       socket.emit("read_message_socket", {
         user_id: user.id,
@@ -326,6 +334,8 @@ const ChatMessages = ({
         receiver_id: latestMessage.receiver_id,
         user_type: latestMessage.user_type,
       });
+    } else {
+      console.log("⛔ Skipped read: tab not active or window not focused");
     }
   }, [latestMessage]);
 
@@ -367,12 +377,19 @@ const ChatMessages = ({
 
           setLatestMessageId(msg.id);
           console.log("read_message-emit");
-          socket.emit("read_message_socket", {
-            user_id: user.id,
-            message_ids: [msg.id],
-            receiver_id: msg.receiver_id,
-            user_type: msg.user_type,
-          });
+          const isTabActive = document.visibilityState === "visible";
+          const isWindowFocused = document.hasFocus();
+
+          if (isTabActive && isWindowFocused) {
+            socket.emit("read_message_socket", {
+              user_id: user.id,
+              message_ids: [msg.id],
+              receiver_id: msg.receiver_id,
+              user_type: msg.user_type,
+            });
+          } else {
+            setPendingReads((prev) => [...prev, msg]);
+          }
 
           const isAtBottom =
             containerRef.current.scrollHeight -
@@ -412,13 +429,20 @@ const ChatMessages = ({
               }
 
               setLatestMessageId(reply.id);
-              socket.emit("read_message_socket", {
-                user_id: user.id,
-                message_ids: [reply.id],
-                receiver_id: reply.receiver_id,
-                user_type: reply.user_type,
-              });
 
+              const isTabActive = document.visibilityState === "visible";
+              const isWindowFocused = document.hasFocus();
+
+              if (isTabActive && isWindowFocused) {
+                socket.emit("read_message_socket", {
+                  user_id: user.id,
+                  message_ids: [reply.id],
+                  receiver_id: reply.receiver_id,
+                  user_type: reply.user_type,
+                });
+              }else {
+                setPendingReads((prev) => [...prev, reply]);
+              }
               return {
                 ...msg,
                 replies: [...existingReplies, reply],
@@ -446,6 +470,46 @@ const ChatMessages = ({
       mounted = false;
     };
   }, [user?.id, userId]);
+
+  useEffect(() => {
+  const handleVisibilityOrFocus = () => {
+    const isTabActive = document.visibilityState === "visible";
+    const isWindowFocused = document.hasFocus();
+
+    if (isTabActive && isWindowFocused && pendingReads.length > 0) {
+      const socket = getSocket();
+
+      const grouped = {};
+      for (const msg of pendingReads) {
+        const key = `${msg.receiver_id}_${msg.user_type}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(msg.id);
+      }
+
+      Object.entries(grouped).forEach(([key, message_ids]) => {
+        const [receiver_id, user_type] = key.split("_");
+
+        socket.emit("read_message_socket", {
+          user_id: user.id,
+          message_ids,
+          receiver_id: parseInt(receiver_id),
+          user_type,
+        });
+      });
+
+      setPendingReads([]); // clear after reading
+    }
+  };
+
+  window.addEventListener("focus", handleVisibilityOrFocus);
+  document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
+  return () => {
+    window.removeEventListener("focus", handleVisibilityOrFocus);
+    document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+  };
+}, [pendingReads]);
+
 
   useEffect(() => {
     const socket = getSocket();
@@ -569,16 +633,19 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          message_id: msgId,
-        }),
-      });
+      const response = await fetch(
+        "https://webexback-06cc.onrender.com/api/messages/pin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            message_id: msgId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -643,7 +710,6 @@ const ChatMessages = ({
       // Check if the message is already in the current messages array
       let existingMessage = messages.find((msg) => msg.id == selmsg.id);
       let needtofetch = false;
-
 
       if (!existingMessage) {
         // Search in replies of each message
@@ -753,11 +819,11 @@ const ChatMessages = ({
     Number(view_user_id) > 0 && !isNaN(Number(view_user_id));
 
   const EmojiPopup = ({ onSelect, isSent }) => (
-    <div className={`ios absolute bottom-6  flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10
-      ${
-        isSent ? "left-0" : "right-0"
-      }
-    `}>
+    <div
+      className={`ios absolute bottom-6  flex gap-1 bg-white border border-gray-200 rounded-full shadow-sm z-10
+      ${isSent ? "left-0" : "right-0"}
+    `}
+    >
       {["👍", "😂", "❤️", "😊", "😁", "🤝🏻"].map((emoji) => (
         <button
           key={emoji}
@@ -930,30 +996,30 @@ const ChatMessages = ({
     setResultOpen(true);
   };
 
- const removeTrailingEmptyDivs = (html) => {
-  // Use DOMParser to clean up divs
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  const container = doc.body;
+  const removeTrailingEmptyDivs = (html) => {
+    // Use DOMParser to clean up divs
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const container = doc.body;
 
-  // Remove trailing empty or blank <div>s
-  while (
-    container.lastChild &&
-    container.lastChild.tagName === "DIV" &&
-    container.lastChild.innerHTML.trim().replace(/&nbsp;|<br\s*\/?>/gi, "") === ""
-  ) {
-    container.removeChild(container.lastChild);
-  }
+    // Remove trailing empty or blank <div>s
+    while (
+      container.lastChild &&
+      container.lastChild.tagName === "DIV" &&
+      container.lastChild.innerHTML
+        .trim()
+        .replace(/&nbsp;|<br\s*\/?>/gi, "") === ""
+    ) {
+      container.removeChild(container.lastChild);
+    }
 
-  let cleaned = container.innerHTML;
+    let cleaned = container.innerHTML;
 
-  // Remove trailing <br> tags (including multiple)
-  cleaned = cleaned.replace(/(<br\s*\/?>\s*)+$/gi, "");
+    // Remove trailing <br> tags (including multiple)
+    cleaned = cleaned.replace(/(<br\s*\/?>\s*)+$/gi, "");
 
-  return cleaned;
-};
-
-
+    return cleaned;
+  };
 
   return (
     <div
@@ -1038,61 +1104,6 @@ const ChatMessages = ({
                   );
                 }
 
-                if (msg.voice_note) {
-  const wasSent = isValidViewUserId
-    ? msg.sender_id == view_user_id
-    : msg.sender_id == user.id;
-
-  return (
-    <div
-      key={`${msg.id}-${msg.created_at}`}
-      className={`w-full my-2 flex ${wasSent ? "flex-row-reverse items-start" : "justify-start"}`}
-    >
-      {/* Profile pic or initial */}
-      {msg.profile_pic && msg.profile_pic !== "null" && msg.profile_pic !== "" ? (
-        <img
-          src={"https://rapidcollaborate.in/ccp" + msg.profile_pic}
-          className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
-        />
-      ) : (
-        <div className="flex justify-center items-center h-7 w-7 text-xs bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full shadow-sm font-medium">
-          {msg.sender_name ? msg.sender_name.charAt(0) : "U"}
-        </div>
-      )}
-
-      {/* Voice Note Card */}
-      <div
-        className={`${
-          wasSent ? "mr-2" : "ml-2"
-        } ${theme == "dark" ? "bg-gray-400" : "bg-blue-50 border border-blue-200"} px-3 py-1 rounded-2xl shadow-md max-w-[80%] w-fit`}
-      >
-        {/* Sender Name & Time */}
-        <div
-          className={`flex gap-2 items-center text-xs mb-2 ${
-            wasSent ? "flex-row-reverse" : ""
-          }`}
-        >
-          <span className="text-gray-700 font-medium">
-            {wasSent && !view_user_id ? "You" : msg.sender_name ?? "Unknown User"}
-          </span>
-          <span className="text-[10px] text-gray-400">
-            {formatTime(msg.created_at)}
-          </span>
-        </div>
-
-        {/* Voice Note */}
-        <div className="flex items-center space-x-2">
-          <PlayCircle size={20} className="text-blue-500" />
-          <audio controls className="h-8">
-            <source src={"https://rapidcollaborate.in/ccp" + msg.voice_note} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-      </div>
-    </div>
-  );
-}
-
                 const wasSent = isValidViewUserId
                   ? msg.sender_id == view_user_id
                   : msg.sender_id == user.id;
@@ -1130,13 +1141,11 @@ const ChatMessages = ({
 
                       {/* Poll Card */}
                       <div
-                        className={`${
-                          wasSent ? "mr-2" : "ml-2"
-                        } ${
-                      highlightedMessageId == msg.id
-                        ? "animate-pulse-highlight bg-blue-100 p-2"
-                        : "bg-white"
-                    }  border border-blue-200 p-4 rounded-2xl shadow-md max-w-[80%] w-fit`}
+                        className={`${wasSent ? "mr-2" : "ml-2"} ${
+                          highlightedMessageId == msg.id
+                            ? "animate-pulse-highlight bg-blue-100 p-2"
+                            : "bg-white"
+                        }  border border-blue-200 p-4 rounded-2xl shadow-md max-w-[80%] w-fit`}
                       >
                         {/* Sender Name & Time */}
                         <div
@@ -1200,7 +1209,7 @@ const ChatMessages = ({
                             );
                           })}
                         </div>
-                        { user?.user_type == "admin" && (
+                        {user?.user_type == "admin" && (
                           <button
                             onClick={() => {
                               handleResultBtnClick(msg);
@@ -1234,7 +1243,7 @@ const ChatMessages = ({
                       }
                     }}
                     //onDoubleClick={() => handleReply(msg.id, msg.message)}
-
+                    id="msg-msg"
                     className={`relative message-wrapper gap-2 rounded-lg w-full flex ${
                       isSent ? "flex-row-reverse" : "justify-start"
                     } ${
@@ -1277,38 +1286,204 @@ const ChatMessages = ({
                         <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
                       ) : null}
 
-                      <div
-                        className={`message-content`}
-                      >
-                        <div  className={`flex flex-col  w-full  ${hoveredMessageId == msg.id ? (theme == "dark" ? "bg-gray-700" : "bg-gray-200") : ""} rounded p-2 ${
-                          isSent ? "items-end justify-end" : "items-start justify-start"
-                        }
+                      <div className={`message-content`}>
+                        <div
+                          className={`flex flex-col  w-full  ${
+                            hoveredMessageId == msg.id
+                              ? theme == "dark"
+                                ? "bg-gray-700"
+                                : "bg-gray-200"
+                              : ""
+                          } rounded p-2 ${
+                            isSent
+                              ? "items-end justify-end"
+                              : "items-start justify-start"
+                          }
                         ${
-                          theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                          theme == "dark"
+                            ? "hover:bg-gray-700"
+                            : "hover:bg-gray-200"
                         }
                         `}
-                        onMouseEnter={() => {
+                          onMouseEnter={() => {
                             if (!emojiPopupLocked && msg.sender_id != 167)
                               setHoveredMessageId(msg.id);
                           }}
                         >
-                        <div className="max-w-[60%] min-w-[20%]">
-                        <div
-                          style={{
-                            opacity:
-                              isReply && replyMsgId != msg.id ? "0.3" : "1",
-                            filter:
-                              isReply && replyMsgId != msg.id
-                                ? "blur(3px)"
-                                : "none",
-                            boxShadow:
-                              isReply && replyMsgId == msg.id
-                                ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
-                                : "none",
-                            transition:
-                              "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
-                          }}
-                          className={` px-3 py-2 w-full rounded-lg
+                          <div className="max-w-[60%] min-w-[20%]">
+                            {msg.voice_note ? (
+                              <div
+                                className={`flex flex-col gap-1 items-start f-11 ${
+                                  isSent
+                                    ? "items-end text-right"
+                                    : "items-start text-left"
+                                } ${
+                                  theme == "dark"
+                                    ? "bg-gray-500 text-gray-50 rounded-tr-none"
+                                    : "bg-gray-100 text-gray-900 rounded-tr-none"
+                                } px-3 py-2 w-full rounded-lg`}
+                              >
+                                {/* Sender Name */}
+                                <div className="text-xs text-gray-500 dark:text-gray-300">
+                                  {isSent && !view_user_id
+                                    ? "You"
+                                    : msg.sender_name ?? "Unknown User"}
+                                </div>
+
+                                {/* Audio Block */}
+                                <div
+                                  className={`flex items-center gap-2 ${
+                                    isSent ? "flex-row-reverse" : "flex-row"
+                                  }`}
+                                >
+                                  <PlayCircle
+                                    size={20}
+                                    className="text-blue-500"
+                                  />
+                                  <audio controls className="h-8">
+                                    <source
+                                      src={`https://rapidcollaborate.in/ccp${msg.voice_note}`}
+                                      type="audio/mpeg"
+                                    />
+                                    Your browser does not support the audio
+                                    element.
+                                  </audio>
+                                </div>
+
+                                {/* Timestamp */}
+                                <div
+                                  className={`message-time text-xs f-11 ${
+                                    isSent ? "text-right" : "text-left"
+                                  } ${
+                                    theme === "dark"
+                                      ? "text-gray-100"
+                                      : "text-gray-400"
+                                  }`}
+                                  data-tooltip-id="my-tooltip"
+                                  data-tooltip-content={msg.created_at}
+                                >
+                                  {formatTime(msg.created_at)}
+                                </div>
+
+                                {/* Reactions */}
+                                {(() => {
+                                  let reactions = [];
+
+                                  try {
+                                    const parsed =
+                                      typeof msg.reactions === "string"
+                                        ? JSON.parse(msg.reactions)
+                                        : msg.reactions;
+
+                                    if (Array.isArray(parsed))
+                                      reactions = parsed;
+                                  } catch {
+                                    reactions = [];
+                                  }
+
+                                  if (reactions.length === 0) return null;
+
+                                  const reactionMap = reactions.reduce(
+                                    (acc, r) => {
+                                      acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                                      return acc;
+                                    },
+                                    {}
+                                  );
+
+                                  return (
+                                    <div
+                                      className={`relative mt-1 flex flex-wrap gap-2 text-sm ${
+                                        isSent ? "justify-end" : "justify-start"
+                                      }`}
+                                    >
+                                      {/* Tooltip Popup */}
+                                      {hoveredEmoji &&
+                                        hoveredEmoji === msg.id && (
+                                          <div
+                                            ref={tooltipRef}
+                                            className="absolute top-[30px] z-50 max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs text-black"
+                                          >
+                                            {loadingReactions ? (
+                                              <div>Loading...</div>
+                                            ) : (
+                                              <div className="space-y-1 flex flex-col">
+                                                {reactionUsers.map((user) => (
+                                                  <div
+                                                    key={user.id}
+                                                    className="flex items-center gap-2 text-black"
+                                                  >
+                                                    <img
+                                                      src={
+                                                        user.profile_pic
+                                                          ? `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                                                          : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                              0
+                                                            )}&background=random&color=fff&size=128`
+                                                      }
+                                                      alt={user.name}
+                                                      className="w-5 h-5 rounded-full"
+                                                    />
+                                                    <span className="f-11">
+                                                      {user.name}
+                                                    </span>
+                                                    <span>{user.emoji}</span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                      {/* Reaction Buttons */}
+                                      {Object.entries(reactionMap).map(
+                                        ([emoji, count]) => (
+                                          <div
+                                            key={emoji}
+                                            onMouseEnter={(e) => {
+                                              if (!emojiPopupLocked) {
+                                                handleReactionHover(
+                                                  e,
+                                                  emoji,
+                                                  msg,
+                                                  "message"
+                                                );
+                                              }
+                                            }}
+                                            className="bg-gray-100 flex items-center border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs"
+                                          >
+                                            <span className="mr-1">
+                                              {emoji}
+                                            </span>
+                                            <span className="text-[10px] font-medium">
+                                              {count}
+                                            </span>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  opacity:
+                                    isReply && replyMsgId != msg.id
+                                      ? "0.3"
+                                      : "1",
+                                  filter:
+                                    isReply && replyMsgId != msg.id
+                                      ? "blur(3px)"
+                                      : "none",
+                                  boxShadow:
+                                    isReply && replyMsgId == msg.id
+                                      ? "0px 0px 8px rgba(37, 99, 235, 0.5)"
+                                      : "none",
+                                  transition:
+                                    "opacity 0.3s ease, filter 0.3s ease, background-color 0.3s ease, transform 0.3s ease",
+                                }}
+                                className={` px-3 py-2 w-full rounded-lg
                              ${
                                isSent
                                  ? `${
@@ -1328,332 +1503,347 @@ const ChatMessages = ({
                           : ""
                       }
                       `}
-                          
-                          // onMouseLeave={() => {
-                          //   if (!emojiPopupLocked) {
-                          //     setHoveredMessageId(null);
-                          //     clearHover();
-                          //   }
-                          // }}
-                        >
-                          <div
-                            className={`text-xs  mb-1 font-medium ${
-                              isSent
-                                ? "text-white-600 text-right"
-                                : `${
-                                    theme == "dark"
-                                      ? "text-white"
-                                      : "text-gray-600"
-                                  }`
-                            }`}
-                          >
-                            <div
-                              className={`flex gap-2 items-end f-11 ${
-                                isSent ? "flex-row-reverse" : ""
-                              }`}
-                            >
-                              <div>
-                                {isSent && !view_user_id
-                                  ? "You"
-                                  : msg.sender_name ?? "Unknown User"}
-                              </div>
-                              <div
-                                className={`message-time flex items-center text-xs f-11 ${
-                                  isSent ? "justify-end" : "justify-start"
-                                }  ${
-                                  isSent
-                                    ? `${
-                                        theme == "dark"
-                                          ? "text-gray-100"
-                                          : "text-gray-400"
-                                      }`
-                                    : `${
-                                        theme == "dark"
-                                          ? "text-gray-100"
-                                          : "text-gray-400"
-                                      }`
-                                }`}
-                                data-tooltip-id="my-tooltip"
-                                data-tooltip-content={msg.created_at}
-                              >
-                                <div> {formatTime(msg.created_at)}</div>
-                              </div>
-                              <div>
-                                {msg.is_edited == 1 && (
-                                  <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
-                                    Edited
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          {msg.is_file == 1 &&
-                            msg.filename &&
-                            (() => {
-                              const ext = msg.filename
-                                .split(".")
-                                .pop()
-                                .toLowerCase();
-                              const isImage = [
-                                "png",
-                                "jpg",
-                                "jpeg",
-                                "avif",
-                                "svg",
-                                "webp",
-                              ].includes(ext);
-                              const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
-                              const filenameOnly = msg.filename
-                                .split("/")
-                                .pop();
 
-                              return (
-                                <div className="w-full mb-1">
-                                  {/* File Info Box */}
-                                  <div className="bg-white/80 border border-gray-300 rounded shadow-sm flex flex-col gap-1">
-                                    <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-l w-full">
-                                      <div>
-                                        {isImage ? (
-                                          <ImageIcon
-                                            className="text-pink-500"
-                                            size={11}
-                                          />
-                                        ) : ext === "mp4" || ext === "mov" ? (
-                                          <VideoIcon
-                                            className="text-purple-600"
-                                            size={11}
-                                          />
-                                        ) : [
-                                            "doc",
-                                            "docx",
-                                            "xls",
-                                            "xlsx",
-                                          ].includes(ext) ? (
-                                          <FileSpreadsheet
-                                            className="text-green-600"
-                                            size={11}
-                                          />
-                                        ) : (
-                                          <FileText
-                                            className="text-blue-600"
-                                            size={11}
-                                          />
-                                        )}
-                                      </div>
-                                      <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
-                                        <a
-                                          href={fileUrl}
-                                          target="_blank"
-                                          download={fileUrl}
-                                          rel="noopener noreferrer"
-                                          className="f-11 text-blue-600 hover:underline  flex items-center"
-                                        >
-                                          {msg.filename.split("/").pop()}
-                                        </a>
-                                      </span>
-                                    </div>
-
-                                    {/* File Preview */}
-
-                                    {isImage && (
-                                      <div className="px-3">
-                                        <button
-                                          onClick={() => {
-                                            setOpenFileModal({
-                                              url: `https://rapidcollaborate.in/ccp${msg.filename}`,
-                                              name: msg.filename
-                                                .split("/")
-                                                .pop(),
-                                              sender_name: msg.sender_name,
-                                              time: msg.created_at,
-                                            });
-                                            console.log(msg);
-                                          }}
-                                        >
-                                          <img
-                                            src={fileUrl}
-                                            alt={msg.filename}
-                                            className="max-w-36 h-full object-contain"
-                                          />
-                                        </button>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          {msg.is_quoted == 1 &&
-                            msg.quoted_msg &&
-                            msg.quoted_msg_name &&
-                            msg.quoted_msg_id && (
-                              <div
-                                className={` border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800
-                              ${isSent ? "border-r-2" : "border-l-2"}`}
+                                // onMouseLeave={() => {
+                                //   if (!emojiPopupLocked) {
+                                //     setHoveredMessageId(null);
+                                //     clearHover();
+                                //   }
+                                // }}
                               >
                                 <div
-                                  className={`flex items-center justify-between mb-1 ${
-                                    isSent ? "flex-row-reverse" : ""
+                                  className={`text-xs  mb-1 font-medium ${
+                                    isSent
+                                      ? "text-white-600 text-right"
+                                      : `${
+                                          theme == "dark"
+                                            ? "text-white"
+                                            : "text-gray-600"
+                                        }`
                                   }`}
                                 >
-                                  <span className="font-bold text-gray-700 mr-1">
-                                    {msg.quoted_msg_name?.length > 15
-                                      ? msg.quoted_msg_name.slice(0, 15) + "…"
-                                      : msg.quoted_msg_name}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      try {
-                                        const quoted = JSON.parse(
-                                          msg.quoted_msg_json
-                                        );
-                                        setSelectedMessage(quoted);
-                                      } catch (e) {
-                                        console.error(
-                                          "Invalid quoted_msg_json",
-                                          e.message
-                                        );
-                                      }
-                                    }}
-                                    className={`text-orange-500 hover:text-orange-900 flex gap-1 ${
-                                      isSent ? "flex-row-reverse " : ""
+                                  <div
+                                    className={`flex gap-2 items-end f-11 ${
+                                      isSent ? "flex-row-reverse" : ""
                                     }`}
                                   >
-                                    Go to message{" "}
-                                    <span
-                                      className={` ${
-                                        isSent ? "rotate-[-180deg] " : ""
+                                    <div>
+                                      {isSent && !view_user_id
+                                        ? "You"
+                                        : msg.sender_name ?? "Unknown User"}
+                                    </div>
+                                    <div
+                                      className={`message-time flex items-center text-xs f-11 ${
+                                        isSent ? "justify-end" : "justify-start"
+                                      }  ${
+                                        isSent
+                                          ? `${
+                                              theme == "dark"
+                                                ? "text-gray-100"
+                                                : "text-gray-400"
+                                            }`
+                                          : `${
+                                              theme == "dark"
+                                                ? "text-gray-100"
+                                                : "text-gray-400"
+                                            }`
                                       }`}
+                                      data-tooltip-id="my-tooltip"
+                                      data-tooltip-content={msg.created_at}
                                     >
-                                      →
-                                    </span>
-                                  </button>
+                                      <div> {formatTime(msg.created_at)}</div>
+                                    </div>
+                                    <div>
+                                      {msg.is_edited == 1 && (
+                                        <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
+                                          Edited
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
+                                {msg.is_file == 1 &&
+                                  msg.filename &&
+                                  (() => {
+                                    const ext = msg.filename
+                                      .split(".")
+                                      .pop()
+                                      .toLowerCase();
+                                    const isImage = [
+                                      "png",
+                                      "jpg",
+                                      "jpeg",
+                                      "avif",
+                                      "svg",
+                                      "webp",
+                                    ].includes(ext);
+                                    const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
+                                    const filenameOnly = msg.filename
+                                      .split("/")
+                                      .pop();
+
+                                    return (
+                                      <div className="w-full mb-1">
+                                        {/* File Info Box */}
+                                        <div className="bg-white/80 border border-gray-300 rounded shadow-sm flex flex-col gap-1">
+                                          <div className="flex items-center gap-1 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-l w-full">
+                                            <div>
+                                              {isImage ? (
+                                                <ImageIcon
+                                                  className="text-pink-500"
+                                                  size={11}
+                                                />
+                                              ) : ext === "mp4" ||
+                                                ext === "mov" ? (
+                                                <VideoIcon
+                                                  className="text-purple-600"
+                                                  size={11}
+                                                />
+                                              ) : [
+                                                  "doc",
+                                                  "docx",
+                                                  "xls",
+                                                  "xlsx",
+                                                ].includes(ext) ? (
+                                                <FileSpreadsheet
+                                                  className="text-green-600"
+                                                  size={11}
+                                                />
+                                              ) : (
+                                                <FileText
+                                                  className="text-blue-600"
+                                                  size={11}
+                                                />
+                                              )}
+                                            </div>
+                                            <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
+                                              <a
+                                                href={fileUrl}
+                                                target="_blank"
+                                                download={fileUrl}
+                                                rel="noopener noreferrer"
+                                                className="f-11 text-blue-600 hover:underline  flex items-center"
+                                              >
+                                                {msg.filename.split("/").pop()}
+                                              </a>
+                                            </span>
+                                          </div>
+
+                                          {/* File Preview */}
+
+                                          {isImage && (
+                                            <div className="px-3">
+                                              <button
+                                                onClick={() => {
+                                                  setOpenFileModal({
+                                                    url: `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                                    name: msg.filename
+                                                      .split("/")
+                                                      .pop(),
+                                                    sender_name:
+                                                      msg.sender_name,
+                                                    time: msg.created_at,
+                                                  });
+                                                  console.log(msg);
+                                                }}
+                                              >
+                                                <img
+                                                  src={fileUrl}
+                                                  alt={msg.filename}
+                                                  className="max-w-36 h-full object-contain"
+                                                />
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                {msg.is_quoted == 1 &&
+                                  msg.quoted_msg &&
+                                  msg.quoted_msg_name &&
+                                  msg.quoted_msg_id && (
+                                    <div
+                                      className={` border-orange-500 bg-orange-50 px-2 py-1 rounded-sm mb-1 text-[11px] text-gray-800
+                              ${isSent ? "border-r-2" : "border-l-2"}`}
+                                    >
+                                      <div
+                                        className={`flex items-center justify-between mb-1 ${
+                                          isSent ? "flex-row-reverse" : ""
+                                        }`}
+                                      >
+                                        <span className="font-bold text-gray-700 mr-1">
+                                          {msg.quoted_msg_name?.length > 15
+                                            ? msg.quoted_msg_name.slice(0, 15) +
+                                              "…"
+                                            : msg.quoted_msg_name}
+                                        </span>
+                                        <button
+                                          onClick={() => {
+                                            try {
+                                              const quoted = JSON.parse(
+                                                msg.quoted_msg_json
+                                              );
+                                              setSelectedMessage(quoted);
+                                            } catch (e) {
+                                              console.error(
+                                                "Invalid quoted_msg_json",
+                                                e.message
+                                              );
+                                            }
+                                          }}
+                                          className={`text-orange-500 hover:text-orange-900 flex gap-1 ${
+                                            isSent ? "flex-row-reverse " : ""
+                                          }`}
+                                        >
+                                          Go to message{" "}
+                                          <span
+                                            className={` ${
+                                              isSent ? "rotate-[-180deg] " : ""
+                                            }`}
+                                          >
+                                            →
+                                          </span>
+                                        </button>
+                                      </div>
+                                      <div
+                                        className="text-[11px] text-gray-700"
+                                        dangerouslySetInnerHTML={{
+                                          __html: msg.quoted_msg,
+                                        }}
+                                      ></div>
+                                    </div>
+                                  )}
                                 <div
-                                  className="text-[11px] text-gray-700"
-                                  dangerouslySetInnerHTML={{
-                                    __html: msg.quoted_msg,
-                                  }}
-                                ></div>
-                              </div>
-                            )}
-                          <div
-                            className={` flex ${
-                              isSent ? "justify-end" : "justify-start"
-                            }`}
-                          >
-                            <div
-                              ref={proseRef}
-                              className={`prose prose-sm ${
-                                isSent ? "text-start" : "text-start"
-                              } max-w-none ${
-                                isSingleEmoji(msg.message)
-                                  ? "text-[26px]"
-                                  : "text-[13px]"
-                              }`}
-                              style={{}}
-                              dangerouslySetInnerHTML={{ __html:  removeTrailingEmptyDivs(msg.message), }}
-                            ></div>
-                          </div>
-                          {(() => {
-                            let reactions = [];
+                                  className={` flex ${
+                                    isSent ? "justify-end" : "justify-start"
+                                  }`}
+                                >
+                                  <div
+                                    ref={proseRef}
+                                    className={`prose prose-sm ${
+                                      isSent ? "text-start" : "text-start"
+                                    } max-w-none ${
+                                      isSingleEmoji(msg.message)
+                                        ? "text-[26px]"
+                                        : "text-[13px]"
+                                    }`}
+                                    style={{}}
+                                    dangerouslySetInnerHTML={{
+                                      __html: removeTrailingEmptyDivs(
+                                        msg.message
+                                      ),
+                                    }}
+                                  ></div>
+                                </div>
+                                {(() => {
+                                  let reactions = [];
 
-                            try {
-                              const parsed =
-                                typeof msg.reactions === "string"
-                                  ? JSON.parse(msg.reactions)
-                                  : msg.reactions;
+                                  try {
+                                    const parsed =
+                                      typeof msg.reactions === "string"
+                                        ? JSON.parse(msg.reactions)
+                                        : msg.reactions;
 
-                              if (Array.isArray(parsed)) {
-                                reactions = parsed;
-                              }
-                            } catch {
-                              reactions = [];
-                            }
+                                    if (Array.isArray(parsed)) {
+                                      reactions = parsed;
+                                    }
+                                  } catch {
+                                    reactions = [];
+                                  }
 
-                            if (reactions.length === 0) return null;
+                                  if (reactions.length === 0) return null;
 
-                            const reactionMap = reactions.reduce((acc, r) => {
-                              acc[r.emoji] = (acc[r.emoji] || 0) + 1;
-                              return acc;
-                            }, {});
+                                  const reactionMap = reactions.reduce(
+                                    (acc, r) => {
+                                      acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                                      return acc;
+                                    },
+                                    {}
+                                  );
 
-                            return (
-                              <div
-                                className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
+                                  return (
+                                    <div
+                                      className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
                             ${isSent ? "justify-end" : "justify-start"}
                           `}
-                              >
-                                {hoveredEmoji && hoveredEmoji == msg.id && (
-                                  <div
-                                    ref={tooltipRef}
-                                    className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs"
-                                  >
-                                    {loadingReactions ? (
-                                      <div>Loading...</div>
-                                    ) : (
-                                      <div className="space-y-1 ios flex items-start flex-col">
-                                        {reactionUsers.map((user) => (
-                                          <div
-                                            key={user.id}
-                                            className={` ${
-                                              theme == "dark"
-                                                ? "text-black"
-                                                : "text-black"
-                                            } flex items-center gap-2`}
-                                          >
-                                            <img
-                                              src={
-                                                user.profile_pic
-                                                  ? "https://rapidcollaborate.in/ccp" +
-                                                    user.profile_pic
-                                                  : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                      0
-                                                    )}&background=random&color=fff&size=128`
-                                              }
-                                              alt={user.name}
-                                              className="w-5 h-5 rounded-full"
-                                            />
-                                            <span className="f-11">
-                                              {user.name}
-                                            </span>
-                                            <span>{user.emoji}</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {Object.entries(reactionMap).map(
-                                  ([emoji, count]) => (
-                                    <div
-                                      key={emoji}
-                                      onMouseEnter={(e) => {
-                                        if (!emojiPopupLocked) {
-                                          handleReactionHover(
-                                            e,
-                                            emoji,
-                                            msg,
-                                            "message"
-                                          );
-                                        }
-                                      }}
-                                      //onMouseLeave={clearHover}
-                                      className="bg-gray-100 flex ios border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs flex items-center"
                                     >
-                                      <span className="mr-1">{emoji}</span>
-                                      <span className="text-[10px] font-medium">
-                                        {count}
-                                      </span>
+                                      {hoveredEmoji &&
+                                        hoveredEmoji == msg.id && (
+                                          <div
+                                            ref={tooltipRef}
+                                            className="absolute text-black top-[30px]  z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 text-xs"
+                                          >
+                                            {loadingReactions ? (
+                                              <div>Loading...</div>
+                                            ) : (
+                                              <div className="space-y-1 ios flex items-start flex-col">
+                                                {reactionUsers.map((user) => (
+                                                  <div
+                                                    key={user.id}
+                                                    className={` ${
+                                                      theme == "dark"
+                                                        ? "text-black"
+                                                        : "text-black"
+                                                    } flex items-center gap-2`}
+                                                  >
+                                                    <img
+                                                      src={
+                                                        user.profile_pic
+                                                          ? "https://rapidcollaborate.in/ccp" +
+                                                            user.profile_pic
+                                                          : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                              0
+                                                            )}&background=random&color=fff&size=128`
+                                                      }
+                                                      alt={user.name}
+                                                      className="w-5 h-5 rounded-full"
+                                                    />
+                                                    <span className="f-11">
+                                                      {user.name}
+                                                    </span>
+                                                    <span>{user.emoji}</span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                      {Object.entries(reactionMap).map(
+                                        ([emoji, count]) => (
+                                          <div
+                                            key={emoji}
+                                            onMouseEnter={(e) => {
+                                              if (!emojiPopupLocked) {
+                                                handleReactionHover(
+                                                  e,
+                                                  emoji,
+                                                  msg,
+                                                  "message"
+                                                );
+                                              }
+                                            }}
+                                            //onMouseLeave={clearHover}
+                                            className="bg-gray-100 flex ios border cursor-pointer text-gray-700 rounded border-gray-300 px-1 py-0.5 text-xs flex items-center"
+                                          >
+                                            <span className="mr-1">
+                                              {emoji}
+                                            </span>
+                                            <span className="text-[10px] font-medium">
+                                              {count}
+                                            </span>
+                                          </div>
+                                        )
+                                      )}
                                     </div>
-                                  )
-                                )}
+                                  );
+                                })()}
                               </div>
-                            );
-                          })()}
+                            )}
+                          </div>
                         </div>
-                        </div>
-                        </div>
+
                         {(() => {
                           let pinned = [];
 
@@ -1788,15 +1978,18 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
-                                    <div className={`flex  relative w-full rounded p-2 items-start
+                                    <div
+                                      className={`flex  relative w-full rounded p-2 items-start
                                       ${
                                         isSent ? "justify-end" : "justify-start"
                                       }
                                       ${
-                                        theme == "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                                        theme == "dark"
+                                          ? "hover:bg-gray-700"
+                                          : "hover:bg-gray-200"
                                       }
                                     `}
-                                    onMouseEnter={() => {
+                                      onMouseEnter={() => {
                                         setHoveredReplyMessageId(
                                           `reply-${reply.id}`
                                         );
@@ -1813,21 +2006,21 @@ const ChatMessages = ({
                                         }
                                       }}
                                     >
-                                    <div className="max-w-[60%] min-w-[20%]">
-                                    <div
-                                      key={`${reply.id}-${reply.created_at}`}
-                                      ref={(el) =>
-                                        (messageRefs.current[reply.id] = el)
-                                      }
-                                      className={`reply-box w-full ${
-                                        highlightedMessageId == reply.id
-                                          ? " bg-gray-300"
-                                          : " bg-gray-100"
-                                      } ${
-                                        isSent
-                                          ? "border-r-2 flex flex-col justify-end items-end "
-                                          : "border-l-2"
-                                      }
+                                      <div className="max-w-[60%] min-w-[20%]">
+                                        <div
+                                          key={`${reply.id}-${reply.created_at}`}
+                                          ref={(el) =>
+                                            (messageRefs.current[reply.id] = el)
+                                          }
+                                          className={`reply-box w-full ${
+                                            highlightedMessageId == reply.id
+                                              ? " bg-gray-300"
+                                              : " bg-gray-100"
+                                          } ${
+                                            isSent
+                                              ? "border-r-2 flex flex-col justify-end items-end "
+                                              : "border-l-2"
+                                          }
                                     ${
                                       isSent
                                         ? `${
@@ -1843,25 +2036,25 @@ const ChatMessages = ({
                                     }
                                     
                                     border-blue-400 rounded-lg p-2 text-sm relative`}
-                                      
-                                      // onMouseLeave={() => {
-                                      //   setHoveredReplyMessageId(null);
-                                      //   clearReplyHover();
-                                      // }}
-                                    >
-                                      {reply.is_new &&
-                                      reply.is_new == "1" &&
-                                      reply.mentioned_users &&
-                                      reply.mentioned_users.includes(
-                                        user?.id
-                                      ) ? (
-                                        <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
-                                      ) : null}
 
-                                      <div
-                                        className={` f-11 flex items-center ${
-                                          isSent ? "flex-row-reverse" : ""
-                                        }
+                                          // onMouseLeave={() => {
+                                          //   setHoveredReplyMessageId(null);
+                                          //   clearReplyHover();
+                                          // }}
+                                        >
+                                          {reply.is_new &&
+                                          reply.is_new == "1" &&
+                                          reply.mentioned_users &&
+                                          reply.mentioned_users.includes(
+                                            user?.id
+                                          ) ? (
+                                            <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
+                                          ) : null}
+
+                                          <div
+                                            className={` f-11 flex items-center ${
+                                              isSent ? "flex-row-reverse" : ""
+                                            }
                                       ${
                                         isSent
                                           ? "text-white-600 text-right"
@@ -1871,22 +2064,22 @@ const ChatMessages = ({
                                                 : "text-gray-600"
                                             }`
                                       } gap-2 mb-1 `}
-                                      >
-                                        {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
+                                          >
+                                            {/* <div className="w-4 h-4 bg-blue-100 rounded-full flex items-center justify-center">
                                         <Reply
                                           size={10}
                                           className="text-blue-600"
                                         />
                                       </div> */}
 
-                                        <div>
-                                          {reply.sender_id == user?.id &&
-                                          !view_user_id
-                                            ? "You"
-                                            : reply.sender_name || "User"}
-                                        </div>
-                                        <div
-                                          className={`text-xs f-11
+                                            <div>
+                                              {reply.sender_id == user?.id &&
+                                              !view_user_id
+                                                ? "You"
+                                                : reply.sender_name || "User"}
+                                            </div>
+                                            <div
+                                              className={`text-xs f-11
                                         ${
                                           isSent
                                             ? "text-white-600"
@@ -1897,266 +2090,268 @@ const ChatMessages = ({
                                               }`
                                         }
                                         `}
-                                        >
-                                          {formatTime(reply.created_at)}
-                                        </div>
-                                      </div>
-                                      {reply.is_file == 1 &&
-                                        reply.filename &&
-                                        (() => {
-                                          const ext = reply.filename
-                                            .split(".")
-                                            .pop()
-                                            .toLowerCase();
-                                          const isImage = [
-                                            "png",
-                                            "jpg",
-                                            "jpeg",
-                                            "avif",
-                                            "svg",
-                                            "webp",
-                                          ].includes(ext);
-                                          const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
-                                          const filenameOnly = reply.filename
-                                            .split("/")
-                                            .pop();
-
-                                          return (
-                                            <div className="w-full mb-2">
-                                              {/* File Info Box */}
-                                              <div
-                                                open
-                                                className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
-                                              >
-                                                <div className="flex items-center gap-2 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
-                                                  {isImage ? (
-                                                    <ImageIcon
-                                                      className="text-pink-500"
-                                                      size={15}
-                                                    />
-                                                  ) : ext === "mp4" ||
-                                                    ext === "mov" ? (
-                                                    <VideoIcon
-                                                      className="text-purple-600"
-                                                      size={15}
-                                                    />
-                                                  ) : [
-                                                      "doc",
-                                                      "docx",
-                                                      "xls",
-                                                      "xlsx",
-                                                    ].includes(ext) ? (
-                                                    <FileSpreadsheet
-                                                      className="text-green-600"
-                                                      size={15}
-                                                    />
-                                                  ) : (
-                                                    <FileText
-                                                      className="text-blue-600"
-                                                      size={15}
-                                                    />
-                                                  )}
-                                                  <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
-                                                    <a
-                                                      href={fileUrl}
-                                                      download={fileUrl}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      className="f-11 text-blue-600 hover:underline  flex items-center"
-                                                    >
-                                                      {reply.filename
-                                                        .split("/")
-                                                        .pop()}
-                                                    </a>
-                                                  </span>
-                                                </div>
-
-                                                {/* File Preview */}
-                                                <div className="px-3">
-                                                  {isImage && (
-                                                    <button
-                                                      onClick={() =>
-                                                        setOpenFileModal({
-                                                          url: `https://rapidcollaborate.in/ccp${reply.filename}`,
-                                                          name: reply.filename
-                                                            .split("/")
-                                                            .pop(),
-                                                          sender_name:
-                                                            reply.sender_name,
-                                                          time: reply.created_at,
-                                                        })
-                                                      }
-                                                    >
-                                                      <img
-                                                        src={fileUrl}
-                                                        alt={reply.filename}
-                                                        className="rounded-md shadow max-w-36 h-full object-contain"
-                                                      />
-                                                    </button>
-                                                  )}
-                                                </div>
-                                              </div>
+                                            >
+                                              {formatTime(reply.created_at)}
                                             </div>
-                                          );
-                                        })()}
-                                      <div
-                                        className="prose prose-sm max-w-none f-13"
-                                        dangerouslySetInnerHTML={{
-                                          __html: reply.message,
-                                        }}
-                                        style={{ lineBreak: "auto" }}
-                                      ></div>
-                                      {(() => {
-                                        let pinned = [];
+                                          </div>
+                                          {reply.is_file == 1 &&
+                                            reply.filename &&
+                                            (() => {
+                                              const ext = reply.filename
+                                                .split(".")
+                                                .pop()
+                                                .toLowerCase();
+                                              const isImage = [
+                                                "png",
+                                                "jpg",
+                                                "jpeg",
+                                                "avif",
+                                                "svg",
+                                                "webp",
+                                              ].includes(ext);
+                                              const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
+                                              const filenameOnly =
+                                                reply.filename.split("/").pop();
 
-                                        if (Array.isArray(reply.pinned_users)) {
-                                          pinned = reply.pinned_users;
-                                        } else {
-                                          try {
-                                            pinned = JSON.parse(
-                                              reply.pinned_users
-                                            );
-                                          } catch {
-                                            pinned = [];
-                                          }
-                                        }
+                                              return (
+                                                <div className="w-full mb-2">
+                                                  {/* File Info Box */}
+                                                  <div
+                                                    open
+                                                    className="bg-white/80 border border-gray-300 rounded-lg shadow-sm"
+                                                  >
+                                                    <div className="flex items-center gap-2 cursor-pointer px-2 py-1 hover:bg-gray-50 transition rounded-lg">
+                                                      {isImage ? (
+                                                        <ImageIcon
+                                                          className="text-pink-500"
+                                                          size={15}
+                                                        />
+                                                      ) : ext === "mp4" ||
+                                                        ext === "mov" ? (
+                                                        <VideoIcon
+                                                          className="text-purple-600"
+                                                          size={15}
+                                                        />
+                                                      ) : [
+                                                          "doc",
+                                                          "docx",
+                                                          "xls",
+                                                          "xlsx",
+                                                        ].includes(ext) ? (
+                                                        <FileSpreadsheet
+                                                          className="text-green-600"
+                                                          size={15}
+                                                        />
+                                                      ) : (
+                                                        <FileText
+                                                          className="text-blue-600"
+                                                          size={15}
+                                                        />
+                                                      )}
+                                                      <span className="f-11 font-medium text-blue-700 truncate max-w-[200px] flex items-center">
+                                                        <a
+                                                          href={fileUrl}
+                                                          download={fileUrl}
+                                                          target="_blank"
+                                                          rel="noopener noreferrer"
+                                                          className="f-11 text-blue-600 hover:underline  flex items-center"
+                                                        >
+                                                          {reply.filename
+                                                            .split("/")
+                                                            .pop()}
+                                                        </a>
+                                                      </span>
+                                                    </div>
 
-                                        return Array.isArray(pinned) &&
-                                          pinned.includes(
-                                            isValidViewUserId
-                                              ? view_user_id
-                                              : user?.id
-                                          ) ? (
-                                          <span
-                                            className={`absolute top-[-8px]  animate-pulse ${
-                                              isSent
-                                                ? "left-[-3px]"
-                                                : "right-[-3px]"
-                                            }`}
-                                          >
-                                            <Pin
-                                              size={18}
-                                              className={`text-orange-500 fill-orange-500 ${
-                                                isSent
-                                                  ? "rotate-[-45deg]"
-                                                  : "rotate-45"
-                                              }`}
-                                            />
-                                          </span>
-                                        ) : null;
-                                      })()}
-                                      {(() => {
-                                        let reactions = [];
+                                                    {/* File Preview */}
+                                                    <div className="px-3">
+                                                      {isImage && (
+                                                        <button
+                                                          onClick={() =>
+                                                            setOpenFileModal({
+                                                              url: `https://rapidcollaborate.in/ccp${reply.filename}`,
+                                                              name: reply.filename
+                                                                .split("/")
+                                                                .pop(),
+                                                              sender_name:
+                                                                reply.sender_name,
+                                                              time: reply.created_at,
+                                                            })
+                                                          }
+                                                        >
+                                                          <img
+                                                            src={fileUrl}
+                                                            alt={reply.filename}
+                                                            className="rounded-md shadow max-w-36 h-full object-contain"
+                                                          />
+                                                        </button>
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              );
+                                            })()}
+                                          <div
+                                            className="prose prose-sm max-w-none f-13"
+                                            dangerouslySetInnerHTML={{
+                                              __html: reply.message,
+                                            }}
+                                            style={{ lineBreak: "auto" }}
+                                          ></div>
+                                          {(() => {
+                                            let pinned = [];
 
-                                        try {
-                                          const parsed =
-                                            typeof reply.reactions === "string"
-                                              ? JSON.parse(reply.reactions)
-                                              : reply.reactions;
+                                            if (
+                                              Array.isArray(reply.pinned_users)
+                                            ) {
+                                              pinned = reply.pinned_users;
+                                            } else {
+                                              try {
+                                                pinned = JSON.parse(
+                                                  reply.pinned_users
+                                                );
+                                              } catch {
+                                                pinned = [];
+                                              }
+                                            }
 
-                                          if (Array.isArray(parsed)) {
-                                            reactions = parsed;
-                                          }
-                                        } catch {
-                                          reactions = [];
-                                        }
+                                            return Array.isArray(pinned) &&
+                                              pinned.includes(
+                                                isValidViewUserId
+                                                  ? view_user_id
+                                                  : user?.id
+                                              ) ? (
+                                              <span
+                                                className={`absolute top-[-8px]  animate-pulse ${
+                                                  isSent
+                                                    ? "left-[-3px]"
+                                                    : "right-[-3px]"
+                                                }`}
+                                              >
+                                                <Pin
+                                                  size={18}
+                                                  className={`text-orange-500 fill-orange-500 ${
+                                                    isSent
+                                                      ? "rotate-[-45deg]"
+                                                      : "rotate-45"
+                                                  }`}
+                                                />
+                                              </span>
+                                            ) : null;
+                                          })()}
+                                          {(() => {
+                                            let reactions = [];
 
-                                        if (reactions.length === 0) return null;
+                                            try {
+                                              const parsed =
+                                                typeof reply.reactions ===
+                                                "string"
+                                                  ? JSON.parse(reply.reactions)
+                                                  : reply.reactions;
 
-                                        const reactionMap = reactions.reduce(
-                                          (acc, r) => {
-                                            acc[r.emoji] =
-                                              (acc[r.emoji] || 0) + 1;
-                                            return acc;
-                                          },
-                                          {}
-                                        );
+                                              if (Array.isArray(parsed)) {
+                                                reactions = parsed;
+                                              }
+                                            } catch {
+                                              reactions = [];
+                                            }
 
-                                        return (
-                                          <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
-                                            {hoveredReplyEmoji &&
-                                              hoveredReplyEmoji == reply.id && (
-                                                <div
-                                                  ref={tooltipRef}
-                                                  className={`absolute top-[30px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs
+                                            if (reactions.length === 0)
+                                              return null;
+
+                                            const reactionMap =
+                                              reactions.reduce((acc, r) => {
+                                                acc[r.emoji] =
+                                                  (acc[r.emoji] || 0) + 1;
+                                                return acc;
+                                              }, {});
+
+                                            return (
+                                              <div className="mt-2 flex gap-2 flex-wrap text-sm relative">
+                                                {hoveredReplyEmoji &&
+                                                  hoveredReplyEmoji ==
+                                                    reply.id && (
+                                                    <div
+                                                      ref={tooltipRef}
+                                                      className={`absolute top-[30px] z-50 h-auto max-h-36 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md p-2 w-48 text-xs
                                                   ${
                                                     isSent
                                                       ? "-left-[150px]"
                                                       : "-right-[30px]"
                                                   }  
                                                 `}
-                                                >
-                                                  {loadingReactions ? (
-                                                    <div>Loading...</div>
-                                                  ) : (
-                                                    <div className="space-y-1 ios">
-                                                      {reactionUsers.map(
-                                                        (user) => (
-                                                          <div
-                                                            key={user.id}
-                                                            className="flex items-center gap-2"
-                                                          >
-                                                            <img
-                                                              src={
-                                                                user.profile_pic
-                                                                  ? "https://rapidcollaborate.in/ccp" +
+                                                    >
+                                                      {loadingReactions ? (
+                                                        <div>Loading...</div>
+                                                      ) : (
+                                                        <div className="space-y-1 ios">
+                                                          {reactionUsers.map(
+                                                            (user) => (
+                                                              <div
+                                                                key={user.id}
+                                                                className="flex items-center gap-2"
+                                                              >
+                                                                <img
+                                                                  src={
                                                                     user.profile_pic
-                                                                  : `https://ui-avatars.com/api/?name=${user.name.charAt(
-                                                                      0
-                                                                    )}&background=random&color=fff&size=128`
-                                                              }
-                                                              alt={user.name}
-                                                              className="w-5 h-5 rounded-full"
-                                                            />
-                                                            <span>
-                                                              {user.name}
-                                                            </span>
-                                                            <span>
-                                                              {user.emoji}
-                                                            </span>
-                                                          </div>
-                                                        )
+                                                                      ? "https://rapidcollaborate.in/ccp" +
+                                                                        user.profile_pic
+                                                                      : `https://ui-avatars.com/api/?name=${user.name.charAt(
+                                                                          0
+                                                                        )}&background=random&color=fff&size=128`
+                                                                  }
+                                                                  alt={
+                                                                    user.name
+                                                                  }
+                                                                  className="w-5 h-5 rounded-full"
+                                                                />
+                                                                <span>
+                                                                  {user.name}
+                                                                </span>
+                                                                <span>
+                                                                  {user.emoji}
+                                                                </span>
+                                                              </div>
+                                                            )
+                                                          )}
+                                                        </div>
                                                       )}
                                                     </div>
                                                   )}
-                                                </div>
-                                              )}
 
-                                            {Object.entries(reactionMap).map(
-                                              ([emoji, count]) => (
-                                                <div
-                                                  key={emoji}
-                                                  onMouseEnter={(e) =>
-                                                    handleReactionHover(
-                                                      e,
-                                                      emoji,
-                                                      reply,
-                                                      "reply"
-                                                    )
-                                                  }
-                                                  //onMouseLeave={clearHover}
-                                                  className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
-                                                >
-                                                  <span className="mr-1">
-                                                    {emoji}
-                                                  </span>
-                                                  <span className="text-[10px] font-medium">
-                                                    {count}
-                                                  </span>
-                                                </div>
-                                              )
-                                            )}
-                                          </div>
-                                        );
-                                      })()}
-                                      {/* <div className="text-xs text-gray-500 mt-2 flex items-center">
+                                                {Object.entries(
+                                                  reactionMap
+                                                ).map(([emoji, count]) => (
+                                                  <div
+                                                    key={emoji}
+                                                    onMouseEnter={(e) =>
+                                                      handleReactionHover(
+                                                        e,
+                                                        emoji,
+                                                        reply,
+                                                        "reply"
+                                                      )
+                                                    }
+                                                    //onMouseLeave={clearHover}
+                                                    className="bg-gray-100 ios border cursor-pointer text-gray-700 border-gray-300 px-2 py-0.5 rounded-full text-xs flex items-center"
+                                                  >
+                                                    <span className="mr-1">
+                                                      {emoji}
+                                                    </span>
+                                                    <span className="text-[10px] font-medium">
+                                                      {count}
+                                                    </span>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            );
+                                          })()}
+                                          {/* <div className="text-xs text-gray-500 mt-2 flex items-center">
                                       {formatTime(reply.created_at)}
                                     </div> */}
-
-                                      
-                                    </div>
-                                    </div>
-                                    {/* Reply Actions */}
+                                        </div>
+                                      </div>
+                                      {/* Reply Actions */}
                                       {hoveredReplyMessageId ==
                                         `reply-${reply.id}` && (
                                         <div
@@ -2189,7 +2384,7 @@ const ChatMessages = ({
                                                     "reply"
                                                   );
                                                   setShowReplyEmojiPopup(false);
-                                                  setEmojiPopupLocked(false)
+                                                  setEmojiPopupLocked(false);
                                                 }}
                                                 isSent={isSent}
                                               />
@@ -2277,7 +2472,6 @@ const ChatMessages = ({
                                         </div>
                                       )}
                                     </div>
-                                    
                                   </div>
                                 );
                               })}
@@ -2293,8 +2487,8 @@ const ChatMessages = ({
                           style={{
                             [isSent ? "left" : "right"]: "15px",
                           }}
-                          onMouseEnter={()=>{
-                            setHoveredMessageId(msg.id)
+                          onMouseEnter={() => {
+                            setHoveredMessageId(msg.id);
                           }}
                         >
                           <div
@@ -2323,7 +2517,7 @@ const ChatMessages = ({
                             )}
                           </div>
 
-                          {isSent && (
+                          {isSent && !msg.voice_note && (
                             <button
                               onClick={() =>
                                 handleEdit(msg.id, "message", msg.message)
@@ -2342,29 +2536,35 @@ const ChatMessages = ({
                           >
                             <Reply size={11} />
                           </button>
+                          {!msg.voice_note && (
+                            <button
+                              onClick={() => handleReminder(msg.id)}
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                              title="Set reminder"
+                            >
+                              <BellDot size={11} />
+                            </button>
+                          )}
 
-                          <button
-                            onClick={() => handleReminder(msg.id)}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
-                            title="Set reminder"
-                          >
-                            <BellDot size={11} />
-                          </button>
-                          <button
-                            onClick={() => handleQuote(msg)}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
-                            title="Quote message"
-                          >
-                            <QuoteIcon size={11} />
-                          </button>
+                          {!msg.voice_note && (
+                            <button
+                              onClick={() => handleQuote(msg)}
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
+                              title="Quote message"
+                            >
+                              <QuoteIcon size={11} />
+                            </button>
+                          )}
 
-                          <button
-                            onClick={() => handlePinMsg(msg.id)}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
-                            title="Pin message"
-                          >
-                            <Pin size={11} />
-                          </button>
+                          {!msg.voice_note && (
+                            <button
+                              onClick={() => handlePinMsg(msg.id)}
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-orange-50  transition-colors"
+                              title="Pin message"
+                            >
+                              <Pin size={11} />
+                            </button>
+                          )}
 
                           {isSent && (
                             <button
@@ -2376,13 +2576,15 @@ const ChatMessages = ({
                             </button>
                           )}
 
-                          <button
-                            onClick={() => handleCopy(msg)}
-                            className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
-                            title="Copy"
-                          >
-                            <Copy size={11} />
-                          </button>
+                          {!msg.voice_note && (
+                            <button
+                              onClick={() => handleCopy(msg)}
+                              className="action-button py-1 px-2 text-gray-600 hover:bg-blue-50 transition-colors"
+                              title="Copy"
+                            >
+                              <Copy size={11} />
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

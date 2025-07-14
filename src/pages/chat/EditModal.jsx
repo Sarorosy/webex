@@ -124,14 +124,14 @@ const EditModal = ({
 
     let isDisabled = false;
 
-    if (
-      selectedUser?.type == "group" &&
-      groupType == "work" &&
-      isJunior &&
-      isTaggingSenior
-    ) {
-      isDisabled = true;
-    }
+    // if (
+    //   selectedUser?.type == "group" &&
+    //   groupType == "work" &&
+    //   isJunior &&
+    //   isTaggingSenior
+    // ) {
+    //   isDisabled = true;
+    // }
     // else if (
     //   selectedUser?.type == "group" &&
     //   groupType == "team" &&
@@ -212,11 +212,11 @@ const EditModal = ({
     const groupType = selectedUser?.group_type;
     const isJunior = user?.seniority === "junior";
 
-    if (groupType === "work" && isJunior && mentionSeniority === "senior") {
-      toast.error("You can't tag Senior Associate");
-      e.cancel = true;
-      return;
-    }
+    // if (groupType === "work" && isJunior && mentionSeniority === "senior") {
+    //   toast.error("You can't tag Senior Associate");
+    //   e.cancel = true;
+    //   return;
+    // }
 
     if (userId == "all") {
       const hasAll = selectedUsers.some((user) => user.id == "all");
