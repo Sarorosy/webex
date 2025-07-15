@@ -38,6 +38,7 @@ const ChatSidebar = ({
   onSelect,
   notificationClickUser,
   setNotificationClickUser,
+  sidebarWidth
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const { selectedStatus, setSelectedStatus } = useSelectedUser();
@@ -864,44 +865,7 @@ const ChatSidebar = ({
     };
   }, [user?.id]);
 
-  const [sidebarWidth, setSidebarWidth] = useState(300);
-  const [isResizing, setIsResizing] = useState(false);
-  const resizeRef = useRef({
-    startX: 0,
-    startWidth: 300,
-  });
-
-  const handleMouseDown = (e) => {
-    resizeRef.current.startX = e.clientX;
-    resizeRef.current.startWidth = sidebarWidth;
-    setIsResizing(true);
-    document.body.style.cursor = "col-resize";
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (isResizing) {
-        const deltaX = e.clientX - resizeRef.current.startX;
-        const newWidth = resizeRef.current.startWidth + deltaX;
-        if (newWidth >= 250 && newWidth <= 500) {
-          setSidebarWidth(newWidth);
-        }
-      }
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.body.style.cursor = "default";
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isResizing]);
+  
 
   const getPlainPreview = (html, limit = 30) => {
     if (!html) return "";
@@ -925,7 +889,7 @@ const ChatSidebar = ({
         theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
       }  py-2 px-1 relative select-none  overflow-hidden  ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
-      } sidebar-container ${selectedUser?.id ? "mobile-hide" : ""}`}
+      } sidebar-container ${selectedUser?.id ? "mobile-hide" : ""} transition-all duration-200 ease-in-out`}
       style={{
         width: `${sidebarWidth}px`,
         minWidth: "300px",
@@ -934,10 +898,7 @@ const ChatSidebar = ({
         flexDirection: "column",
       }}
     >
-      <div
-        onMouseDown={handleMouseDown}
-        className="absolute top-0 right-0 h-full w-2 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-2"
-      ></div>
+      
 
       <div
         className={`px-2 border-b mb-2

@@ -1098,11 +1098,11 @@ const ChatSend = ({
         </div>
       )}
 
-      <div>
+      <div className="relative">
         {/* Paperclip icon (file input trigger) */}
         <div
           onMouseDown={startResizing}
-          className="cursor-n-resize absolute top-2 right-11 z-50"
+          className="cursor-n-resize absolute top-2 right-11 z-50 "
           data-tooltip-id="my-tooltip"
           data-tooltip-content="Drag to resize"
           title=""

@@ -1255,7 +1255,7 @@ const ChatMessages = ({
                     }  msg-number-${msg.id} ${isSent ? "" : ""} `}
                   >
                     <div
-                      className={`py-2 flex flex-col ${
+                      className={`flex flex-col ${
                         isSent ? "items-end " : "items-start "
                       } `}
                     >
@@ -1275,16 +1275,11 @@ const ChatMessages = ({
                       )}
                     </div>
                     <div
-                      className={`message relative w-full ${
+                      className={`message relative w-full  flex-1 ${
                         isSent ? "rounded-tr-sm" : "rounded-tl-sm"
                       }`}
                     >
-                      {msg.is_new &&
-                      msg.is_new == "1" &&
-                      msg.mentioned_users &&
-                      msg.mentioned_users.includes(user?.id) ? (
-                        <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
-                      ) : null}
+                      
 
                       <div className={`message-content`}>
                         <div
@@ -1310,7 +1305,13 @@ const ChatMessages = ({
                               setHoveredMessageId(msg.id);
                           }}
                         >
-                          <div className="max-w-[60%] min-w-[20%]">
+                          <div className="max-w-[60%] min-w-[20%] relative">
+                            {msg.is_new &&
+                              msg.is_new == "1" &&
+                              msg.mentioned_users &&
+                              msg.mentioned_users.includes(user?.id) ? (
+                                <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
+                              ) : null}
                             {msg.voice_note ? (
                               <div
                                 className={`flex flex-col gap-1 items-start f-11 ${
@@ -2006,7 +2007,15 @@ const ChatMessages = ({
                                         }
                                       }}
                                     >
-                                      <div className="max-w-[60%] min-w-[20%]">
+                                      <div className="max-w-[60%] min-w-[20%] relative">
+                                        {reply.is_new &&
+                                          reply.is_new == "1" &&
+                                          reply.mentioned_users &&
+                                          reply.mentioned_users.includes(
+                                            user?.id
+                                          ) ? (
+                                            <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
+                                          ) : null}
                                         <div
                                           key={`${reply.id}-${reply.created_at}`}
                                           ref={(el) =>
@@ -2042,14 +2051,7 @@ const ChatMessages = ({
                                           //   clearReplyHover();
                                           // }}
                                         >
-                                          {reply.is_new &&
-                                          reply.is_new == "1" &&
-                                          reply.mentioned_users &&
-                                          reply.mentioned_users.includes(
-                                            user?.id
-                                          ) ? (
-                                            <div className="absolute -top-1 right-0 text-white bg-blue-500 p-0.5 f-11 w-2 h-2 rounded-full animate-pulse"></div>
-                                          ) : null}
+                                          
 
                                           <div
                                             className={` f-11 flex items-center ${

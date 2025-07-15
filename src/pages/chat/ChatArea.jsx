@@ -12,7 +12,7 @@ import { useSelectedUser } from "../../utils/SelectedUserContext";
 import PinnedMessages from "./PinnedMessages";
 import ChatFiles from "./ChatFiles";
 import PollMessages from "./PollMessages";
-const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
+const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen, handleMouseDown,isResizing , sidebarWidth}) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
@@ -99,8 +99,11 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen }) => {
   };
 
   return (
-    <div className="w-full rounded-lg pl-1 flex flex-col justify-between relative h-screen">
-      
+    <div className={`size-max flex-1 rounded-lg pl-1 flex flex-col justify-between relative h-screen ${isResizing ? " select-none" : ""}`}>
+       <div
+              onMouseDown={handleMouseDown}
+              className="absolute top-0 left-0 h-full w-1.5 cursor-col-resize z-[99] bg-[] hover:bg-orange-300 hover:w-1.5"
+            ></div>
       <ChatHeader
             selectedUser={selectedUser}
             isTyping={isTyping}

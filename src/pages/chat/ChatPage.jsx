@@ -1,6 +1,6 @@
 import ChatSidebar from "./ChatSidebar";
 import ChatArea from "./ChatArea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { decode } from "../../utils/encoder";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
@@ -161,8 +161,47 @@ const ChatPage = () => {
     }
   };
 
+  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef({
+    startX: 0,
+    startWidth: 300,
+  });
+
+  const handleMouseDown = (e) => {
+    resizeRef.current.startX = e.clientX;
+    resizeRef.current.startWidth = sidebarWidth;
+    setIsResizing(true);
+    document.body.style.cursor = "col-resize";
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isResizing) {
+        const deltaX = e.clientX - resizeRef.current.startX;
+        const newWidth = resizeRef.current.startWidth + deltaX;
+        if (newWidth >= 250 && newWidth <= 500) {
+          setSidebarWidth(newWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.body.style.cursor = "default";
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
+
   return (
-    <div className="flex flex-col rounded sticky top-0 n-height">
+    <div className="flex flex-col rounded sticky top-0 n-height transition-all duration-200 ease-in-out">
       <div className="flex flex-1 overflow-hidden">
         <ChatSidebar
           view_user_id={view_user_id}
@@ -171,21 +210,30 @@ const ChatPage = () => {
           onSelect={setSelectedUser}
           notificationClickUser={notificationClickUser}
           setNotificationClickUser={setNotificationClickUser}
+          sidebarWidth={sidebarWidth}
         />
         {selectedUser ? (
+           
           <ChatArea
             selectedUser={selectedUser}
             view_user_id={view_user_id}
             selectedMessage={selectedMessage}
             setSelectedMessage={setSelectedMessage}
             setLeftGroupOpen={setLeftGroupOpen}
+            handleMouseDown={handleMouseDown}
+            isResizing={isResizing}
+            sidebarWidth={sidebarWidth}
           />
         ) : (
           <div
             className={`flex flex-col flex-1 ${
               theme == "dark" ? "" : "bg-gradient-to-b from-orange-50"
-            } rounded m-2 justify-between`}
+            } rounded m-2 justify-between relative`}
           >
+            <div
+              onMouseDown={handleMouseDown}
+              className="absolute top-0 -left-2 h-full w-1.5 cursor-col-resize z-10 bg-[] hover:bg-orange-300 hover:w-1.5"
+            ></div>
             <StartConversation />
           </div>
         )}
