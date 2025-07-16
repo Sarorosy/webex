@@ -99,7 +99,7 @@ const ChatArea = ({ view_user_id, selectedUser, setLeftGroupOpen, handleMouseDow
   };
 
   return (
-    <div className={`size-max flex-1 rounded-lg pl-1 flex flex-col justify-between relative h-screen ${isResizing ? " select-none" : ""}`}>
+    <div className={`w-fit flex-1 rounded-lg pl-1 flex flex-col justify-between relative h-screen ${isResizing ? " select-none" : ""}`}>
        <div
               onMouseDown={handleMouseDown}
               className="absolute top-0 left-0 h-full w-1.5 cursor-col-resize z-[99] bg-[] hover:bg-orange-300 hover:w-1.5"
