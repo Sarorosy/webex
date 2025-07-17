@@ -38,7 +38,7 @@ const ChatSidebar = ({
   onSelect,
   notificationClickUser,
   setNotificationClickUser,
-  sidebarWidth
+  sidebarWidth,
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const { selectedStatus, setSelectedStatus } = useSelectedUser();
@@ -619,22 +619,24 @@ const ChatSidebar = ({
       });
     };
 
-    // const handleChatOpened = ({ chatId, chatType, userId }) => {
-    //   setChats((prevChats) =>
-    //     prevChats.map((chat) => {
-    //       if (chat.id === chatId && chat.type === chatType) {
-    //         return {
-    //           ...chat,
-    //           read_status: 0,
-    //           unread_count: 0,
-    //           is_mentioned: false,
-    //           is_all: false,
-    //         };
-    //       }
-    //       return chat;
-    //     })
-    //   );
-    // };
+    const handleChatOpened = ({ chatId, chatType, userId }) => {
+      if (userId == user?.id) {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.id === chatId && chat.type === chatType) {
+              return {
+                ...chat,
+                read_status: 0,
+                unread_count: 0,
+                is_mentioned: false,
+                is_all: false,
+              };
+            }
+            return chat;
+          })
+        );
+      }
+    };
 
     const handleMessageDelete = (msgObj) => {
       const { msgId, type } = msgObj;
@@ -658,7 +660,7 @@ const ChatSidebar = ({
     socket.on("new_status", handleNewStatus);
     socket.on("status_deleted", handleStatusDeleted);
     socket.on("message_delete", handleMessageDelete);
-    //socket.on("chat_opened", handleChatOpened);
+    socket.on("chat_opened", handleChatOpened);
 
     return () => {
       socket.off("user_loggedin", handleUserLoggedIn);
@@ -667,7 +669,7 @@ const ChatSidebar = ({
       socket.off("new_status", handleNewStatus);
       socket.off("status_deleted", handleStatusDeleted);
       socket.off("message_delete", handleMessageDelete);
-      //socket.off("chat_opened", handleChatOpened);
+      socket.off("chat_opened", handleChatOpened);
     };
   }, [user, chats]);
 
@@ -865,8 +867,6 @@ const ChatSidebar = ({
     };
   }, [user?.id]);
 
-  
-
   const getPlainPreview = (html, limit = 30) => {
     if (!html) return "";
 
@@ -889,7 +889,9 @@ const ChatSidebar = ({
         theme == "dark" ? "bg-gray-800 text-white" : "bg-gray-100 text-black"
       }  py-2 px-1 relative select-none  overflow-hidden  ${
         messageLoading ? "cursor-wait pointer-events-none cur-wait" : ""
-      } sidebar-container ${selectedUser?.id ? "mobile-hide" : ""} transition-all duration-200 ease-in-out`}
+      } sidebar-container ${
+        selectedUser?.id ? "mobile-hide" : ""
+      } transition-all duration-200 ease-in-out`}
       style={{
         width: `${sidebarWidth}px`,
         minWidth: "300px",
@@ -898,8 +900,6 @@ const ChatSidebar = ({
         flexDirection: "column",
       }}
     >
-      
-
       <div
         className={`px-2 border-b mb-2
         ${theme == "dark" ? "border-gray-400" : ""}  
