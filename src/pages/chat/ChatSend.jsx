@@ -9,6 +9,7 @@ import { getSocket, connectSocket } from "../../utils/Socket";
 import { useSelectedUser } from "../../utils/SelectedUserContext";
 import {
   BarChart2,
+  ChevronsUp,
   File,
   Megaphone,
   Paperclip,
@@ -970,26 +971,32 @@ const ChatSend = ({
   const [height, setHeight] = useState(90); // initial height
 
   const startResizing = (e) => {
-    e.preventDefault();
-    const startY = e.clientY;
-    const startHeight = height;
+  e.preventDefault();
+  const startY = e.clientY;
+  const startHeight = height;
 
-    const onMouseMove = (e) => {
-      const newHeight = startHeight - (e.clientY - startY);
-      if (newHeight > 70) {
-        // min height
-        setHeight(newHeight);
-      }
-    };
+  // Change cursor to 'ns-resize'
+  document.body.style.cursor = 'row-resize';
 
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+  const onMouseMove = (e) => {
+    const newHeight = startHeight - (e.clientY - startY);
+    if (newHeight > 70) {
+      setHeight(newHeight);
+    }
   };
+
+  const onMouseUp = () => {
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+
+    // Reset cursor to default
+    document.body.style.cursor = 'default';
+  };
+
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onMouseUp);
+};
+
 
   return (
     <>
@@ -1102,14 +1109,16 @@ const ChatSend = ({
         {/* Paperclip icon (file input trigger) */}
         <div
           onMouseDown={startResizing}
-          className="cursor-n-resize absolute top-2 right-11 z-50 "
+          className={`cursor-row-resize absolute top-[1px] right-[50%] z-50  p-0.5 rounded
+              ${theme == "dark" ? "text-gray-100 bg-orange-700" : "text-gray-100 bg-gray-500"}
+            `}
           data-tooltip-id="my-tooltip"
           data-tooltip-content="Drag to resize"
           title=""
         >
-          <Scaling
-            size={15}
-            className={`${theme == "dark" ? "text-gray-100" : "text-gray-500"}`}
+          <ChevronsUp
+            size={14}
+            className={`${theme == "dark" ? "" : ""}`}
           />
         </div>
         <div

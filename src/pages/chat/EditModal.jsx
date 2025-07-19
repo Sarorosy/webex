@@ -304,7 +304,7 @@ const EditModal = ({
 
   return (
     <motion.div
-      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-[99]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -320,7 +320,7 @@ const EditModal = ({
             : "bg-white text-gray-700"
         }  rounded-md w-full max-w-md`}
       >
-        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-md">
           <h2 className="text-lg font-semibold text-white">Edit Message</h2>
           <div>
             <button
@@ -391,7 +391,7 @@ const EditModal = ({
                       ? "bg-gray-800 border-gray-400 text-gray-300"
                       : ""
                   }
-                  w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none
+                  w-full min-h-[8px] p-3 rounded border border-gray-300 focus:outline-none max-h-[400px] overflow-y-auto
               `}
                 placeholder="Type @ to mention someone..."
                 onInput={handleInputChange} // Track changes in the input
@@ -415,7 +415,7 @@ const EditModal = ({
             <button
               onClick={handleEdit}
               disabled={submitBtnDisabled}
-              className="px-4 py-1 rounded border border-orange-500 hover:text-white hover:bg-orange-500 f-13"
+              className="px-3 py-1 rounded hover:text-white hover:bg-orange-600 bg-orange-500 text-white f-13 leading-none"
             >
               {submitBtnDisabled ? "Updating..." : "Update"}
             </button>
