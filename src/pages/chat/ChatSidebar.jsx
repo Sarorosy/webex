@@ -439,6 +439,7 @@ const ChatSidebar = ({
       if (!chatsLoaded) return;
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
+      console.log(msg)
 
       if (!msg || !msg.sender_id || !msg.receiver_id) {
         console.warn("Malformed message or reply:", msgOrReply);
@@ -456,7 +457,7 @@ const ChatSidebar = ({
           : msg.sender_id;
       const otherChatType = msg.user_type === "group" ? "group" : "user";
 
-      console.log("otherUserId", otherUserId);
+      console.log(`otherUserId-${msg?.id}`, otherUserId);
 
       const isRelevant =
         msg.user_type === "group"

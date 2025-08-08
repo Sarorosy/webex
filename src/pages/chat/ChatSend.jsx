@@ -1435,19 +1435,7 @@ const ChatSend = ({
                 data-tooltip-content="Schedule Message"
                 className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-600 transition "
               >
-                {submitBtnDisabled ? (
-                  <div className="mx-auto flex justify-center w-full">
-                    <ScaleLoader
-                      className="mx-auto"
-                      color="#fff"
-                      height={14}
-                      width={3}
-                      radius={2}
-                    />
-                  </div>
-                ) : (
                   <Clock4 size={13} />
-                )}
               </button>
             )}
             <button
