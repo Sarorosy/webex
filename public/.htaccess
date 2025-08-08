@@ -1,0 +1,29 @@
+# Vite SPA routing
+Options -MultiViews
+RewriteEngine On
+RewriteBase /ccp/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.html [QSA,L]
+
+# Disable caching globally
+<IfModule mod_headers.c>
+  # For all files
+  <FilesMatch "\.(html|js|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+
+  # Strongest protection for index.html
+  <FilesMatch "^index\.html$">
+    FileETag None
+    Header unset ETag
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>

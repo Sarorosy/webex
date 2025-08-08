@@ -1,0 +1,117 @@
+{
+  "name": "webex",
+  "homepage": "https://rapidcollaborate.in/ccp/",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Webex Clone",
+  "author": "Saravanan",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "electron": "electron .",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "vite build && electron-forge make"
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "platforms": [
+            "win32"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "platforms": [
+            "linux"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "platforms": [
+            "linux"
+          ]
+        }
+      ],
+      "outputDir": "C:/Users/Admin/Pictures"
+    }
+  },
+  "dependencies": {
+    "@draft-js-plugins/editor": "^4.1.4",
+    "@draft-js-plugins/mention": "^5.3.0",
+    "@reduxjs/toolkit": "^2.8.2",
+    "@syncfusion/ej2-base": "^29.1.36",
+    "@syncfusion/ej2-react-dropdowns": "^29.1.41",
+    "@syncfusion/ej2-react-inputs": "^29.1.39",
+    "@syncfusion/ej2-react-richtexteditor": "^29.1.40",
+    "@tinymce/tinymce-react": "^6.3.0",
+    "agora-rtc-sdk-ng": "^4.23.3",
+    "axios": "^1.9.0",
+    "buffer": "^6.0.3",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
+    "draft-js": "^0.11.7",
+    "electron-squirrel-startup": "^1.0.1",
+    "emoji-picker-react": "^4.12.2",
+    "firebase": "^11.7.3",
+    "flatpickr": "^4.6.13",
+    "framer-motion": "^12.10.1",
+    "idb-keyval": "^6.2.1",
+    "lodash.isequal": "^4.5.0",
+    "lucide-react": "^0.508.0",
+    "moment": "^2.30.1",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.5",
+    "process": "^0.11.10",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
+    "react-input-emoji": "^5.9.0",
+    "react-loading-skeleton": "^3.5.0",
+    "react-mentions": "^4.4.10",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.5.3",
+    "react-select": "^5.10.1",
+    "react-spinners": "^0.17.0",
+    "react-tooltip": "^5.28.1",
+    "socket.io-client": "^4.8.1",
+    "stream-browserify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.8.1",
+    "@electron-forge/maker-rpm": "^7.8.1",
+    "@electron-forge/maker-squirrel": "^7.8.1",
+    "@electron-forge/maker-zip": "^7.8.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+    "@electron-forge/plugin-fuses": "^7.8.1",
+    "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "electron": "^36.2.0",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.0"
+  }
+}

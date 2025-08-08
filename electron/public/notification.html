@@ -1,0 +1,108 @@
+<!-- public/notification.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notification</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 300px;
+    height: 100px;
+    font-family: 'Inter', sans-serif;
+    background: transparent;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #4a90e2, #357ABD);
+    border-radius: 12px;
+    box-shadow:
+      0 8px 15px rgba(53, 122, 189, 0.3),
+      0 4px 6px rgba(0, 0, 0, 0.15);
+    padding: 15px 20px;
+    color: #fff;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeInUp 0.4s ease forwards;
+  }
+
+  .icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+  }
+  .icon svg {
+    fill: #fff;
+    width: 22px;
+    height: 22px;
+  }
+
+  .content {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .title {
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .message {
+    margin-top: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.4;
+    max-height: 38px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="icon" aria-hidden="true">
+    <!-- Notification bell icon SVG -->
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 24c1.104 0 2-.9 2-2h-4c0 1.1.896 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V6a1.5 1.5 0 0 0-3 0v.68C7.64 7.36 6 9.92 6 13v5l-2 2v1h16v-1l-2-2z"/>
+    </svg>
+  </div>
+  <div class="content">
+    <div class="title" id="title"></div>
+    <div class="message" id="message"></div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    ipcRenderer.on('notify-data', (e, { title, message }) => {
+      document.getElementById('title').innerText = title;
+      document.getElementById('message').innerText = message;
+    });
+  </script>
+</body>
+</html>
