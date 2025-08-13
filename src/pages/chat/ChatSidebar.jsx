@@ -224,9 +224,10 @@ const ChatSidebar = ({
   const [sideBarLoading, setSideBarLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const fetchChats = async () => {
+  const fetchChats = async (load = true, isSyncing = false) => {
   try {
-    setSideBarLoading(true);
+      setSideBarLoading(load);
+      setSyncing(isSyncing);
 
     const userId = view_user_id ? view_user_id : user.id;
 
@@ -320,6 +321,7 @@ const ChatSidebar = ({
     console.error("Error fetching chats:", err);
   } finally {
     setSideBarLoading(false);
+    setSyncing(false)
   }
 };
 
