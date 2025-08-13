@@ -16,6 +16,7 @@ import {
   Check,
   Shield,
   Bot,
+  Infinity
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import { encode } from "../../utils/encoder";
 import { useAuth } from "../../utils/idb";
 import UserBotSettings from "./UserBotSettings";
+import UserLoopSettings from "./UserLoopSettings";
 
 const getRandomColor = (id) => {
   const colors = [
@@ -47,6 +49,7 @@ const ManageUsers = ({ onClose }) => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [botSettingsOpen, setBotSettingsOpen] = useState(false);
+  const [loopSettingsOpen, setLoopSettingsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -130,6 +133,10 @@ const ManageUsers = ({ onClose }) => {
   const handleBotMessageClick = (user) => {
     setSelectedUser(user);
     setBotSettingsOpen(true);
+  };
+  const handleLoopClick = (user) => {
+    setSelectedUser(user);
+    setLoopSettingsOpen(true);
   };
 
   const handleEditClick = (id) => {
@@ -262,7 +269,7 @@ const ManageUsers = ({ onClose }) => {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "tween", duration: 0.3 }}
-        className={`fixed top-0 left-0 w-[40%]  ${
+        className={`fixed top-0 left-0 w-[45%]  ${
           theme == "dark"
             ? "bg-gray-800 text-white mw-dark"
             : "bg-white text-black"
@@ -407,6 +414,10 @@ const ManageUsers = ({ onClose }) => {
                                     <Shield size={15} />
                                   </button>
                                 )}
+
+                               
+
+                                
                             </div>
                           </div>
                         </div>
@@ -582,6 +593,23 @@ const ManageUsers = ({ onClose }) => {
                                 (user?.user_type == "subadmin" &&
                                   user?.bot_settings == 1)) && (
                                 <button
+                                  title="Loop Updates"
+                                  onClick={() => handleLoopClick(u)}
+                                  className="text-orange-500 hover:text-orange-600 hover:bg-orange-100 p-1 border rounded"
+                                  style={{
+                                    background: `${
+                                      theme == "dark" ? "#f6f6f6" : ""
+                                    }`,
+                                  }}
+                                >
+                                  <Infinity size={15} />
+                                </button>
+                              )}
+
+                              {(user?.user_type == "admin" ||
+                                (user?.user_type == "subadmin" &&
+                                  user?.bot_settings == 1)) && (
+                                <button
                                   title="Edit Bot Messages"
                                   onClick={() => handleBotMessageClick(u)}
                                   className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-1 border rounded"
@@ -731,6 +759,14 @@ const ManageUsers = ({ onClose }) => {
             <UserBotSettings
               onClose={() => {
                 setBotSettingsOpen(false);
+              }}
+              user={selectedUser}
+            />
+          )}
+          {loopSettingsOpen && (
+            <UserLoopSettings
+              onClose={() => {
+                setLoopSettingsOpen(false);
               }}
               user={selectedUser}
             />

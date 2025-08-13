@@ -283,10 +283,10 @@ const ChatSidebar = ({
         // Merge group details into groupInteractions first (by id)
         const groupMap = new Map();
         groups.forEach((g) => groupMap.set(g.id, g));
-        groupDetails.forEach((gd) => {
-          if (!groupMap.has(gd.id)) groupMap.set(gd.id, gd);
-          else groupMap.set(gd.id, { ...groupMap.get(gd.id), ...gd });
-        });
+        // groupDetails.forEach((gd) => {
+        //   if (!groupMap.has(gd.id)) groupMap.set(gd.id, gd);
+        //   else groupMap.set(gd.id, { ...groupMap.get(gd.id), ...gd });
+        // });
 
         const mergedGroups = Array.from(groupMap.values());
 
@@ -535,7 +535,7 @@ const ChatSidebar = ({
           : msg.sender_id;
       const otherChatType = msg.user_type === "group" ? "group" : "user";
 
-      console.log(`otherUserId-${msg?.id}`, otherUserId);
+      console.log(`otherUserId- `, otherUserId);
 
       const isRelevant =
         msg.user_type === "group"
