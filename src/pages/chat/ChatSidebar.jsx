@@ -224,21 +224,19 @@ const ChatSidebar = ({
   const [sideBarLoading, setSideBarLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const fetchChats = async (load = true, isSyncing = false) => {
+  const fetchChats = async () => {
   try {
-    setSideBarLoading(load);
-    setSyncing(isSyncing);
+    setSideBarLoading(true);
 
     const userId = view_user_id ? view_user_id : user.id;
 
-    // Fire 3 API calls in parallel
-    const [userRes, groupRes, groupDetailsRes] = await Promise.all([
-      fetch("https://webexback-06cc.onrender.com/api/chats/getUserInteractions", {
+    const [interactionsRes, unreadRes, groupsRes] = await Promise.all([
+      fetch("https://webexback-06cc.onrender.com/api/chats/getUserAndGroupInteractions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       }),
-      fetch("https://webexback-06cc.onrender.com/api/chats/getGroupInteractions", {
+      fetch("https://webexback-06cc.onrender.com/api/chats/getUnreadMessageCounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
@@ -250,44 +248,78 @@ const ChatSidebar = ({
       }),
     ]);
 
-    const userData = await userRes.json();
-    const groupData = await groupRes.json();
-    const groupDetailsData = await groupDetailsRes.json();
+    const interactionsData = await interactionsRes.json();
+    const unreadData = await unreadRes.json();
+    const groupsData = await groupsRes.json();
 
-    if (userData.status && groupData.status && groupDetailsData.status) {
-      // Combine all chats
-      const combined = [
-        ...(userData.data || []),
-        ...(groupData.data || []),
-        ...(groupDetailsData.data || []),
-      ];
+    if (interactionsData.status && unreadData.status && groupsData.status) {
+      const { users, groups } = interactionsData.data;
+      const unreadCounts = unreadData.data;
+      const groupDetails = groupsData.data;
 
-      // Remove duplicates by id (keep first occurrence)
-      const uniqueMap = new Map();
-      combined.forEach(item => {
-        if (item.id !== undefined && !uniqueMap.has(item.id)) {
-          uniqueMap.set(item.id, item);
+      const unreadMap = new Map();
+      unreadCounts.forEach(item => {
+        unreadMap.set(item.type + "_" + item.id, item);
+      });
+
+      // Attach unread info to users
+      users.forEach(user => {
+        const key = "user_" + user.id;
+        const unreadInfo = unreadMap.get(key);
+        user.read_status = unreadInfo ? 1 : 0;
+        user.unread_count = unreadInfo ? unreadInfo.unread_count : 0;
+        user.unread_message_ids = unreadInfo ? unreadInfo.unread_message_ids : [];
+        user.is_mentioned = unreadInfo ? Boolean(unreadInfo.is_mentioned) : false;
+        user.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
+        if (unreadInfo) user.last_message_id = unreadInfo.last_message_id;
+      });
+
+      // Attach unread info to groups (interaction groups + groupDetails merged)
+      // Merge group details into groupInteractions first (by id)
+      const groupMap = new Map();
+      groups.forEach(g => groupMap.set(g.id, g));
+      groupDetails.forEach(gd => {
+        if (!groupMap.has(gd.id)) groupMap.set(gd.id, gd);
+        else groupMap.set(gd.id, { ...groupMap.get(gd.id), ...gd });
+      });
+
+      const mergedGroups = Array.from(groupMap.values());
+
+      mergedGroups.forEach(group => {
+        const key = "group_" + group.id;
+        const unreadInfo = unreadMap.get(key);
+        group.read_status = unreadInfo ? 1 : 0;
+        group.unread_count = unreadInfo ? unreadInfo.unread_count : 0;
+        group.unread_message_ids = unreadInfo ? unreadInfo.unread_message_ids : [];
+        group.is_mentioned = unreadInfo ? Boolean(unreadInfo.is_mentioned) : false;
+        group.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
+        if (unreadInfo) group.last_message_id = unreadInfo.last_message_id;
+
+        try {
+          group.status = JSON.parse(group.status || "[]");
+        } catch {
+          group.status = [];
         }
+        group.is_status = group.is_status ? 1 : 0;
+        group.status_count = parseInt(group.status_count) || 0;
       });
 
-      // Convert map values to array and sort by last_interacted_time desc
-      const mergedChats = Array.from(uniqueMap.values()).sort((a, b) => {
-        const timeA = new Date(a.last_interacted_time || 0).getTime();
-        const timeB = new Date(b.last_interacted_time || 0).getTime();
-        return timeB - timeA;
-      });
+      // Combine users + merged groups
+      const combined = [...users, ...mergedGroups];
 
-      setChats(mergedChats);
-      updateChatLoginStatus(mergedChats);
+      // Sort by last_interacted_time desc
+      combined.sort((a, b) => new Date(b.last_interacted_time || 0) - new Date(a.last_interacted_time || 0));
+
+      setChats(combined);
+      updateChatLoginStatus(combined);
       setChatsLoaded(true);
     } else {
-      console.error("Error fetching chats data");
+      console.error("Error fetching data");
     }
   } catch (err) {
     console.error("Error fetching chats:", err);
   } finally {
     setSideBarLoading(false);
-    setSyncing(false);
   }
 };
 
