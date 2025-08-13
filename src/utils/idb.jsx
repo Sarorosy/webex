@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const storedUser = await get("User");
+      const storedUser = await get("CCPUSER");
       const storedTheme = localStorage.getItem("Theme");
       if (storedUser) {
         setUser(storedUser);
@@ -30,12 +30,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     setUser(updatedUserData);
-    await set("User", updatedUserData);
+    await set("CCPUSER", updatedUserData);
   };
 
   const logout = async () => {
     setUser(null);
-    await del("User");
+    await del("CCPUSER");
   };
 
   const setFavourites = async (favourites) => {
@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
         ...prev,
         favMenus: favourites,
       };
-      set("User", updatedUser);
+      set("CCPUSER", updatedUser);
       return updatedUser;
     });
   };
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         ...prev,
         notifications: notification,
       };
-      set("User", updatedUser);
+      set("CCPUSER", updatedUser);
       return updatedUser;
     });
   };
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         ...prev,
         availability: status,
       };
-      set("User", updatedUser);
+      set("CCPUSER", updatedUser);
       return updatedUser;
     });
   };
@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }) => {
         message_count: updatedMessageCount,
       };
 
-      set("User", updatedUser);
+      set("CCPUSER", updatedUser);
       return updatedUser;
     });
   };
