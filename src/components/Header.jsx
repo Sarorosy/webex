@@ -461,8 +461,13 @@ export default function Header() {
                 {user?.profile_pic ? (
                   <div>
                     <img
-                      src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
+                      src={
+                        user.profile_pic.startsWith("http")
+                          ? user.profile_pic
+                          : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                      }
                       alt="Profile"
+                      loading="lazy"
                       className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />
                   </div>
@@ -471,6 +476,7 @@ export default function Header() {
                     {user.name[0]}
                   </div>
                 )}
+
                 {isUserOnline ? (
                   <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
                 ) : (

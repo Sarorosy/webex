@@ -84,16 +84,22 @@ const PollResults = ({ msg, onClose }) => {
                       className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-md text-sm shadow-sm"
                     >
                       {user.profile_pic ? (
-                        <img
-                          src={`https://rapidcollaborate.in/ccp${user.profile_pic}`}
-                          alt={user.name}
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-bold">
-                          {user.name?.charAt(0)}
-                        </div>
-                      )}
+  <img
+    src={
+      user.profile_pic.startsWith("http")
+        ? user.profile_pic
+        : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+    }
+    alt={user.name}
+    className="w-6 h-6 rounded-full object-cover"
+    loading="lazy"
+  />
+) : (
+  <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-500 text-white text-xs font-bold">
+    {user.name?.charAt(0)}
+  </div>
+)}
+
                       <span className="text-gray-800 font-medium">{user.name}</span>
                     </div>
                   ))

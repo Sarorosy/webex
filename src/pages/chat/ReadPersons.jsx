@@ -89,13 +89,20 @@ const ReadPersons = ({ messageId }) => {
             key={user.id}
             className="w-6 h-6 rounded-full overflow-hidden border border-gray-900"
             title={`${user.name} • ${formatReadTime(user.read_at)}`}
-            data-tooltip-content={`${user.name} • ${formatReadTime(user.read_at)}`}
+            data-tooltip-content={`${user.name} • ${formatReadTime(
+              user.read_at
+            )}`}
             data-tooltip-id="my-tooltip"
           >
             {user.profile_pic ? (
               <img
-                src={`https://rapidcollaborate.in/ccp${user.profile_pic}`}
+                src={
+                  user.profile_pic.startsWith("http")
+                    ? user.profile_pic
+                    : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                }
                 alt={user.name}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -127,8 +134,13 @@ const ReadPersons = ({ messageId }) => {
                     <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-400">
                       {user.profile_pic ? (
                         <img
-                          src={`https://rapidcollaborate.in/ccp${user.profile_pic}`}
+                          src={
+                            user.profile_pic.startsWith("http")
+                              ? user.profile_pic
+                              : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                          }
                           alt={user.name}
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                       ) : (

@@ -102,7 +102,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
 
         if (!res.ok) throw new Error("Search failed");
         const data = await res.json();
-        setMessages(data.messages ?? []); 
+        setMessages(data.messages ?? []);
       } catch (err) {
         if (err.name !== "AbortError") console.error("Search error:", err);
       } finally {
@@ -222,8 +222,13 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                         >
                           {user.profile_pic ? (
                             <img
-                              src={`https://rapidcollaborate.in/ccp${user.profile_pic}`}
+                              src={
+                                user.profile_pic.startsWith("http")
+                                  ? user.profile_pic
+                                  : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                              }
                               alt={user.name}
+                              loading="lazy"
                               className="w-8 h-8 rounded-full object-cover"
                             />
                           ) : (
@@ -231,6 +236,7 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                               {user.name.charAt(0)}
                             </div>
                           )}
+
                           <span>{user.name}</span>
                         </div>
                       ))
@@ -258,31 +264,33 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                             // navigate("/chat", {
                             //   state: { type: "message", data: msg },
                             // });
-                            if(selectedUser && selectedUser?.id == msg.user.id && selectedUser?.type == msg.user.type){
-
-                            }else{
+                            if (
+                              selectedUser &&
+                              selectedUser?.id == msg.user.id &&
+                              selectedUser?.type == msg.user.type
+                            ) {
+                            } else {
                               setSelectedUser(null);
                             }
-                            setTimeout(()=>{
-                              setSelectedUser(msg.user)
+                            setTimeout(() => {
+                              setSelectedUser(msg.user);
                               setSelectedMessage(msg);
-                            }, 100)
-                            
+                            }, 100);
                           }}
                         >
                           <div className="flex items-start  gap-2">
                             <div>
-                            {msg.profile_pic ? (
+                              {msg.profile_pic ? (
                                 <img
-                                src={`https://rapidcollaborate.in/ccp${msg.profile_pic}`}
-                                alt={msg.sender_name}
-                                className="w-6 h-6 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold text-xs uppercase">
-                                {msg.sender_name.charAt(0)}
-                              </div>
-                            )}
+                                  src={`https://rapidcollaborate.in/ccp${msg.profile_pic}`}
+                                  alt={msg.sender_name}
+                                  className="w-6 h-6 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white font-semibold text-xs uppercase">
+                                  {msg.sender_name.charAt(0)}
+                                </div>
+                              )}
                             </div>
                             <div className="font-semibold ">
                               {msg.sender_id == user?.id
@@ -306,7 +314,11 @@ const TotalSearch = ({ onClose, query, setQuery }) => {
                       ))
                     ) : (
                       <p className="text-gray-50 p-2">
-                        {!query ? "Search Messages" : messageLoading ? "Loading..." : " No messages found."}
+                        {!query
+                          ? "Search Messages"
+                          : messageLoading
+                          ? "Loading..."
+                          : " No messages found."}
                       </p>
                     )}
                   </div>

@@ -14,7 +14,7 @@ const ScheduledMessages = ({ userId, userType }) => {
   useEffect(() => {
     const fetchScheduledMessages = async () => {
       try {
-        setMessages([])
+        setMessages([]);
         const response = await axios.post(
           "https://webexback-06cc.onrender.com/api/chats/scheduled-messages",
           {
@@ -151,7 +151,11 @@ const ScheduledMessages = ({ userId, userType }) => {
                   {msg.filename && (
                     <div className="mt-2 f-12 text-blue-600 flex items-center">
                       <a
-                        href={"https://rapidcollaborate.in/ccp" + msg.filename}
+                        href={
+                          msg.filename.startsWith("http")
+                            ? msg.filename
+                            : `https://rapidcollaborate.in/ccp${msg.filename}`
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -159,6 +163,7 @@ const ScheduledMessages = ({ userId, userType }) => {
                       </a>
                     </div>
                   )}
+
                   {msg.voice_note && (
                     <div className="mt-2">
                       🔊 <audio controls src={msg.voice_note}></audio>

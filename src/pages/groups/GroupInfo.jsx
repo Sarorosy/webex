@@ -72,7 +72,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
           },
           body: JSON.stringify({
             delete_user_name: selectedMember?.name,
-            post_user_id : user?.id,
+            post_user_id: user?.id,
             user_id: selectedMember?.id,
             user_name: user?.name,
             own: false,
@@ -129,7 +129,9 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         animate={{ y: "5%" }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className={`${theme == "dark" ? "bg-gray-500 text-gray-50" : "bg-white"} rounded-t-3xl w-full max-w-2xl h-[90%] shadow-xl relative`}
+        className={`${
+          theme == "dark" ? "bg-gray-500 text-gray-50" : "bg-white"
+        } rounded-t-3xl w-full max-w-2xl h-[90%] shadow-xl relative`}
       >
         {/* Close Button */}
         <button
@@ -140,12 +142,24 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         </button>
 
         {/* Banner */}
-        <div className={`w-full h-[100px]  rounded-t-3xl ${theme == "dark" ? "bg-gray-800" : "bg-orange-300"} `} />
+        <div
+          className={`w-full h-[100px]  rounded-t-3xl ${
+            theme == "dark" ? "bg-gray-800" : "bg-orange-300"
+          } `}
+        />
 
         {/* Group Info Card */}
         <div className="px-6 -mt-12">
-          <div className={`${theme == "dark" ? "bg-gray-400 text-gray-50" : "bg-white"} rounded-xl shadow-md p-5`}>
-            <h2 className={`text-lg font-bold ${theme == "dark" ? "text-black" : "text-gray-800"} flex items-center gap-2`}>
+          <div
+            className={`${
+              theme == "dark" ? "bg-gray-400 text-gray-50" : "bg-white"
+            } rounded-xl shadow-md p-5`}
+          >
+            <h2
+              className={`text-lg font-bold ${
+                theme == "dark" ? "text-black" : "text-gray-800"
+              } flex items-center gap-2`}
+            >
               {selectedGroup?.name}
               <button
                 onClick={() => setEditGroupOpen(true)}
@@ -161,18 +175,24 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               </>
             ) : (
               <>
-                <p className={`${theme == "dark" ? "text-black" : "text-gray-600"}  mt-1 mb-3`}>{group.description}</p>
-                <div className={`flex flex-wrap gap-6 text-sm items-center ${theme == "dark" ? "text-black" : "text-gray-600"}`}>
+                <p
+                  className={`${
+                    theme == "dark" ? "text-black" : "text-gray-600"
+                  }  mt-1 mb-3`}
+                >
+                  {group.description}
+                </p>
+                <div
+                  className={`flex flex-wrap gap-6 text-sm items-center ${
+                    theme == "dark" ? "text-black" : "text-gray-600"
+                  }`}
+                >
                   <div>
-                    <span className="font-medium ">
-                      Created by:
-                    </span>{" "}
+                    <span className="font-medium ">Created by:</span>{" "}
                     {group.created_by_username}
                   </div>
                   <div>
-                    <span className="font-medium ">
-                      Member Limit:
-                    </span>{" "}
+                    <span className="font-medium ">Member Limit:</span>{" "}
                     {group.member_limit}
                   </div>
                   {!loadingMembers &&
@@ -220,7 +240,9 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
 
         {/* Members Section */}
         <div className="px-6 mt-6 overflow-y-auto h-[60%]">
-          <h3 className="text-lg font-semibold mb-3 text-gray-900">Members ({loadingMembers ? "loading..." : members.length})</h3>
+          <h3 className="text-lg font-semibold mb-3 text-gray-900">
+            Members ({loadingMembers ? "loading..." : members.length})
+          </h3>
 
           {loadingMembers ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -242,24 +264,31 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
               {members.map((member) => (
                 <li
                   key={member.id}
-                  className={`flex items-start justify-between gap-4 p-3 ${theme == "dark" ? "bg-gray-200" : "bg-white"} rounded shadow hover:shadow-md transition`}
+                  className={`flex items-start justify-between gap-4 p-3 ${
+                    theme == "dark" ? "bg-gray-200" : "bg-white"
+                  } rounded shadow hover:shadow-md transition`}
                 >
                   <div className="flex gap-2">
                     <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold overflow-hidden">
-                    {member.profile_pic ? (
-                      <img
-                        src={`https://rapidcollaborate.in/ccp${member.profile_pic}`}
-                        alt={member.name}
-                        className="w-10 h-full object-cover"
-                      />
-                    ) : (
-                      member.name?.charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{member.name}</p>
-                    <p className="f-11 text-gray-500">{member.email}</p>
-                  </div>
+                      {member.profile_pic ? (
+                        <img
+                          src={
+                            member.profile_pic.startsWith("http")
+                              ? member.profile_pic
+                              : `https://rapidcollaborate.in/ccp${member.profile_pic}`
+                          }
+                          alt={member.name}
+                          className="w-10 h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        member.name?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{member.name}</p>
+                      <p className="f-11 text-gray-500">{member.email}</p>
+                    </div>
                   </div>
                   {member.id !== user?.id && (
                     <button
@@ -314,7 +343,7 @@ const GroupInfo = ({ selectedGroup, onClose }) => {
         )}
         {editGroupOpen && (
           <EditGroup
-            selectedGroup={{group_id :selectedGroup?.id}}
+            selectedGroup={{ group_id: selectedGroup?.id }}
             onClose={() => {
               setEditGroupOpen(false);
             }}

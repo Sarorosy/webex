@@ -55,8 +55,11 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
   const CustomOption = (props) => {
     const { data, innerRef, innerProps } = props;
     const avatar = data.profile_pic
-      ? `${baseURL}${data.profile_pic}`
-      : null;
+  ? data.profile_pic.startsWith("http")
+    ? data.profile_pic
+    : `${baseURL}${data.profile_pic}`
+  : null;
+
 
     return (
       <div ref={innerRef} {...innerProps} className="flex items-center px-2 py-1 cursor-pointer hover:bg-gray-100">
@@ -75,8 +78,11 @@ const AddMembers = ({ groupId, onClose, members, finalFunction }) => {
    const CustomMultiValue = (props) => {
       const { data } = props;
       const avatar = data.profile_pic
-        ? `${baseURL}${data.profile_pic}`
-        : null;
+  ? data.profile_pic.startsWith("http")
+    ? data.profile_pic
+    : `${baseURL}${data.profile_pic}`
+  : null;
+
   
       return (
         <components.MultiValue {...props}>

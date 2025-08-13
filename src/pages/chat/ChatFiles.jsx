@@ -111,7 +111,7 @@ const ChatFiles = ({
         });
 
         setLatestMessageId(maxId);
-        setLatestMessage(latestMsg)
+        setLatestMessage(latestMsg);
       }
 
       return reversedData;
@@ -254,11 +254,11 @@ const ChatFiles = ({
     };
   }, [skip, hasMore, isLoading]);
 
-  useEffect(()=>{
-    if(latestMessage){
+  useEffect(() => {
+    if (latestMessage) {
       const socket = getSocket();
       connectSocket(user?.id);
-      console.log("latestmessage" ,latestMessage)
+      console.log("latestmessage", latestMessage);
 
       socket.emit("read_message_socket", {
         user_id: user.id,
@@ -266,9 +266,8 @@ const ChatFiles = ({
         receiver_id: latestMessage.receiver_id,
         user_type: latestMessage.user_type,
       });
-
     }
-  },[latestMessage])
+  }, [latestMessage]);
 
   useEffect(() => {
     let mounted = true;
@@ -906,7 +905,6 @@ const ChatFiles = ({
                   <div
                     key={`${msg.id}-${msg.created_at}`}
                     ref={(el) => (messageRefs.current[msg.id] = el)}
-                    
                     style={{
                       opacity: isReply && replyMsgId !== msg.id ? "0.3" : "1",
                       filter:
@@ -940,12 +938,15 @@ const ChatFiles = ({
                       } `}
                     >
                       {msg.profile_pic &&
-                      msg.profile_pic != "null" &&
-                      msg.profile_pic != "" ? (
+                      msg.profile_pic !== "null" &&
+                      msg.profile_pic !== "" ? (
                         <img
                           src={
-                            "https://rapidcollaborate.in/ccp" + msg.profile_pic
+                            msg.profile_pic.startsWith("http")
+                              ? msg.profile_pic
+                              : `https://rapidcollaborate.in/ccp${msg.profile_pic}`
                           }
+                          loading="lazy"
                           className="h-8 w-8 rounded-full object-cover border-2 border-white shadow-sm"
                         />
                       ) : (
@@ -1220,7 +1221,6 @@ const ChatFiles = ({
                                         ? " bg-gray-300"
                                         : " bg-gray-50"
                                     } border-l-2 border-blue-400 p-2 rounded text-sm text-gray-800 shadow-sm hover:shadow-md transition-shadow relative`}
-                                    
                                   >
                                     <div
                                       className={`font-semibold text-gray-700 flex items-center gap-2 mb-1 `}
@@ -1232,12 +1232,13 @@ const ChatFiles = ({
                                         />
                                       </div>
                                       {reply.profile_pic &&
-                                      reply.profile_pic != "null" &&
-                                      reply.profile_pic != "" ? (
+                                      reply.profile_pic !== "null" &&
+                                      reply.profile_pic !== "" ? (
                                         <img
                                           src={
-                                            "https://rapidcollaborate.in/ccp" +
-                                            reply.profile_pic
+                                            reply.profile_pic.startsWith("http")
+                                              ? reply.profile_pic
+                                              : `https://rapidcollaborate.in/ccp${reply.profile_pic}`
                                           }
                                           className="h-6 w-6 rounded-full object-cover border-2 border-white shadow-sm"
                                         />
@@ -1248,6 +1249,7 @@ const ChatFiles = ({
                                             : "U"}
                                         </div>
                                       )}
+
                                       {reply.sender_id == user?.id &&
                                       !view_user_id
                                         ? "You"
@@ -1336,8 +1338,11 @@ const ChatFiles = ({
                                                           <img
                                                             src={
                                                               user.profile_pic
-                                                                ? "https://rapidcollaborate.in/ccp" +
-                                                                  user.profile_pic
+                                                                ? user.profile_pic.startsWith(
+                                                                    "http"
+                                                                  )
+                                                                  ? user.profile_pic
+                                                                  : `https://rapidcollaborate.in/ccp${user.profile_pic}`
                                                                 : `https://ui-avatars.com/api/?name=${user.name.charAt(
                                                                     0
                                                                   )}&background=random&color=fff&size=128`
@@ -1391,7 +1396,6 @@ const ChatFiles = ({
                                     </div>
 
                                     {/* Reply Actions */}
-                                    
                                   </div>
                                 );
                               })}
@@ -1460,13 +1464,20 @@ const ChatFiles = ({
                                     {reactionUsers.map((user) => (
                                       <div
                                         key={user.id}
-                                        className={` ${theme == "dark"  ? "text-black" : "text-black"} flex items-center gap-2`}
+                                        className={` ${
+                                          theme == "dark"
+                                            ? "text-black"
+                                            : "text-black"
+                                        } flex items-center gap-2`}
                                       >
                                         <img
                                           src={
                                             user.profile_pic
-                                              ? "https://rapidcollaborate.in/ccp" +
-                                                user.profile_pic
+                                              ? user.profile_pic.startsWith(
+                                                  "http"
+                                                )
+                                                ? user.profile_pic
+                                                : `https://rapidcollaborate.in/ccp${user.profile_pic}`
                                               : `https://ui-avatars.com/api/?name=${user.name.charAt(
                                                   0
                                                 )}&background=random&color=fff&size=128`
@@ -1509,7 +1520,6 @@ const ChatFiles = ({
                         );
                       })()}
                     </div>
-                    
                   </div>
                 );
               })}

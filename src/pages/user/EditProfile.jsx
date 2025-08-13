@@ -10,10 +10,13 @@ const EditProfile = ({ onClose }) => {
   const [pronouns, setPronouns] = useState(user?.pronouns || "");
   const [bio, setBio] = useState(user?.bio || "");
   const [profilePic, setProfilePic] = useState(
-    user && user.profile_pic
-      ? "https://rapidcollaborate.in/ccp" + user.profile_pic
-      : null
-  );
+  user && user.profile_pic
+    ? user.profile_pic.startsWith("http")
+      ? user.profile_pic
+      : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+    : null
+);
+
   const [loading, setLoading] = useState(false);
 
   const handleProfileChange = (e) => {
