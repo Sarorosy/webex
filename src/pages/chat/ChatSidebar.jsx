@@ -225,39 +225,71 @@ const ChatSidebar = ({
   const [syncing, setSyncing] = useState(false);
 
   const fetchChats = async (load = true, isSyncing = false) => {
-    try {
-      setSideBarLoading(load);
-      setSyncing(isSyncing);
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
-        {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: view_user_id ? view_user_id : user.id,
-          }),
+  try {
+    setSideBarLoading(load);
+    setSyncing(isSyncing);
+
+    const userId = view_user_id ? view_user_id : user.id;
+
+    // Fire 3 API calls in parallel
+    const [userRes, groupRes, groupDetailsRes] = await Promise.all([
+      fetch("https://webexback-06cc.onrender.com/api/chats/getUserInteractions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      }),
+      fetch("https://webexback-06cc.onrender.com/api/chats/getGroupInteractions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      }),
+      fetch("https://webexback-06cc.onrender.com/api/chats/getUserGroupsWithDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      }),
+    ]);
+
+    const userData = await userRes.json();
+    const groupData = await groupRes.json();
+    const groupDetailsData = await groupDetailsRes.json();
+
+    if (userData.status && groupData.status && groupDetailsData.status) {
+      // Combine all chats
+      const combined = [
+        ...(userData.data || []),
+        ...(groupData.data || []),
+        ...(groupDetailsData.data || []),
+      ];
+
+      // Remove duplicates by id (keep first occurrence)
+      const uniqueMap = new Map();
+      combined.forEach(item => {
+        if (item.id !== undefined && !uniqueMap.has(item.id)) {
+          uniqueMap.set(item.id, item);
         }
-      );
-      const data = await res.json();
-      if (data.status) {
-        const filteredChats = (data.data || []).filter(
-          (item) => item.id !== undefined
-        );
-        setChats(filteredChats);
-        updateChatLoginStatus(filteredChats);
-        setChatsLoaded(true);
-      } else {
-        console.error("Error fetching chats data");
-      }
-    } catch (err) {
-      console.error("Error fetching chats:", err);
-    } finally {
-      setSideBarLoading(false);
-      setSyncing(false);
+      });
+
+      // Convert map values to array and sort by last_interacted_time desc
+      const mergedChats = Array.from(uniqueMap.values()).sort((a, b) => {
+        const timeA = new Date(a.last_interacted_time || 0).getTime();
+        const timeB = new Date(b.last_interacted_time || 0).getTime();
+        return timeB - timeA;
+      });
+
+      setChats(mergedChats);
+      updateChatLoginStatus(mergedChats);
+      setChatsLoaded(true);
+    } else {
+      console.error("Error fetching chats data");
     }
-  };
+  } catch (err) {
+    console.error("Error fetching chats:", err);
+  } finally {
+    setSideBarLoading(false);
+    setSyncing(false);
+  }
+};
 
   const updateChatLoginStatus = async (chatList) => {
     try {
@@ -439,7 +471,7 @@ const ChatSidebar = ({
       if (!chatsLoaded) return;
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
-      console.log(msg)
+      // console.log(msg)
 
       if (!msg || !msg.sender_id || !msg.receiver_id) {
         console.warn("Malformed message or reply:", msgOrReply);
@@ -505,7 +537,7 @@ const ChatSidebar = ({
         }
 
         const updatedChats = [...prevChats];
-        console.log(msg);
+        // console.log(msg);
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
