@@ -102,6 +102,8 @@ const ChatSidebar = ({
 
   const audioRef = useRef(new Audio(notificationsound));
 
+  
+
   useEffect(() => {
     connectSocket(user?.id);
     const socket = getSocket();
@@ -156,11 +158,26 @@ const ChatSidebar = ({
       setOnlineUserIds(userIds); // userIds is assumed to be an array from server
     };
 
+    const handlePrimaryUserUpdated = ({ group_id, user_id }) => {
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat.id == group_id && chat.type === "group") {
+          return {
+            ...chat,
+            primary_user: user_id,
+          };
+        }
+        return chat;
+      })
+    );
+  };
+
     socket.on("group_left", handleGroupLeft);
     socket.on("group_updated", handleGroupUpdated);
     // socket.on("group_created", handleGroupCreated);
     socket.on("group_deleted", handleGroupDeleted);
     socket.on("online-users", handleOnlineUsers);
+    socket.on("primary_user_updated", handlePrimaryUserUpdated);
 
     return () => {
       socket.off("group_left", handleGroupLeft);
@@ -168,6 +185,7 @@ const ChatSidebar = ({
       // socket.off("group_created", handleGroupCreated);
       socket.off("group_deleted", handleGroupDeleted);
       socket.off("online-users", handleOnlineUsers);
+      socket.off("primary_user_updated", handlePrimaryUserUpdated);
     };
   }, [user?.id, selectedUser]);
 

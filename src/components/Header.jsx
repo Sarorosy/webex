@@ -63,6 +63,7 @@ export default function Header() {
   const { addTaskOpen, setAddTaskOpen } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { allUsers, setAllUsers } = useSelectedUser();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -175,6 +176,28 @@ export default function Header() {
       socket.off("availability_updated", handleAvailabilityUpdated);
     };
   }, [user]);
+
+  const fetchUsers = async () => {
+      try {
+        const response = await fetch(
+          "https://webexback-06cc.onrender.com/api/users/fetchallusers"
+        );
+        const data = await response.json();
+        if (data.status) {
+          const filteredUsers = data.data.filter(
+            (user) => user.user_type !== "admin"
+          );
+          setAllUsers(filteredUsers);
+        } else {
+          toast.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } 
+    };
+    useEffect(() => {
+      fetchUsers();
+    }, []);
 
   const selectedUserRef = useRef(selectedUser);
 

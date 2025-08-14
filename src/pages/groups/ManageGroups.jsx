@@ -23,12 +23,17 @@ const ManageGroups = ({ onClose }) => {
   const [groups, setGroups] = useState([]);
   const [addGroup, setAddGroup] = useState(false);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
+  const [selecteduserId, setSelectedUserId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const { theme } = useAuth();
   useEffect(() => {
     fetchGroups();
   }, []);
+
+  useEffect(() => {
+    console.log(selecteduserId);
+  }, [selecteduserId]);
 
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [viewOpen, setViewOpen] = useState(false);
@@ -65,9 +70,9 @@ const ManageGroups = ({ onClose }) => {
     }
   };
 
-  const fetchGroups = async () => {
+  const fetchGroups = async (load = true) => {
     try {
-      setLoading(true);
+      setLoading(load);
       const res = await fetch("https://webexback-06cc.onrender.com/api/groups/all");
       const data = await res.json();
       setGroups(data.groups || []);
@@ -105,6 +110,34 @@ const ManageGroups = ({ onClose }) => {
   const toggleGroup = (id) => {
     setExpandedGroupId((prev) => (prev === id ? null : id));
   };
+
+  const handleMarkAsPrimary = async (userId) =>{
+    if(!expandedGroupId){
+      toast.error("Pls select a group first");
+      return
+    }
+    try{
+      const response = await fetch("https://webexback-06cc.onrender.com/api/groups/mark-as-primary-user",{
+        method: "POST",
+        headers: {
+          "Content-type" : "application/json"
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          group_id : expandedGroupId
+        })
+      });
+      const data = await response.json();
+      if(data.status){
+        toast.success("User marked as primary");
+        fetchGroups(false);
+      }else{
+        toast.error(data.message || "Failed to mark user as primary");
+      }
+    }catch(e){
+      console.log(e)
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center ">
@@ -255,31 +288,58 @@ const ManageGroups = ({ onClose }) => {
                           {group.members.map((member) => (
                             <div
                               key={member.user_id}
-                              className="flex items-center gap-3 border-b border-gray-200 pb-2"
+                              onMouseEnter={() =>
+                                setSelectedUserId(member.user_id)
+                              }
+                              onMouseLeave={() => setSelectedUserId(null)}
+                              className="flex items-center justify-between gap-3 border-b border-gray-200 pb-2 relative"
                             >
-                              <img
-                                src={
-                                  member.profile_pic
-                                    ? member.profile_pic.startsWith("http")
-                                      ? member.profile_pic
-                                      : `https://rapidcollaborate.in/ccp${member.profile_pic}`
-                                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                        member.user_name
-                                      )}`
-                                }
-                                alt={member.user_name}
-                                className="w-8 h-8 rounded-full object-cover"
-                                loading="lazy"
-                              />
+                              {/* Left: Profile Info */}
+                              <div className="flex items-center gap-3 w-full">
+                                <img
+                                  src={
+                                    member.profile_pic
+                                      ? member.profile_pic.startsWith("http")
+                                        ? member.profile_pic
+                                        : `https://rapidcollaborate.in/ccp${member.profile_pic}`
+                                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                          member.user_name
+                                        )}`
+                                  }
+                                  alt={member.user_name}
+                                  className="w-8 h-8 rounded-full object-cover"
+                                  loading="lazy"
+                                />
 
-                              <div>
-                                <p className="font-medium text-sm">
-                                  {member.user_name}
-                                </p>
-                                <p className="text-gray-500 text-xs">
-                                  {member.email}
-                                </p>
+                                <div className="w-full"> 
+                                  <p className="font-medium text-sm flex items-center justify-between">
+                                    {member.user_name}
+
+                                    {(selecteduserId === member.user_id) && (group?.primary_user != member.user_id) && (
+                                      <button
+                                        onClick={() =>
+                                          handleMarkAsPrimary(member.user_id)
+                                        }
+                                        className="bg-blue-500 text-white px-2 ml-2 f-10 py-0.5 text-xs rounded-full shadow hover:bg-blue-600 transition-all"
+                                      >
+                                        Mark as Primary
+                                      </button>
+                                    )}
+                                    {group?.primary_user === member.user_id && (
+                                      <p
+                                        
+                                        className="bg-blue-500 text-white px-2 ml-2 f-10 py-0.5 text-xs rounded-full shadow hover:bg-blue-600 transition-all"
+                                      >
+                                        primary
+                                      </p>
+                                    )}
+                                  </p>
+                                  <p className="text-gray-500 text-xs">
+                                    {member.email}
+                                  </p>
+                                </div>
                               </div>
+
                             </div>
                           ))}
                         </div>
