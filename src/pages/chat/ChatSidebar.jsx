@@ -35,6 +35,7 @@ import faviconimg from "../../assets/ccp-fav.png"; // Path to your favicon image
 // import notificationsound from "../../assets/notification-sound.mp3";
 import notificationsound from "../../assets/new-notification.wav";
 import TotalSearch from "./TotalSearch";
+import axios from "axios";
 
 const ChatSidebar = ({
   view_user_id,
@@ -60,6 +61,7 @@ const ChatSidebar = ({
   const { user, theme } = useAuth();
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
+  const [userGroups, setUserGroups] = useState([]);
 
   const chatsRef = useRef([]);
   useEffect(() => {
@@ -337,6 +339,24 @@ const ChatSidebar = ({
     }
   };
 
+  const fetchGroups = async () => {
+  try {
+    const res = await axios.get(
+      `https://webexback-06cc.onrender.com/api/groups/user-present-groups-only/${user?.id}`
+    );
+
+    // Filter only groups where is_present === true
+    const presentGroups = (res.data.groups || []).filter(
+      (group) => group.is_present === true
+    );
+
+    setUserGroups(presentGroups);
+  } catch (err) {
+    console.error("Error fetching groups", err);
+  }
+};
+
+
   const updateChatLoginStatus = async (chatList) => {
     try {
       const updatedChats = await Promise.all(
@@ -473,6 +493,7 @@ const ChatSidebar = ({
 
   useEffect(() => {
     fetchChats(true);
+    fetchGroups();
   }, [view_user_id]);
 
   useEffect(() => {
@@ -507,6 +528,7 @@ const ChatSidebar = ({
     const syncChats = () => {
       console.log("🔄 Reconnected: syncing chats and messages");
       fetchChats(false, true); // 👈 get latest chats
+      fetchGroups();
       // You can also call message syncing API here (see below)
     };
 
@@ -548,7 +570,13 @@ const ChatSidebar = ({
 
               // console.log("Matched group chat:", matchingChat);
 
-              return !!matchingChat;
+
+              const groupExistsInUserGroups = userGroups.some(
+                (group) => group.group_id == otherUserId
+              );
+
+              // If either matches, consider it relevant
+              return !!matchingChat || groupExistsInUserGroups;
             })()
           : msg.sender_id == user?.id || msg.receiver_id == user?.id;
 
@@ -565,6 +593,7 @@ const ChatSidebar = ({
 
         if (index == -1) {
           fetchChats(false);
+          fetchGroups();
           return prevChats;
         }
 

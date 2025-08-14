@@ -455,3 +455,48 @@ div#commentsMention[placeholder]:empty:before {
 .tox-statusbar__right-container{
   display: none !important;
 }
+
+.view-task-btn {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  padding: 2px 3px;
+  border-radius: 5px;
+  font-weight: 500;
+  margin-top: 5px;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  width: fit-content;
+  color: #d37800 !important;
+  font-weight: 600 !important;
+  background: #ececec !important;
+}
+
+.view-task-btn:hover {
+  background-color: #0056b3;
+}
+
+.view-task-btn::after {
+  content: "➔"; /* Arrow */
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.task-unique-id {
+  color: #000294 !important;
+  font-weight: 600 !important;
+  background: #ececec !important;
+  padding: 1px 5px !important;
+  border-radius: 4px !important;
+  font-size: 12px;
+}
+.status-completed{
+  color: rgb(0, 82, 0);
+  background: rgb(201, 255, 201);
+  padding: 1px  3px;
+  border-radius: 5px;
+}
