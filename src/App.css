@@ -1,3 +1,4 @@
+
 #root {
   width: 100%;
 }
@@ -449,9 +450,13 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 
-.tox-editor-header{
-  z-index:  0 !important;
+
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 1; }
 }
-.tox-statusbar__right-container{
-  display: none !important;
+
+.animate-blink {
+  animation: blink 2s infinite;
 }

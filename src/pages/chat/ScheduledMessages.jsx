@@ -2,19 +2,18 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../utils/idb";
 import { getSocket, connectSocket } from "../../utils/Socket";
-import { Clock4, Paperclip } from "lucide-react";
+import { Clock4, Paperclip, X } from "lucide-react";
 
 const ScheduledMessages = ({ userId, userType }) => {
   const [messages, setMessages] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+  const { user , theme } = useAuth();
 
   useEffect(() => {
     const fetchScheduledMessages = async () => {
       try {
-        setMessages([])
         const response = await axios.post(
           "https://webexback-06cc.onrender.com/api/chats/scheduled-messages",
           {
@@ -103,33 +102,50 @@ const ScheduledMessages = ({ userId, userType }) => {
   };
 
   return (
-    <div className="">
-      <div className="bg-yellow-50 border border-yellow-300 px-4 py-1 rounded-lg shadow-sm flex items-center ">
-        <p className="f-11 flex items-center">
-          <Clock4 size={15} className="mr-1" /> You scheduled a message to be
-          deliver at{" "}
-          <span className="font-semibold ml-1">
-            {new Date(latest.schedule_at).toLocaleString()}
-          </span>
-        </p>
-        <button
-          onClick={() => setShowModal(true)}
-          className="f-11 text-blue-600 font-medium ml-2"
-        >
-          View all scheduled messages
-        </button>
-      </div>
+    <div className="absolute">
+      <div className="relative group inline-block">
+  {/* Always visible clock icon */}
+  <div className="animate-blink bg-yellow-600 border border-yellow-300 px-2 py-2 rounded shadow-sm flex items-center cursor-pointer absolute z-[9] top-[-5px] left-[10px]">
+    <Clock4 size={15} className="text-white" />
+  </div>
+
+  {/* Hidden details - show on hover */}
+  <div className="absolute left-[42px] top-[-5px] w-fit white-space-nowrap bg-orange-500 text-white border border-yellow-300 px-2 py-2 rounded items-start 
+                  hidden scale-95 group-hover:flex group-hover:scale-100 transition-all duration-300 z-10 flex-col gap-1">
+    <p className="f-11 flex items-center">
+      {/* <Clock4 size={15} className="mr-1" />  */}
+      You scheduled a message to be delivered at{" "}
+      <span className="font-semibold ml-1">
+        {new Date(latest.schedule_at).toLocaleString()}
+      </span>
+    </p>
+    <button
+      onClick={() => setShowModal(true)}
+      className="text-[10px] text-blue-600 font-medium bg-white px-2 py-1 leading-none rounded text-orange-600 hover:bg-orange-100"
+    >
+      View all scheduled messages
+    </button>
+  </div>
+</div>
+
 
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-          <div className="bg-white w-full max-w-md max-h-[80vh] rounded-lg overflow-y-auto shadow-lg p-4 relative">
+          <div className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  w-[400px]  rounded-lg`}>
+            <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
+          
+            
+            <h2 className="text-[17px] font-semibold text-white">All Scheduled Messages</h2>
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-sm"
+              className="text-gray-500 hover:text-red-500"
             >
-              ✕
+              <X size={20} className="text-white" />
             </button>
-            <h2 className="text-sm font-bold mb-4">All Scheduled Messages</h2>
+            </div>
+            <div className="p-4 max-h-[400px] overflow-y-auto">
             <ul className="space-y-3">
               {messages.map((msg) => (
                 <li
@@ -175,6 +191,7 @@ const ScheduledMessages = ({ userId, userType }) => {
                 </li>
               ))}
             </ul>
+            </div>
           </div>
         </div>
       )}

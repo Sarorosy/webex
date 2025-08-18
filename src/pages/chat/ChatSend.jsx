@@ -31,6 +31,7 @@ import AddStatus from "../status/AddStatus";
 import ScheduleMessageModal from "./ScheduleMessageModal";
 import moment from "moment";
 
+
 const ChatSend = ({
   type,
   userId,
@@ -57,9 +58,6 @@ const ChatSend = ({
 
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedHours, setSelectedHours] = useState(null);
-
-  const [customDate, setCustomDate] = useState("");
-  const [customTime, setCustomTime] = useState("");
 
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
@@ -247,12 +245,8 @@ const ChatSend = ({
           })
         );
 
-        if (user?.seniority == "senior") {
-          setGroupUsers(fullList);
-        } else {
-          const filtered = updatedUsers.filter(Boolean); // remove nulls
-          setGroupUsers(filtered);
-        }
+        const filtered = updatedUsers.filter(Boolean); // remove nulls
+        setGroupUsers(filtered);
       } else {
         console.error(data.message || "Failed to fetch group members");
       }
@@ -683,13 +677,10 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/send",
-        {
-          method: "POST",
-          body: formData, // No need for headers, browser sets Content-Type with boundary
-        }
-      );
+      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/send", {
+        method: "POST",
+        body: formData, // No need for headers, browser sets Content-Type with boundary
+      });
 
       if (!res.ok) throw new Error("Message send failed");
 
@@ -723,26 +714,10 @@ const ChatSend = ({
   const handleSchedule = async () => {
     if (isSending || (!value.trim() && !selectedFile)) return;
 
-    if (!selectedHours) {
+    if(!selectedHours){
       toast.error("Please Select a time");
       return;
     }
-
-    let scheduleAt;
-      if (selectedHours === "custom") {
-        if (!customDate || !customTime) {
-          toast.error("Please select both date and time for custom schedule.");
-          return;
-        }
-        scheduleAt = moment(
-          `${customDate} ${customTime}`,
-          "YYYY-MM-DD HH:mm"
-        ).format("YYYY-MM-DD HH:mm:ss");
-      } else {
-        scheduleAt = moment()
-          .add(selectedHours, "hours")
-          .format("YYYY-MM-DD HH:mm:ss");
-      }
 
     const rawText = value.trim();
 
@@ -770,12 +745,60 @@ const ChatSend = ({
       return emails[parseInt(index)];
     });
 
+    if (type == "user" && user?.seniority == "junior") {
+      const prevMessagedUserIds = user?.messagedUserIds || [];
+      console.log("prevMessagedUserIds", prevMessagedUserIds);
+      const isNewUser = !prevMessagedUserIds.includes(userId);
+      console.log("isNewUser", isNewUser);
+      console.log("message_count", user?.message_count || 0);
+
+      if (isNewUser && (user?.message_count || 0) >= 5) {
+        toast.custom(
+          (t) => (
+            <div
+              className={`max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl pointer-events-auto ring-1 ring-black ring-opacity-5 p-4 flex items-start space-x-4 ${
+                t.visible ? "animate-enter" : "animate-leave"
+              }`}
+            >
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Message Limit Reached
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  You've messaged 5 different users. Please continue the
+                  conversation in a group instead.
+                </p>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="text-gray-500 hover:text-gray-800 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ),
+          {
+            duration: 6000,
+            position: "top-right",
+            id: "one-to-one-limit",
+            ariaProps: {
+              role: "status",
+              "aria-live": "polite",
+            },
+          }
+        );
+      }
+
+      await trackMessagedUser(userId);
+    }
 
     try {
       setIsSending(true);
       setSubmitBtnDisabled(true);
       setMessageLoading(true);
       setShowEmojiPicker(false);
+
+      const scheduleAt = moment().add(selectedHours, "hours").format("YYYY-MM-DD HH:mm:ss");
 
       
 
@@ -806,13 +829,10 @@ const ChatSend = ({
         formData.append("selectedFile", selectedFile); // key should match `req.file`
       }
 
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/schedule",
-        {
-          method: "POST",
-          body: formData, // No need for headers, browser sets Content-Type with boundary
-        }
-      );
+      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/schedule", {
+        method: "POST",
+        body: formData, // No need for headers, browser sets Content-Type with boundary
+      });
 
       if (!res.ok) throw new Error("Message send failed");
 
@@ -831,7 +851,7 @@ const ChatSend = ({
       setSelectedUsers([]);
       setValue("");
       setScheduleModalOpen(false);
-      setSelectedHours(null);
+      setSelectedHours(null)
       const chatInput = document.getElementById("chatInput");
       const chatInput2 = document.getElementById("chatInputuser");
       if (chatInput) {
@@ -1095,32 +1115,31 @@ const ChatSend = ({
     };
   }, [userId, type]);
 
+  
   const containerRef = useRef();
 
   const stripHtml = (input) => {
-    const tmp = document.createElement("div");
-    tmp.innerHTML = input;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = input;
 
-    // Remove all child nodes that are not <img>
-    const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_ELEMENT, {
-      acceptNode(node) {
-        return node.tagName !== "IMG"
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_SKIP;
-      },
-    });
-
-    let node;
-    const nodesToRemove = [];
-
-    while ((node = walker.nextNode())) {
-      nodesToRemove.push(node);
+  // Remove all child nodes that are not <img>
+  const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_ELEMENT, {
+    acceptNode(node) {
+      return node.tagName !== "IMG" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
     }
+  });
 
-    nodesToRemove.forEach((n) => n.remove());
+  let node;
+  const nodesToRemove = [];
 
-    return tmp.innerHTML.trim();
-  };
+  while ((node = walker.nextNode())) {
+    nodesToRemove.push(node);
+  }
+
+  nodesToRemove.forEach((n) => n.remove());
+
+  return tmp.innerHTML.trim();
+};
 
   const cleanedValue = stripHtml(value).trim();
 
@@ -1424,7 +1443,7 @@ const ChatSend = ({
               </div>
             </div>
           )}
-          <div className="flex flex-col items-center gap-2 justify-end">
+          <div className="flex flex-col items-center gap-2 justify-between">
             {!isReply && (
               <button
                 onClick={() => {
@@ -1435,7 +1454,19 @@ const ChatSend = ({
                 data-tooltip-content="Schedule Message"
                 className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-600 transition "
               >
+                {submitBtnDisabled ? (
+                  <div className="mx-auto flex justify-center w-full">
+                    <ScaleLoader
+                      className="mx-auto"
+                      color="#fff"
+                      height={14}
+                      width={3}
+                      radius={2}
+                    />
+                  </div>
+                ) : (
                   <Clock4 size={13} />
+                )}
               </button>
             )}
             <button
@@ -1468,10 +1499,6 @@ const ChatSend = ({
           onSchedule={handleSchedule}
           selectedHours={selectedHours}
           setSelectedHours={setSelectedHours}
-          customDate={customDate}
-          setCustomDate={setCustomDate}
-          customTime={customTime}
-          setCustomTime={setCustomTime}
         />
       )}
     </>

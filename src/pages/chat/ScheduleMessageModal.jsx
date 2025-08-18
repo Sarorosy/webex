@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import moment from "moment";
+import { useAuth } from "../../utils/idb";
+import { X } from "lucide-react";
 
 const options = [
   { label: "1 Hour", value: 1 },
@@ -9,21 +11,10 @@ const options = [
   { label: "8 Hours", value: 8 },
   { label: "12 Hours", value: 12 },
   { label: "24 Hours", value: 24 },
-  { label: "custom", value: "custom" },
 ];
 
-const ScheduleMessageModal = ({
-  onClose,
-  onSchedule,
-  selectedHours,
-  setSelectedHours,
-  customDate,
-  setCustomDate,
-  customTime,
-  setCustomTime,
-}) => {
-
-  const today = moment().format("YYYY-MM-DD");
+const ScheduleMessageModal = ({ onClose, onSchedule, selectedHours,setSelectedHours  }) => {
+   const { theme } = useAuth();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
@@ -31,21 +22,34 @@ const ScheduleMessageModal = ({
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg"
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  w-[400px]  rounded-lg`}
       >
-        <h2 className="text-lg font-semibold mb-4">Schedule Message</h2>
-
-        <label className="block mb-2 text-sm font-medium text-gray-700">
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
+        <h2 className="text-[17px] font-semibold text-white">Schedule Message</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-red-500"
+        >
+          <X size={20} className="text-white" />
+        </button>
+        </div>
+        <div className="p-4">
+        <label className="block text-sm font-medium mb-1">
           Deliver after:
         </label>
         <select
-          className="w-full border border-gray-300 rounded px-3 py-2 mb-4"
+          className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 border rounded-md
+                `}
           value={selectedHours || ""}
-          onChange={(e) => setSelectedHours(e.target.value)}
+          onChange={(e) => setSelectedHours(parseInt(e.target.value))}
         >
-          <option value="" disabled>
-            Select time
-          </option>
+          <option value="" disabled>Select time</option>
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -53,55 +57,14 @@ const ScheduleMessageModal = ({
           ))}
         </select>
 
-        {selectedHours == "custom" && (
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Date
-              </label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                value={customDate}
-                 min={today}
-                onChange={(e) => setCustomDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Time
-              </label>
-              <input
-                type="time"
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                value={customTime}
-                onChange={(e) => setCustomTime(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-
-        {selectedHours && selectedHours != "custom" && (
-          <div className="mb-4 text-sm f-11">
+        {selectedHours && (
+          <div className="mb-4 text-sm f-11 mt-1">
             Your message will be delivered at:{" "}
-            <strong>
-              {moment().add(selectedHours, "hours").format("LLL")}
-            </strong>
+            <strong>{moment().add(selectedHours, "hours").format("LLL")}</strong>
           </div>
         )}
 
-        {selectedHours && selectedHours === "custom" && customDate && customTime && (
-          <div className="mb-4 text-sm f-11">
-            Your message will be delivered at:{" "}
-            <strong>
-              {moment(`${customDate} ${customTime}`, "YYYY-MM-DD HH:mm").format(
-                "LLL"
-              )}
-            </strong>
-          </div>
-        )}
-
-        <div className="flex justify-end gap-2 mt-4">
+        <div className="flex justify-end gap-2 mt-5">
           <button
             onClick={onClose}
             className="f-11 px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
@@ -110,14 +73,12 @@ const ScheduleMessageModal = ({
           </button>
           <button
             onClick={onSchedule}
-            disabled={
-              !selectedHours ||
-              (selectedHours === "custom" && (!customDate || !customTime))
-            }
-            className="f-11 px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm disabled:bg-gray-400"
+            disabled={!selectedHours}
+            className="f-11 bg-orange-600 text-white px-2 py-1 rounded-md hover:bg-orange-700 disabled:bg-orange-300 disabled:text-gray-100 disabled:cursor-no-drop"
           >
             Schedule
           </button>
+        </div>
         </div>
       </motion.div>
     </div>
