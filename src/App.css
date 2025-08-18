@@ -86,9 +86,9 @@ div#commentsMention[placeholder]:empty:before {
   text-decoration: underline;
   font-weight: 500;
 }
-.chat-messages-container-div{
+/* .chat-messages-container-div{ */
   /* background-image: url('./assets/chat-bg.jpg'); */
-}
+/* } */
 .chat-header-bg{
   background-image: url('./assets/pexels-padrinan-19670.jpg');
   object-fit: cover;
@@ -377,9 +377,9 @@ div#commentsMention[placeholder]:empty:before {
 
 
 
- .mbox {
+ /* .mbox { */
     /* background: #f3f3f3; */
-}
+/* } */
 
 /* .mw .mbox:hover {
     background: #ddd;
@@ -507,4 +507,60 @@ div#commentsMention[placeholder]:empty:before {
   background: rgb(201, 255, 201);
   padding: 1px  3px;
   border-radius: 5px;
+}
+
+
+
+
+
+.css-kgv93u-control , .css-1jwr0hd-control {
+    min-height: 27px !important;
+    padding: 0px !important;
+    font-size: 12px !important;
+    border-radius: 4px !important;
+}
+
+.css-hlgwow {
+  padding: 0px 8px !important;
+}
+.css-19bb58m {
+  margin: 0px !important;
+}
+
+.css-1xc3v61-indicatorContainer , .css-15lsz6c-indicatorContainer {
+  padding: 5px !important; 
+}
+.css-yyp97q-placeholder , .css-1vo199k-option , .css-1mrj0tr-option , .css-1edvtjd-option {
+    font-size: 12px !important;
+}
+
+.css-1nmdiq5-menu {
+    z-index: 9;
+}
+
+
+
+
+.tox .tox-statusbar {
+  border-top: 0px solid #e3e3e3 !important;
+}
+
+.tox-tinymce {
+    border-radius: 4px !important;
+}
+.tox:not(.tox-tinymce-inline) .tox-editor-header {
+    background-color: #f6f6f6 !important;
+    border-bottom: 1px solid #e1e1e1 !important;
+    box-shadow: none !important;
+    padding: 0px !important;
+}
+.tox .tox-menubar, .tox .tox-promotion , .tox .tox-toolbar-overlord , .tox .tox-toolbar__primary {
+    background-color: unset !important;
+}
+.tox .tox-menubar{
+  gap: 7px;
+}
+
+.mce-content-body {
+    font-size: 13px !important;
 }

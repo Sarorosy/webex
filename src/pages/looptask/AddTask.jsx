@@ -17,7 +17,7 @@ export default function AddTask({ onClose }) {
   const [milestonesList, setMilestonesList] = useState([]);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
-  const { user } = useAuth();
+  const { user, theme } = useAuth();
   const navigate = useNavigate();
   const { selectedMessageFortask, setSelectedMessageFortask } =
     useSelectedUser();
@@ -449,29 +449,40 @@ export default function AddTask({ onClose }) {
         animate={{ x: 0 }}
         exit={{ x: "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="relative w-full max-w-4xl bg-white h-full shadow-xl overflow-y-auto text-black"
+        className={`fixed top-0 left-0 w-full max-w-4xl relative ${
+          theme == "dark"
+            ? "bg-gray-800 text-white mw-dark"
+            : "bg-white text-black"
+        } shadow-xl border-l border-gray-300 z-[100] flex flex-col`}
       >
-        <div className="">
-          <div className="">
-            {/* Header */}
-            <div className="bg-orange-500 text-white px-3 py-1 flex items-center justify-between">
-              <h1 className="text-xl font-bold  flex items-center justify-between">
-                Create New Task
-              </h1>
-              <button
-                onClick={onClose}
-                className="bg-white text-red-500 p-1 rounded"
-              >
-                <X size={15} />
-              </button>
-            </div>
+        {/* Header */}
+        <div
+          className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
+            ${
+              theme == "dark"
+                ? "bg-gray-500 text-white mw-dark"
+                : "bg-gray-300 text-black"
+            }
+          `}
+        >
+          <span>Create New Task</span>
+          <button
+            onClick={onClose}
+            className="text-sm text-white bg-orange-600 px-1 py-1 rounded  hover:bg-orange-800"
+          >
+            <X size={13} />
+          </button>
+        </div>
+        <div className="bg-white w-full f-13 px-4 py-6 pr-1 flex flex-col flex-1 overflow-y-auto">
+          <div className="overflow-y-auto flex-1 flex flex-col pr-4">
+            
 
-            <form className="bg-white w-full f-13 mt-3 px-4 py-6">
+            <form className=" ">
               <div>
                 {/* Basic Information */}
-                <div className="mb-8">
-                  <h2 className="text-[16px] font-medium text-gray-900 mb-4 flex items-end leading-none ">
-                    <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
+                <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                  <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Basic Information
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -480,7 +491,7 @@ export default function AddTask({ onClose }) {
                         Bucket
                       </label>
                       <Select
-                        classNamePrefix="task-filter"
+                        classNamePrefix="task-filter !text-[11px]"
                         styles={customSelectStyles}
                         options={selectOptions(buckets, "fld_bucket_name")}
                         value={
@@ -603,9 +614,9 @@ export default function AddTask({ onClose }) {
                 </div>
 
                 {/* Task Details */}
-                <div className="mb-8">
-                  <h2 className="text-[16px] font-medium text-gray-900 mb-4 flex items-end leading-none ">
-                    <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
+                <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                  <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Task Details
                   </h2>
                   <div className="space-y-4">
@@ -621,7 +632,7 @@ export default function AddTask({ onClose }) {
                         onChange={(e) =>
                           setFormData({ ...formData, title: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                       />
                     </div>
 
@@ -640,7 +651,7 @@ export default function AddTask({ onClose }) {
                         })
                       }
                       rows={3}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none"
+                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors resize-none"
                     /> */}
 
                       <Editor
@@ -654,7 +665,7 @@ export default function AddTask({ onClose }) {
                           }))
                         }
                         init={{
-                          height: 300,
+                          height: 250,
                           menubar: true,
                           plugins: [
                             "advlist autolink lists link image charmap print preview anchor",
@@ -671,14 +682,16 @@ export default function AddTask({ onClose }) {
                   </div>
                 </div>
               </div>
-              {/* Timing & Schedule */}
-              <h2 className="text-[16px] font-medium text-gray-900 mb-4 flex items-end leading-none ">
-                <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
-                Timing & Schedule
-              </h2>
-              <div className="mb-8 flex gap-5 items-start">
-                <div className="w-1/2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+             
+              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                {/* Timing & Schedule */}
+                <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                  <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
+                  Timing & Schedule
+                </h2>
+                <div className="">
+                  <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
                     <div>
                       <label className="block text-[13px] font-medium text-gray-700 mb-1">
                         Due Date
@@ -693,7 +706,7 @@ export default function AddTask({ onClose }) {
                             : ""
                         }
                         readOnly
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                       />
                     </div>
 
@@ -708,54 +721,14 @@ export default function AddTask({ onClose }) {
                         onChange={(e) =>
                           setFormData({ ...formData, dueTime: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="w-1/2 flex gap-7">
-                  {/* <div>
-                  <label className="block text-[13px] font-medium text-gray-700 mb-3">
-                    Recurring Task
-                  </label>
-                  <div className="flex gap-6">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="recurring"
-                        value="Yes"
-                        checked={formData.recurring === "Yes"}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            recurring: e.target.value,
-                          })
-                        }
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
-                      />
-                      <span className="ml-2 text-[13px] text-gray-700">
-                        Yes
-                      </span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="recurring"
-                        value="No"
-                        checked={formData.recurring === "No"}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            recurring: e.target.value,
-                          })
-                        }
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
-                      />
-                      <span className="ml-2 text-[13px] text-gray-700">No</span>
-                    </label>
-                  </div>
-                </div> */}
+                <div className="flex gap-7">
+                 
 
                   {formData.recurring === "Yes" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full ">
@@ -765,7 +738,7 @@ export default function AddTask({ onClose }) {
                         </label>
                         <select
                           name="recurring_duration"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                           required
                           onChange={(e) =>
                             setFormData({
@@ -787,7 +760,7 @@ export default function AddTask({ onClose }) {
                         </label>
                         <select
                           name="recurring_type"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                           required
                           onChange={(e) =>
                             setFormData({
@@ -810,12 +783,12 @@ export default function AddTask({ onClose }) {
               </div>
 
               {/* Links */}
-              <div className="mb-8">
-                <h2 className="text-[16px] font-medium text-gray-900 mb-4 flex items-end leading-none ">
-                  <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
+              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                  <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                   Links & References
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <div>
                     <label className="block text-[13px] font-medium text-gray-700 mb-1">
                       Google Sheets/Docs Link
@@ -828,7 +801,7 @@ export default function AddTask({ onClose }) {
                       onChange={(e) =>
                         setFormData({ ...formData, googleLink: e.target.value })
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     />
                   </div>
 
@@ -847,23 +820,24 @@ export default function AddTask({ onClose }) {
                           additionalLink: e.target.value,
                         })
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     />
                   </div>
                 </div>
               </div>
+              </div>
 
               {/* Milestones */}
-              <div className="mb-8">
+              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[16px] font-medium text-gray-900 flex items-center">
-                    <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
+                  <h2 className="text-[14px] font-medium text-orange-600 flex items-center">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Milestones
                   </h2>
                   <button
                     type="button"
                     onClick={addMilestone}
-                    className="bg-green-600 hover:bg-green-700 text-white px-2 py-1.5 rounded text-[13px] font-medium transition-colors duration-200 flex items-center gap-1 leading-none"
+                    className="bg-green-600 hover:bg-green-700 text-white px-2 py-1.5 rounded text-[10px] font-medium transition-colors duration-200 flex items-center gap-1 leading-none"
                   >
                     + Add Milestone
                   </button>
@@ -916,7 +890,7 @@ export default function AddTask({ onClose }) {
                               e.target.value
                             )
                           }
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                         />
                       </div> */}
                         <div className="mt-3 flex justify-end items-end">
@@ -932,18 +906,18 @@ export default function AddTask({ onClose }) {
                     </div>
                   ))}
                   {milestones.length === 0 && (
-                    <div className="text-center py-2 text-gray-500 bg-red-50">
-                      <p className="text-[13px]">No milestones added yet</p>
+                    <div className="text-center py-2 text-red-700 bg-red-50">
+                      <p className="text-[12px]">No milestones added yet</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Files */}
-              <div className="mb-8">
+              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-[16px] font-medium text-gray-900 flex items-center">
-                    <div className="w-1 h-5 bg-orange-600 rounded-full mr-3"></div>
+                  <h2 className="text-[14px] font-medium text-orange-600 flex items-center">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Attachments
                     <span className="ml-2 text-[13px] text-gray-500 font-normal">
                       (Max 3 files)
@@ -952,7 +926,7 @@ export default function AddTask({ onClose }) {
                   <button
                     type="button"
                     onClick={addFile}
-                    className="bg-green-600 hover:bg-green-700 text-white px-2 py-1.5 rounded text-[13px] font-medium transition-colors duration-200 flex items-center gap-1 leading-none"
+                    className="bg-green-600 hover:bg-green-700 text-white px-2 py-1.5 rounded text-[10px] font-medium transition-colors duration-200 flex items-center gap-1 leading-none"
                   >
                     + Add File
                   </button>
@@ -973,7 +947,7 @@ export default function AddTask({ onClose }) {
                           onChange={(e) =>
                             handleFileChange(i, "file", e.target.files[0])
                           }
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                         /> */}
                           <div className="flex items-center w-full border border-gray-300 rounded-lg  text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors">
                             <label className="relative cursor-pointer bg-gray-500 text-white px-2 py-2 rounded hover:bg-blue-600 whitespace-nowrap">
@@ -1002,7 +976,7 @@ export default function AddTask({ onClose }) {
                             onChange={(e) =>
                               handleFileChange(i, "fileName", e.target.value)
                             }
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                            className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                           />
                         </div>
                       </div>
@@ -1018,19 +992,19 @@ export default function AddTask({ onClose }) {
                     </div>
                   ))}
                   {files.length === 0 && (
-                    <div className="text-center py-2 text-gray-500 bg-red-50">
-                      <p className="text-[13px]">No files attached yet</p>
+                    <div className="text-center py-2 text-red-700 bg-red-50">
+                      <p className="text-[12px]">No files attached yet</p>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="flex justify-end pt-4 border-t border-gray-200">
+              <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="inline-flex items-center px-2 py-1.5 border border-transparent text-[13px] leading-none font-medium rounded shadow-sm text-white bg-orange-500 hover:bg-orange-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-orange-500 transition-colors"
+                  className="inline-flex items-center px-2 py-1.5 border border-transparent text-[12px] leading-none font-medium rounded shadow-sm text-white bg-orange-500 hover:bg-orange-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-orange-500 transition-colors"
                 >
                   {creatingTask ? "Creating..." : "Create Task"}{" "}
                   <ChevronsRight size={14} />
