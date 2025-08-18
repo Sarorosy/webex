@@ -16,7 +16,8 @@ import {
   Check,
   Shield,
   Bot,
-  Infinity
+  Infinity,
+  Hash
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { AnimatePresence, motion } from "framer-motion";
@@ -28,6 +29,7 @@ import { encode } from "../../utils/encoder";
 import { useAuth } from "../../utils/idb";
 import UserBotSettings from "./UserBotSettings";
 import UserLoopSettings from "./UserLoopSettings";
+import UserTags from "./UserTags";
 
 const getRandomColor = (id) => {
   const colors = [
@@ -50,6 +52,7 @@ const ManageUsers = ({ onClose }) => {
   const [search, setSearch] = useState("");
   const [botSettingsOpen, setBotSettingsOpen] = useState(false);
   const [loopSettingsOpen, setLoopSettingsOpen] = useState(false);
+  const [userTagsOpen, setUserTagsOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -137,6 +140,10 @@ const ManageUsers = ({ onClose }) => {
   const handleLoopClick = (user) => {
     setSelectedUser(user);
     setLoopSettingsOpen(true);
+  };
+  const handleTagClick = (user) => {
+    setSelectedUser(user);
+    setUserTagsOpen(true);
   };
 
   const handleEditClick = (id) => {
@@ -589,6 +596,20 @@ const ManageUsers = ({ onClose }) => {
                         ) : (
                           <div className="flex flex-col items-end justify-start gap-2">
                             <div className="flex justify-start gap-2">
+                              {(user?.user_type == "admin") && (
+                                <button
+                                  title="user Tags"
+                                  onClick={() => handleTagClick(u)}
+                                  className="text-blue-500 hover:text-blue-600 hover:bg-blue-100 p-1 border rounded"
+                                  style={{
+                                    background: `${
+                                      theme == "dark" ? "#f6f6f6" : ""
+                                    }`,
+                                  }}
+                                >
+                                  <Hash size={14} />
+                                </button>
+                              )}
                               {(user?.user_type == "admin" ||
                                 (user?.user_type == "subadmin" &&
                                   user?.bot_settings == 1)) && (
@@ -771,6 +792,14 @@ const ManageUsers = ({ onClose }) => {
               user={selectedUser}
             />
           )}
+        {userTagsOpen && (
+          <UserTags 
+          onClose={()=>{setUserTagsOpen(false)}}
+          user={selectedUser}
+          after={fetchUsers}
+          />
+        )}
+
         </AnimatePresence>
 
         {isModalOpen && (

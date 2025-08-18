@@ -25,6 +25,8 @@ import {
   BarChart2,
   ChartBarBig,
   Megaphone,
+  Hash,
+  RadioTower,
 } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
@@ -54,6 +56,8 @@ import AddStatus from "../pages/status/AddStatus.jsx";
 import ManagePoll from "../pages/poll/ManagePoll.jsx";
 import ManageStatus from "../pages/status/ManageStatus.jsx";
 import AddTask from "../pages/looptask/AddTask.jsx";
+import ManageUserTags from "../pages/usertags/ManageUserTags.jsx";
+import SendBroadcast from "../pages/broadcast/SendBroadcast.jsx";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -72,6 +76,8 @@ export default function Header() {
   const [pollOpen, setPollOpen] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [userTagsOpen, setUserTagsOpen] = useState(false);
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const { searchOpen, setSearchOpen } = useSelectedUser();
@@ -632,6 +638,34 @@ export default function Header() {
                   <Megaphone size={17} className="" />
                 </button>
               )}
+              {(user?.user_type == "admin") && (
+                <button
+                  onClick={() => setUserTagsOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Manage User Tags"
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
+                >
+                  <Hash size={17} className="" />
+                </button>
+              )}
+              {(user?.user_type == "admin") && (
+                <button
+                  onClick={() => setBroadcastOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Broadcast Message"
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
+                >
+                  <RadioTower size={17} className="" />
+                </button>
+              )}
 
               {/* <button
                   onClick={() => setStatusPageOpen(true)}
@@ -766,6 +800,17 @@ export default function Header() {
             onClose={() => {
               setAddTaskOpen(false);
             }}
+          />
+        )}
+
+        {userTagsOpen && (
+          <ManageUserTags 
+            onClose={()=>{setUserTagsOpen(false)}}
+          />
+        )}
+        {broadcastOpen && (
+          <SendBroadcast 
+          onClose={()=>{setBroadcastOpen(false)}}
           />
         )}
         <ReminderPopup />
