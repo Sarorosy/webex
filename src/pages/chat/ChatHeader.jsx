@@ -10,6 +10,7 @@ import {
   Search,
   Star,
   X,
+  Infinity
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../utils/idb";
@@ -21,6 +22,7 @@ import axios from "axios";
 import ScreenSharing from "../../components/ScreenSharing";
 import TypingIndicator from "./TypingIndicator";
 import ScheduledMessages from "./ScheduledMessages";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ChatHeader = ({
   selectedUser,
@@ -48,6 +50,141 @@ const ChatHeader = ({
   const { selectedStatus, setSelectedStatus } = useSelectedUser();
   const { selectedGroupForStatus, setSelectedGroupForStatus } =
     useSelectedUser();
+  const { allUsers, setAllUsers } = useSelectedUser();
+  const { primaryUserData, setPrimaryUserData } = useSelectedUser();
+
+  const [lateTasks, setLateTasks] = useState([]);
+
+  useEffect(() => {
+    if (
+      selectedUser &&
+      selectedUser?.type === "group" &&
+      selectedUser?.primary_user
+    ) {
+      const primaryUser = allUsers.find(
+        (u) => u.id == selectedUser.primary_user
+      );
+      setPrimaryUserData(primaryUser || null);
+    } else {
+      setPrimaryUserData(null);
+    }
+    setLateTasks([]);
+  }, [selectedUser, allUsers]);
+
+  useEffect(() => {
+    if (!primaryUserData || !primaryUserData.email) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchLateTasks = async () => {
+      try {
+        setLateTasks([]); // clear while loading
+        const response = await fetch(
+          "https://loopback-skci.onrender.com/api/tasks/getlatetasksbyemail",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              email: primaryUserData.email,
+            }),
+            signal,
+          }
+        );
+
+        if (!response.ok) return; // request aborted or failed
+
+        const data = await response.json();
+        if (!signal.aborted && data.status) {
+          setLateTasks(data?.data);
+        }
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchLateTasks();
+
+    // Cleanup: cancel request if selectedUser changes
+    return () => {
+      controller.abort();
+    };
+  }, [primaryUserData]);
+
+
+ function LateTasksList({ lateTasks }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const encodeBase64Url = (str) => {
+    return btoa(str)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+  };
+
+  if (!lateTasks || lateTasks.length === 0) return null;
+
+  return (
+    <div
+      className="relative inline-block"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Icon with Count */}
+      <div className="flex items-center gap-1 cursor-pointer">
+        <Infinity className="w-6 h-6 text-orange-500" />
+        <span className="text-sm font-semibold">{lateTasks.length}</span>
+      </div>
+
+      {/* Hover Popup */}
+      <AnimatePresence>
+        {isHovered && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute left-0 mt-2 bg-gray-900 text-white p-3 rounded-lg shadow-lg z-50 w-72 max-h-80 overflow-auto"
+          >
+            <p className="font-bold mb-2">Late Tasks</p>
+            <ul className="space-y-2">
+              {lateTasks.map((task) => {
+                const encodedId = encodeBase64Url(String(task.id));
+                const link = `https://www.apacvault.com/admin/view_details/${encodedId}`;
+
+                return (
+                  <li
+                    key={task.id}
+                    className="border border-gray-700 p-2 rounded flex items-center gap-1"
+                  >
+                    <span className="text-xs task-unique-id">
+                      {task.fld_unique_task_id}
+                    </span>
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-0.5 f-11 text-xs rounded self-start"
+                    >
+                      View Task
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -224,10 +361,11 @@ const ChatHeader = ({
 
               {/* Small status dot */}
               {selectedUser?.type === "group" &&
-                selectedUser?.is_status === 1 && Array.isArray(selectedUser.status) &&
-                            selectedUser.status.some(
-                              (s) => s?.id !== null && s?.id !== undefined
-                            ) && (
+                selectedUser?.is_status === 1 &&
+                Array.isArray(selectedUser.status) &&
+                selectedUser.status.some(
+                  (s) => s?.id !== null && s?.id !== undefined
+                ) && (
                   <span className="absolute top-0 -right-1 w-3 h-3 border-2 border-white rounded-full bg-blue-600 cursor-pointer z-50" />
                 )}
             </div>
@@ -267,6 +405,10 @@ const ChatHeader = ({
 
         {/* Right Section */}
         <div className="flex justify-between items-center gap-3">
+          {lateTasks && lateTasks.length > 0 && (
+            <LateTasksList lateTasks={lateTasks} />
+          )}
+
           {selectedUser?.type == "group" && selectedUser?.group_type && (
             <div
               className={`typing-indicator bg-gray-100 px-2 py-0.5 rounded uppercase f-11 text-black`}
@@ -397,9 +539,9 @@ const ChatHeader = ({
           </button>
         </div>
       )}
-      <ScheduledMessages 
-      userId={selectedUser?.id}
-      userType={selectedUser?.type}
+      <ScheduledMessages
+        userId={selectedUser?.id}
+        userType={selectedUser?.type}
       />
       {/* FLOATING RESULTS */}
     </div>

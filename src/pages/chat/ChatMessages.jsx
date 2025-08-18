@@ -639,19 +639,16 @@ const ChatMessages = ({
   const handlePinMsg = async (msgId) => {
     try {
       const userId = Number(user.id); // Ensure consistent variable
-      const response = await fetch(
-        "https://webexback-06cc.onrender.com/api/messages/pin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            message_id: msgId,
-          }),
-        }
-      );
+      const response = await fetch("https://webexback-06cc.onrender.com/api/messages/pin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          message_id: msgId,
+        }),
+      });
 
       const data = await response.json();
 
@@ -1241,8 +1238,11 @@ const ChatMessages = ({
                       msg.profile_pic !== "" ? (
                         <img
                           src={
-                            "https://rapidcollaborate.in/ccp" + msg.profile_pic
+                            msg.profile_pic.startsWith("http")
+                              ? msg.profile_pic
+                              : `https://rapidcollaborate.in/ccp${msg.profile_pic}`
                           }
+                          loading="lazy"
                           className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
                         />
                       ) : (
@@ -1375,8 +1375,11 @@ const ChatMessages = ({
                       msg.profile_pic != "null" &&
                       msg.profile_pic != "" ? (
                         <img
+                        loading="lazy"
                           src={
-                            "https://rapidcollaborate.in/ccp" + msg.profile_pic
+                            msg.profile_pic.startsWith("http")
+                              ? msg.profile_pic
+                              : `https://rapidcollaborate.in/ccp${msg.profile_pic}`
                           }
                           className="h-7 w-7 rounded-full object-cover border-2 border-gray shadow-sm"
                         />
@@ -1527,14 +1530,20 @@ const ChatMessages = ({
                                                     <img
                                                       src={
                                                         user.profile_pic
-                                                          ? `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                                                          ? user.profile_pic.startsWith(
+                                                              "http"
+                                                            )
+                                                            ? user.profile_pic
+                                                            : `https://rapidcollaborate.in/ccp${user.profile_pic}`
                                                           : `https://ui-avatars.com/api/?name=${user.name.charAt(
                                                               0
                                                             )}&background=random&color=fff&size=128`
                                                       }
+                                                      loading="lazy"
                                                       alt={user.name}
                                                       className="w-5 h-5 rounded-full"
                                                     />
+
                                                     <span className="f-11">
                                                       {user.name}
                                                     </span>
@@ -1688,7 +1697,11 @@ const ChatMessages = ({
                                       "svg",
                                       "webp",
                                     ].includes(ext);
-                                    const fileUrl = `https://rapidcollaborate.in/ccp${msg.filename}`;
+                                    const fileUrl = msg.filename.startsWith(
+                                      "http"
+                                    )
+                                      ? msg.filename
+                                      : `https://rapidcollaborate.in/ccp${msg.filename}`;
                                     const filenameOnly = msg.filename
                                       .split("/")
                                       .pop();
@@ -1747,7 +1760,11 @@ const ChatMessages = ({
                                               <button
                                                 onClick={() => {
                                                   setOpenFileModal({
-                                                    url: `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                                    url: msg.filename.startsWith(
+                                                      "http"
+                                                    )
+                                                      ? msg.filename
+                                                      : `https://rapidcollaborate.in/ccp${msg.filename}`,
                                                     name: msg.filename
                                                       .split("/")
                                                       .pop(),
@@ -1901,12 +1918,16 @@ const ChatMessages = ({
                                                     <img
                                                       src={
                                                         user.profile_pic
-                                                          ? "https://rapidcollaborate.in/ccp" +
-                                                            user.profile_pic
+                                                          ? user.profile_pic.startsWith(
+                                                              "http"
+                                                            )
+                                                            ? user.profile_pic
+                                                            : `https://rapidcollaborate.in/ccp${user.profile_pic}`
                                                           : `https://ui-avatars.com/api/?name=${user.name.charAt(
                                                               0
                                                             )}&background=random&color=fff&size=128`
                                                       }
+                                                      loading="lazy"
                                                       alt={user.name}
                                                       className="w-5 h-5 rounded-full"
                                                     />
@@ -2076,9 +2097,11 @@ const ChatMessages = ({
                                       reply.profile_pic != "" ? (
                                         <img
                                           src={
-                                            "https://rapidcollaborate.in/ccp" +
-                                            reply.profile_pic
+                                            reply.profile_pic.startsWith("http")
+                                              ? reply.profile_pic
+                                              : `https://rapidcollaborate.in/ccp${reply.profile_pic}`
                                           }
+                                          loading="lazy"
                                           className="h-6 w-6 rounded-full object-cover border-2 border-gray shadow-sm"
                                         />
                                       ) : (
@@ -2291,6 +2314,7 @@ const ChatMessages = ({
                                                         >
                                                           <img
                                                             src={fileUrl}
+                                                            loading="lazy"
                                                             alt={reply.filename}
                                                             className="rounded-md shadow max-w-36 h-full object-contain"
                                                           />
@@ -2404,8 +2428,11 @@ const ChatMessages = ({
                                                                 <img
                                                                   src={
                                                                     user.profile_pic
-                                                                      ? "https://rapidcollaborate.in/ccp" +
-                                                                        user.profile_pic
+                                                                      ? user.profile_pic.startsWith(
+                                                                          "http"
+                                                                        )
+                                                                        ? user.profile_pic
+                                                                        : `https://rapidcollaborate.in/ccp${user.profile_pic}`
                                                                       : `https://ui-avatars.com/api/?name=${user.name.charAt(
                                                                           0
                                                                         )}&background=random&color=fff&size=128`
@@ -2413,6 +2440,7 @@ const ChatMessages = ({
                                                                   alt={
                                                                     user.name
                                                                   }
+                                                                  loading="lazy"
                                                                   className="w-5 h-5 rounded-full"
                                                                 />
                                                                 <span>

@@ -35,6 +35,7 @@ import faviconimg from "../../assets/ccp-fav.png"; // Path to your favicon image
 // import notificationsound from "../../assets/notification-sound.mp3";
 import notificationsound from "../../assets/new-notification.wav";
 import TotalSearch from "./TotalSearch";
+import axios from "axios";
 
 const ChatSidebar = ({
   view_user_id,
@@ -60,6 +61,7 @@ const ChatSidebar = ({
   const { user, theme } = useAuth();
   const navigate = useNavigate();
   const [onlineUserIds, setOnlineUserIds] = useState([]);
+  const [userGroups, setUserGroups] = useState([]);
 
   const chatsRef = useRef([]);
   useEffect(() => {
@@ -99,6 +101,8 @@ const ChatSidebar = ({
   }, [chats]);
 
   const audioRef = useRef(new Audio(notificationsound));
+
+  
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -154,11 +158,26 @@ const ChatSidebar = ({
       setOnlineUserIds(userIds); // userIds is assumed to be an array from server
     };
 
+    const handlePrimaryUserUpdated = ({ group_id, user_id }) => {
+    setChats((prevChats) =>
+      prevChats.map((chat) => {
+        if (chat.id == group_id && chat.type === "group") {
+          return {
+            ...chat,
+            primary_user: user_id,
+          };
+        }
+        return chat;
+      })
+    );
+  };
+
     socket.on("group_left", handleGroupLeft);
     socket.on("group_updated", handleGroupUpdated);
     // socket.on("group_created", handleGroupCreated);
     socket.on("group_deleted", handleGroupDeleted);
     socket.on("online-users", handleOnlineUsers);
+    socket.on("primary_user_updated", handlePrimaryUserUpdated);
 
     return () => {
       socket.off("group_left", handleGroupLeft);
@@ -166,6 +185,7 @@ const ChatSidebar = ({
       // socket.off("group_created", handleGroupCreated);
       socket.off("group_deleted", handleGroupDeleted);
       socket.off("online-users", handleOnlineUsers);
+      socket.off("primary_user_updated", handlePrimaryUserUpdated);
     };
   }, [user?.id, selectedUser]);
 
@@ -228,28 +248,106 @@ const ChatSidebar = ({
     try {
       setSideBarLoading(load);
       setSyncing(isSyncing);
-      const res = await fetch(
-        "https://webexback-06cc.onrender.com/api/chats/getGroupsAndUsersInteracted",
-        {
+
+      const userId = view_user_id ? view_user_id : user.id;
+
+      const [interactionsRes, unreadRes, groupsRes] = await Promise.all([
+        fetch("https://webexback-06cc.onrender.com/api/chats/getUserAndGroupInteractions", {
           method: "POST",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: view_user_id ? view_user_id : user.id,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.status) {
-        const filteredChats = (data.data || []).filter(
-          (item) => item.id !== undefined
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }),
+        fetch("https://webexback-06cc.onrender.com/api/chats/getUnreadMessageCounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }),
+        fetch("https://webexback-06cc.onrender.com/api/chats/getUserGroupsWithDetails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }),
+      ]);
+
+      const interactionsData = await interactionsRes.json();
+      const unreadData = await unreadRes.json();
+      const groupsData = await groupsRes.json();
+
+      if (interactionsData.status && unreadData.status && groupsData.status) {
+        const { users, groups } = interactionsData.data;
+        const unreadCounts = unreadData.data;
+        const groupDetails = groupsData.data;
+
+        const unreadMap = new Map();
+        unreadCounts.forEach((item) => {
+          unreadMap.set(item.type + "_" + item.id, item);
+        });
+
+        // Attach unread info to users
+        users.forEach((user) => {
+          const key = "user_" + user.id;
+          const unreadInfo = unreadMap.get(key);
+          user.read_status = unreadInfo ? 1 : 0;
+          user.unread_count = unreadInfo ? unreadInfo.unread_count : 0;
+          user.unread_message_ids = unreadInfo
+            ? unreadInfo.unread_message_ids
+            : [];
+          user.is_mentioned = unreadInfo
+            ? Boolean(unreadInfo.is_mentioned)
+            : false;
+          user.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
+          if (unreadInfo) user.last_message_id = unreadInfo.last_message_id;
+        });
+
+        // Attach unread info to groups (interaction groups + groupDetails merged)
+        // Merge group details into groupInteractions first (by id)
+        const groupMap = new Map();
+        groups.forEach((g) => groupMap.set(g.id, g));
+        // groupDetails.forEach((gd) => {
+        //   if (!groupMap.has(gd.id)) groupMap.set(gd.id, gd);
+        //   else groupMap.set(gd.id, { ...groupMap.get(gd.id), ...gd });
+        // });
+
+        const mergedGroups = Array.from(groupMap.values());
+
+        mergedGroups.forEach((group) => {
+          const key = "group_" + group.id;
+          const unreadInfo = unreadMap.get(key);
+          group.read_status = unreadInfo ? 1 : 0;
+          group.unread_count = unreadInfo ? unreadInfo.unread_count : 0;
+          group.unread_message_ids = unreadInfo
+            ? unreadInfo.unread_message_ids
+            : [];
+          group.is_mentioned = unreadInfo
+            ? Boolean(unreadInfo.is_mentioned)
+            : false;
+          group.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
+          if (unreadInfo) group.last_message_id = unreadInfo.last_message_id;
+
+          try {
+            group.status = JSON.parse(group.status || "[]");
+          } catch {
+            group.status = [];
+          }
+          group.is_status = group.is_status ? 1 : 0;
+          group.status_count = parseInt(group.status_count) || 0;
+        });
+
+        // Combine users + merged groups
+        const combined = [...users, ...mergedGroups];
+
+        // Sort by last_interacted_time desc
+        combined.sort(
+          (a, b) =>
+            new Date(b.last_interacted_time || 0) -
+            new Date(a.last_interacted_time || 0)
         );
-        setChats(filteredChats);
-        updateChatLoginStatus(filteredChats);
+
+        setChats(combined);
+        updateChatLoginStatus(combined);
         setChatsLoaded(true);
       } else {
-        console.error("Error fetching chats data");
+        console.error("Error fetching data");
       }
     } catch (err) {
       console.error("Error fetching chats:", err);
@@ -258,6 +356,24 @@ const ChatSidebar = ({
       setSyncing(false);
     }
   };
+
+  const fetchGroups = async () => {
+  try {
+    const res = await axios.get(
+      `https://webexback-06cc.onrender.com/api/groups/user-present-groups-only/${user?.id}`
+    );
+
+    // Filter only groups where is_present === true
+    const presentGroups = (res.data.groups || []).filter(
+      (group) => group.is_present === true
+    );
+
+    setUserGroups(presentGroups);
+  } catch (err) {
+    console.error("Error fetching groups", err);
+  }
+};
+
 
   const updateChatLoginStatus = async (chatList) => {
     try {
@@ -395,6 +511,7 @@ const ChatSidebar = ({
 
   useEffect(() => {
     fetchChats(true);
+    fetchGroups();
   }, [view_user_id]);
 
   useEffect(() => {
@@ -429,6 +546,7 @@ const ChatSidebar = ({
     const syncChats = () => {
       console.log("🔄 Reconnected: syncing chats and messages");
       fetchChats(false, true); // 👈 get latest chats
+      fetchGroups();
       // You can also call message syncing API here (see below)
     };
 
@@ -439,7 +557,7 @@ const ChatSidebar = ({
       if (!chatsLoaded) return;
 
       const msg = isReply ? msgOrReply : msgOrReply; // No need for msgOrReply.reply
-      console.log(msg)
+      // console.log(msg)
 
       if (!msg || !msg.sender_id || !msg.receiver_id) {
         console.warn("Malformed message or reply:", msgOrReply);
@@ -457,7 +575,7 @@ const ChatSidebar = ({
           : msg.sender_id;
       const otherChatType = msg.user_type === "group" ? "group" : "user";
 
-      console.log(`otherUserId-${msg?.id}`, otherUserId);
+      console.log(`otherUserId- `, otherUserId);
 
       const isRelevant =
         msg.user_type === "group"
@@ -470,7 +588,13 @@ const ChatSidebar = ({
 
               // console.log("Matched group chat:", matchingChat);
 
-              return !!matchingChat;
+
+              const groupExistsInUserGroups = userGroups.some(
+                (group) => group.group_id == otherUserId
+              );
+
+              // If either matches, consider it relevant
+              return !!matchingChat || groupExistsInUserGroups;
             })()
           : msg.sender_id == user?.id || msg.receiver_id == user?.id;
 
@@ -487,6 +611,7 @@ const ChatSidebar = ({
 
         if (index == -1) {
           fetchChats(false);
+          fetchGroups();
           return prevChats;
         }
 
@@ -505,7 +630,7 @@ const ChatSidebar = ({
         }
 
         const updatedChats = [...prevChats];
-        console.log(msg);
+        // console.log(msg);
         updatedChats[index] = {
           ...updatedChats[index],
           last_interacted_time: new Date().toISOString(),
@@ -956,7 +1081,9 @@ const ChatSidebar = ({
             }`}
           >
             <RefreshCcw size={18} className="animate-spin" />
-            <span className="font-medium tracking-wide f-12">Back Online - Syncing Chats...</span>
+            <span className="font-medium tracking-wide f-12">
+              Back Online - Syncing Chats...
+            </span>
           </div>
         )}
 
@@ -1258,9 +1385,11 @@ const ChatSidebar = ({
                             {chat.profile_pic ? (
                               <img
                                 src={
-                                  "https://rapidcollaborate.in/ccp" +
-                                  chat.profile_pic
+                                  chat.profile_pic.startsWith("http")
+                                    ? chat.profile_pic
+                                    : `https://rapidcollaborate.in/ccp${chat.profile_pic}`
                                 }
+                                loading="lazy"
                                 alt="Profile"
                                 className="w-8 h-8 rounded-full object-cover"
                               />

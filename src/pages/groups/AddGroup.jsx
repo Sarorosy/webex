@@ -93,7 +93,12 @@ const AddGroup = ({ onClose, finalFunction }) => {
   // Custom Option with avatar
   const CustomOption = (props) => {
     const { data, innerRef, innerProps } = props;
-    const avatar = data.profile_pic ? `${baseURL}${data.profile_pic}` : null;
+    const avatar = data.profile_pic
+  ? data.profile_pic.startsWith("http")
+    ? data.profile_pic
+    : `${baseURL}${data.profile_pic}`
+  : null;
+
 
     return (
       <div
@@ -133,7 +138,12 @@ const AddGroup = ({ onClose, finalFunction }) => {
 
   const CustomMultiValue = (props) => {
     const { data } = props;
-    const avatar = data.profile_pic ? `${baseURL}${data.profile_pic}` : null;
+    const avatar = data.profile_pic
+  ? data.profile_pic.startsWith("http")
+    ? data.profile_pic
+    : `${baseURL}${data.profile_pic}`
+  : null;
+
 
     return (
       <components.MultiValue {...props}>

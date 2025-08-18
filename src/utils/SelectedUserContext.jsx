@@ -15,6 +15,8 @@ export const SelectedUserProvider = ({ children }) => {
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [addTaskOpen, setAddTaskOpen] = useState(null);
   const [selectedMessageFortask, setSelectedMessageFortask] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const [primaryUserData, setPrimaryUserData] = useState(null);
 
   return (
     <SelectedUserContext.Provider value={{
@@ -37,7 +39,11 @@ export const SelectedUserProvider = ({ children }) => {
       addTaskOpen,
       setAddTaskOpen,
       selectedMessageFortask,
-      setSelectedMessageFortask
+      setSelectedMessageFortask,
+      allUsers,
+      setAllUsers,
+      primaryUserData,
+      setPrimaryUserData
 
     }}>
       {children}

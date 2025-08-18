@@ -10,7 +10,7 @@ const UserBotSettings = ({ onClose, user }) => {
   const [search, setSearch] = useState("");
   const [selectedGroups, setSelectedGroups] = useState([]);
   const [activeTab, setActiveTab] = useState("all"); // "all" | "present"
-  const {theme} = useAuth();
+  const { theme } = useAuth();
   useEffect(() => {
     if (user?.id) {
       fetchGroups();
@@ -23,12 +23,11 @@ const UserBotSettings = ({ onClose, user }) => {
         `https://webexback-06cc.onrender.com/api/groups/user-present-groups/${user?.id}`
       );
       setGroups(res.data.groups || []);
-      setSelectedGroups(res.data.existing_ids || [])
+      setSelectedGroups(res.data.existing_ids || []);
     } catch (err) {
       console.error("Error fetching groups", err);
     }
   };
-
 
   const handleToggleGroup = (groupId) => {
     setSelectedGroups((prev) =>
@@ -94,28 +93,37 @@ const UserBotSettings = ({ onClose, user }) => {
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
         // className="w-full max-w-md bg-white rounded-lg shadow-xl flex flex-col"
         className={`${
-            theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
-          }  max-w-4xl  rounded-lg w-[400px]`}
+          theme == "dark"
+            ? "bg-gray-300 text-gray-700"
+            : "bg-white text-gray-700"
+        }  max-w-4xl  rounded-lg w-[400px]`}
       >
         {/* Header */}
-        
+
         <div className="flex justify-between items-center px-4 py-3 bg-orange-500  rounded-t-lg">
           <div className="flex items-center gap-3">
             {user?.profile_pic ? (
               <img
-                src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
+                src={
+                  user.profile_pic.startsWith("http")
+                    ? user.profile_pic
+                    : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                }
                 alt={user.name}
                 className="w-8 h-8 rounded-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold text-lg">
                 {user?.name?.charAt(0)}
               </div>
             )}
+
             <div>
-              <p className="font-semibold text-gray-100 text-sm">{user?.name}</p>
-              <p 
-                
+              <p className="font-semibold text-gray-100 text-sm">
+                {user?.name}
+              </p>
+              <p
                 className={`${
                   theme == "dark" ? "text-gray-100" : "text-gray-500"
                 } `}
@@ -141,7 +149,9 @@ const UserBotSettings = ({ onClose, user }) => {
             placeholder="Search groups..."
             className={`
                   ${
-                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                    theme == "dark"
+                      ? "bg-gray-800 border-gray-400 text-gray-300"
+                      : ""
                   }
                   w-full border px-3 py-2 rounded-md text-sm focus:outline-none focus:ring focus:ring-blue-200 f-13
                 `}
@@ -174,7 +184,9 @@ const UserBotSettings = ({ onClose, user }) => {
               key={group.group_id}
               className={`
                 ${
-                  theme == "dark" ? "bg-gray-400 hover:bg-gray-500" : "bg-gray-200 hover:bg-gray-300"
+                  theme == "dark"
+                    ? "bg-gray-400 hover:bg-gray-500"
+                    : "bg-gray-200 hover:bg-gray-300"
                 }
                 flex items-center justify-between py-2 px-3 border-b last:border-none cursor-pointer rounded-md transition mb-1
               `}

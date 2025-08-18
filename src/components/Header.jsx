@@ -25,6 +25,8 @@ import {
   BarChart2,
   ChartBarBig,
   Megaphone,
+  Hash,
+  RadioTower,
 } from "lucide-react";
 import logo from "../assets/ccp-logo.png";
 import { AnimatePresence } from "framer-motion";
@@ -54,6 +56,8 @@ import AddStatus from "../pages/status/AddStatus.jsx";
 import ManagePoll from "../pages/poll/ManagePoll.jsx";
 import ManageStatus from "../pages/status/ManageStatus.jsx";
 import AddTask from "../pages/looptask/AddTask.jsx";
+import ManageUserTags from "../pages/usertags/ManageUserTags.jsx";
+import SendBroadcast from "../pages/broadcast/SendBroadcast.jsx";
 
 export default function Header() {
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -63,6 +67,7 @@ export default function Header() {
   const { addTaskOpen, setAddTaskOpen } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { allUsers, setAllUsers } = useSelectedUser();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -71,6 +76,8 @@ export default function Header() {
   const [pollOpen, setPollOpen] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [usersOpen, setUsersOpen] = useState(false);
+  const [userTagsOpen, setUserTagsOpen] = useState(false);
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const { searchOpen, setSearchOpen } = useSelectedUser();
@@ -175,6 +182,28 @@ export default function Header() {
       socket.off("availability_updated", handleAvailabilityUpdated);
     };
   }, [user]);
+
+  const fetchUsers = async () => {
+      try {
+        const response = await fetch(
+          "https://webexback-06cc.onrender.com/api/users/fetchallusers"
+        );
+        const data = await response.json();
+        if (data.status) {
+          const filteredUsers = data.data.filter(
+            (user) => user.user_type !== "admin"
+          );
+          setAllUsers(filteredUsers);
+        } else {
+          toast.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } 
+    };
+    useEffect(() => {
+      fetchUsers();
+    }, []);
 
   const selectedUserRef = useRef(selectedUser);
 
@@ -461,8 +490,13 @@ export default function Header() {
                 {user?.profile_pic ? (
                   <div>
                     <img
-                      src={"https://rapidcollaborate.in/ccp" + user.profile_pic}
+                      src={
+                        user.profile_pic.startsWith("http")
+                          ? user.profile_pic
+                          : `https://rapidcollaborate.in/ccp${user.profile_pic}`
+                      }
                       alt="Profile"
+                      loading="lazy"
                       className="w-8 h-8 rounded-full mx-auto object-cover border"
                     />
                   </div>
@@ -471,6 +505,7 @@ export default function Header() {
                     {user.name[0]}
                   </div>
                 )}
+
                 {isUserOnline ? (
                   <span className="absolute bottom-[4px] right-[4px] w-2 h-2 bg-green-500 rounded-full border border-white" />
                 ) : (
@@ -601,6 +636,34 @@ export default function Header() {
                   } hover:bg-orange-500  transition`}
                 >
                   <Megaphone size={17} className="" />
+                </button>
+              )}
+              {(user?.user_type == "admin") && (
+                <button
+                  onClick={() => setUserTagsOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Manage User Tags"
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
+                >
+                  <Hash size={17} className="" />
+                </button>
+              )}
+              {(user?.user_type == "admin") && (
+                <button
+                  onClick={() => setBroadcastOpen(true)}
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Broadcast Message"
+                  className={`flex items-center p-2 f-13 rounded-full ${
+                    theme == "dark"
+                      ? "text-white"
+                      : "text-gray-800 hover:text-gray-900"
+                  } hover:bg-orange-500  transition`}
+                >
+                  <RadioTower size={17} className="" />
                 </button>
               )}
 
@@ -737,6 +800,17 @@ export default function Header() {
             onClose={() => {
               setAddTaskOpen(false);
             }}
+          />
+        )}
+
+        {userTagsOpen && (
+          <ManageUserTags 
+            onClose={()=>{setUserTagsOpen(false)}}
+          />
+        )}
+        {broadcastOpen && (
+          <SendBroadcast 
+          onClose={()=>{setBroadcastOpen(false)}}
           />
         )}
         <ReminderPopup />

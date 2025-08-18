@@ -58,7 +58,9 @@ const EditModal = ({
             userColor: "#6A0572",
             seniority: member.seniority ?? "junior",
             profilePic: member.profile_pic
-              ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
+              ? member.profile_pic.startsWith("http")
+                ? member.profile_pic
+                : `https://rapidcollaborate.in/ccp${member.profile_pic}`
               : null,
           }));
 

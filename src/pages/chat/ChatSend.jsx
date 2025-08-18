@@ -169,8 +169,10 @@ const ChatSend = ({
             userColor: "#6A0572",
             seniority: member.seniority ?? "junior",
             profilePic: member.profile_pic
-              ? `https://rapidcollaborate.in/ccp${member.profile_pic}`
-              : null,
+        ? member.profile_pic.startsWith("http")
+          ? member.profile_pic
+          : `https://rapidcollaborate.in/ccp${member.profile_pic}`
+        : null,
             email: member.email,
             user_panel: member.user_panel,
           }));
@@ -330,6 +332,7 @@ const ChatSend = ({
           <img
             src={data.profilePic}
             alt={data.userName}
+            loading="lazy"
             className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
