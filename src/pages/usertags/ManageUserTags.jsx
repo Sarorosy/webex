@@ -104,7 +104,7 @@ export default function ManageUserTags({ onClose }) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`relative w-full max-w-[450px] h-screen ${
           theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"
-        } shadow-xl`}
+        } shadow-xl flex flex-col`}
       >
         {/* Header */}
         <div
@@ -175,7 +175,7 @@ export default function ManageUserTags({ onClose }) {
         )}
 
         {/* Tag list */}
-        <ul className="space-y-2 max-h-[65vh] overflow-y-auto px-3">
+        <ul className="space-y-2 flex-1 overflow-y-auto px-3 pb-3">
           {paginatedTags.map((tag) => (
             <li
               key={tag.id}
@@ -186,7 +186,7 @@ export default function ManageUserTags({ onClose }) {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="flex-1 border px-2 py-1 mr-2 rounded"
+                  className={`flex-1 border px-2 py-1 mr-2 rounded ${ theme == "dark" ? "bg-gray-500 border border-gray-500" : "" }`}
                 />
               ) : (
                 <span>{tag.name}</span>

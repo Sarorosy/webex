@@ -332,8 +332,6 @@ export default function AddTask({ onClose }) {
         }
       });
 
-      
-
       // Make API call
       const response = await fetch(
         "https://loopback-skci.onrender.com/api/tasks/create",
@@ -453,7 +451,7 @@ export default function AddTask({ onClose }) {
           theme == "dark"
             ? "bg-gray-800 text-white mw-dark"
             : "bg-white text-black"
-        } shadow-xl border-l border-gray-300 z-[100] flex flex-col`}
+        } shadow-xl z-[100] flex flex-col`}
       >
         {/* Header */}
         <div
@@ -473,25 +471,33 @@ export default function AddTask({ onClose }) {
             <X size={13} />
           </button>
         </div>
-        <div className="bg-white w-full f-13 px-4 py-6 pr-1 flex flex-col flex-1 overflow-y-auto">
+        <div className="w-full f-13 px-4 py-6 pr-1 flex flex-col flex-1 overflow-y-auto">
           <div className="overflow-y-auto flex-1 flex flex-col pr-4">
-            
-
             <form className=" ">
               <div>
                 {/* Basic Information */}
-                <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                <div
+                  className={`mb-4 p-3 border border-gray-200 ${
+                    theme == "dark"
+                      ? "bg-gray-700 text-gray-100 mw-dark"
+                      : "bg-gray-50 text-gray-700"
+                  }`}
+                >
                   <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
                     <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Basic Information
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Bucket
                       </label>
                       <Select
-                        classNamePrefix="task-filter !text-[11px]"
+                        classNamePrefix={`${
+                          theme == "dark"
+                            ? "!bg-gray-800 !border-gray-400 !text-white !placeholder-gray-100 dark-select"
+                            : ""
+                        } task-filter`}
                         styles={customSelectStyles}
                         options={selectOptions(buckets, "fld_bucket_name")}
                         value={
@@ -532,11 +538,15 @@ export default function AddTask({ onClose }) {
                     </div>
 
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Assign To
                       </label>
                       <Select
-                        classNamePrefix="task-filter"
+                        classNamePrefix={`${
+                          theme == "dark"
+                            ? "!bg-gray-800 !border-gray-400 !text-white !placeholder-gray-100 dark-select"
+                            : ""
+                        } task-filter`}
                         styles={customSelectStyles}
                         options={selectOptions(
                           users,
@@ -563,11 +573,15 @@ export default function AddTask({ onClose }) {
                     </div>
 
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Project
                       </label>
                       <Select
-                        classNamePrefix="task-filter"
+                        classNamePrefix={`${
+                          theme == "dark"
+                            ? "!bg-gray-800 !border-gray-400 !text-white !placeholder-gray-100 dark-select"
+                            : ""
+                        } task-filter`}
                         styles={customSelectStyles}
                         options={selectOptions(projects, "fld_project_name")}
                         value={
@@ -586,11 +600,15 @@ export default function AddTask({ onClose }) {
                     </div>
 
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Followers
                       </label>
                       <Select
-                        classNamePrefix="task-filter"
+                        classNamePrefix={`${
+                          theme == "dark"
+                            ? "!bg-gray-800 !border-gray-400 !text-white !placeholder-gray-100 dark-select"
+                            : ""
+                        } task-filter`}
                         styles={customSelectStyles}
                         isMulti
                         options={selectOptions(
@@ -614,14 +632,20 @@ export default function AddTask({ onClose }) {
                 </div>
 
                 {/* Task Details */}
-                <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+                <div
+                  className={`mb-4 p-3 border border-gray-200 ${
+                    theme == "dark"
+                      ? "bg-gray-700 text-gray-100 mw-dark"
+                      : "bg-gray-50 text-gray-700"
+                  }`}
+                >
                   <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
                     <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
                     Task Details
                   </h2>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Task Title
                       </label>
                       <input
@@ -632,12 +656,19 @@ export default function AddTask({ onClose }) {
                         onChange={(e) =>
                           setFormData({ ...formData, title: e.target.value })
                         }
-                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                      <label className="block text-[13px] font-medium mb-1">
                         Description
                       </label>
                       {/* <textarea
@@ -664,6 +695,7 @@ export default function AddTask({ onClose }) {
                             description: newContent,
                           }))
                         }
+                        className={`!bg-gray-700`}
                         init={{
                           height: 250,
                           menubar: true,
@@ -683,152 +715,215 @@ export default function AddTask({ onClose }) {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-             
-              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
-                {/* Timing & Schedule */}
-                <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
-                  <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
-                  Timing & Schedule
-                </h2>
-                <div className="">
-                  <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                        Due Date
-                      </label>
-                      <input
-                        type="text"
-                        name="dueDate"
-                        ref={dateRef}
-                        value={
-                          formData.dueDate
-                            ? dayjs(formData.dueDate).format("DD/MM/YYYY")
-                            : ""
-                        }
-                        readOnly
-                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                      />
-                    </div>
+                <div
+                  className={`mb-4 bg-3 border border-gray-200 p-3 ${
+                    theme == "dark"
+                      ? "bg-gray-700 text-white mw-dark"
+                      : "bg-gray-50 text-black"
+                  }`}
+                >
+                  {/* Timing & Schedule */}
+                  <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
+                    Timing & Schedule
+                  </h2>
+                  <div className="">
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-[13px] font-medium mb-1">
+                          Due Date
+                        </label>
+                        <input
+                          type="text"
+                          name="dueDate"
+                          ref={dateRef}
+                          value={
+                            formData.dueDate
+                              ? dayjs(formData.dueDate).format("DD/MM/YYYY")
+                              : ""
+                          }
+                          readOnly
+                          className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
+                        />
+                      </div>
 
+                      <div>
+                        <label className="block text-[13px] font-medium mb-1">
+                          Due Time
+                        </label>
+                        <input
+                          type="time"
+                          name="dueTime"
+                          value={formData.dueTime}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              dueTime: e.target.value,
+                            })
+                          }
+                          className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-7">
+                    {formData.recurring === "Yes" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full ">
+                        <div>
+                          <label className="block text-[13px] font-medium mb-1">
+                            Frequency
+                          </label>
+                          <select
+                            name="recurring_duration"
+                            className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
+                            required
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                recurringDuration: e.target.value,
+                              })
+                            }
+                            value={formData.recurringDuration || ""}
+                          >
+                            <option value="">Select Frequency</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Monthly">Monthly</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] font-medium mb-1">
+                            Recurring Type
+                          </label>
+                          <select
+                            name="recurring_type"
+                            className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
+                            required
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                recurringType: e.target.value,
+                              })
+                            }
+                            value={formData.recurringType || ""}
+                          >
+                            <option value="">Select Type</option>
+                            <option value="Non Stop">Non Stop</option>
+                            <option value="Stop after 3 times repetition">
+                              Stop after 3 times repetition
+                            </option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Links */}
+                <div
+                  className={`mb-4 bg-3 border border-gray-200 p-3 ${
+                    theme == "dark"
+                      ? "bg-gray-700 text-white mw-dark"
+                      : "bg-gray-50 text-black"
+                  }`}
+                >
+                  <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
+                    <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
+                    Links & References
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                        Due Time
+                      <label className="block text-[13px] font-medium mb-1">
+                        Google Sheets/Docs Link
                       </label>
                       <input
-                        type="time"
-                        name="dueTime"
-                        value={formData.dueTime}
+                        type="url"
+                        name="googleLink"
+                        placeholder="https://docs.google.com/..."
+                        value={formData.googleLink}
                         onChange={(e) =>
-                          setFormData({ ...formData, dueTime: e.target.value })
+                          setFormData({
+                            ...formData,
+                            googleLink: e.target.value,
+                          })
                         }
-                        className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[13px] font-medium mb-1">
+                        Additional Link
+                      </label>
+                      <input
+                        type="url"
+                        name="additionalLink"
+                        placeholder="https://example.com/..."
+                        value={formData.additionalLink}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            additionalLink: e.target.value,
+                          })
+                        }
+                        className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
                       />
                     </div>
                   </div>
                 </div>
-
-                <div className="flex gap-7">
-                 
-
-                  {formData.recurring === "Yes" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full ">
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                          Frequency
-                        </label>
-                        <select
-                          name="recurring_duration"
-                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                          required
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              recurringDuration: e.target.value,
-                            })
-                          }
-                          value={formData.recurringDuration || ""}
-                        >
-                          <option value="">Select Frequency</option>
-                          <option value="Weekly">Weekly</option>
-                          <option value="Monthly">Monthly</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                          Recurring Type
-                        </label>
-                        <select
-                          name="recurring_type"
-                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                          required
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              recurringType: e.target.value,
-                            })
-                          }
-                          value={formData.recurringType || ""}
-                        >
-                          <option value="">Select Type</option>
-                          <option value="Non Stop">Non Stop</option>
-                          <option value="Stop after 3 times repetition">
-                            Stop after 3 times repetition
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Links */}
-              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
-                <h2 className="text-[14px] font-medium text-orange-600 mb-4 flex items-end leading-none ">
-                  <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
-                  Links & References
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                      Google Sheets/Docs Link
-                    </label>
-                    <input
-                      type="url"
-                      name="googleLink"
-                      placeholder="https://docs.google.com/..."
-                      value={formData.googleLink}
-                      onChange={(e) =>
-                        setFormData({ ...formData, googleLink: e.target.value })
-                      }
-                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                      Additional Link
-                    </label>
-                    <input
-                      type="url"
-                      name="additionalLink"
-                      placeholder="https://example.com/..."
-                      value={formData.additionalLink}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          additionalLink: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
               </div>
 
               {/* Milestones */}
-              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+              <div
+                className={`mb-4 bg-3 border border-gray-200 p-3 ${
+                  theme == "dark"
+                    ? "bg-gray-700 text-white mw-dark"
+                    : "bg-gray-50 text-black"
+                }`}
+              >
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-[14px] font-medium text-orange-600 flex items-center">
                     <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
@@ -846,15 +941,23 @@ export default function AddTask({ onClose }) {
                   {milestones.map((m, i) => (
                     <div
                       key={i}
-                      className="bg-gray-50 rounded p-2 border border-gray-200 flex items-end gap-3"
+                      className={`${
+                        theme == "dark"
+                          ? "bg-gray-600 text-white mw-dark"
+                          : "bg-gray-50 text-black"
+                      } rounded p-2 border border-gray-200 flex items-end gap-3`}
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                          <label className="block text-[13px] font-medium mb-1">
                             Milestone
                           </label>
                           <Select
-                            classNamePrefix="task-filter"
+                            classNamePrefix={`${
+                              theme == "dark"
+                                ? "!bg-gray-800 !border-gray-400 !text-white !placeholder-gray-100 dark-select"
+                                : ""
+                            } task-filter`}
                             styles={customSelectStyles}
                             options={selectOptions(
                               milestonesList,
@@ -877,7 +980,7 @@ export default function AddTask({ onClose }) {
                           />
                         </div>
                         {/* <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                        <label className="block text-[13px] font-medium mb-1">
                           Due Date & Time
                         </label>
                         <input
@@ -890,14 +993,19 @@ export default function AddTask({ onClose }) {
                               e.target.value
                             )
                           }
-                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                           className={`
+                          ${
+                            theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-100" : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
                         />
                       </div> */}
                         <div className="mt-3 flex justify-end items-end">
                           <button
                             type="button"
                             onClick={() => removeMilestone(i)}
-                            className="bg-red-600 hover:bg-red-700 p-2 rounded text-white mt-2"
+                            className="bg-red-600 hover:bg-red-700 p-2 rounded text-white"
                           >
                             <Trash2 size={13} />
                           </button>
@@ -914,7 +1022,13 @@ export default function AddTask({ onClose }) {
               </div>
 
               {/* Files */}
-              <div className="mb-4 bg-gray-50 p-3 border border-gray-200">
+              <div
+                className={`mb-4 bg-3 border border-gray-200 p-3 ${
+                  theme == "dark"
+                    ? "bg-gray-700 text-white mw-dark"
+                    : "bg-gray-50 text-black"
+                }`}
+              >
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-[14px] font-medium text-orange-600 flex items-center">
                     <div className="w-1 h-4 bg-orange-600 rounded-full mr-2"></div>
@@ -931,15 +1045,19 @@ export default function AddTask({ onClose }) {
                     + Add File
                   </button>
                 </div>
-                <div className="space-y-3">
+                <div className="gap-3">
                   {files.map((f, i) => (
                     <div
                       key={i}
-                      className="bg-gray-50 rounded p-2 border border-gray-200 flex items-end gap-3"
+                      className={`${
+                        theme == "dark"
+                          ? "bg-gray-600 text-white mw-dark"
+                          : "bg-gray-50 text-black"
+                      } rounded p-2 border border-gray-200 flex items-end gap-3`}
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4  w-full">
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                          <label className="block text-[13px] font-medium mb-1">
                             Select File
                           </label>
                           {/* <input
@@ -947,10 +1065,22 @@ export default function AddTask({ onClose }) {
                           onChange={(e) =>
                             handleFileChange(i, "file", e.target.files[0])
                           }
-                          className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                           className={`
+                          ${
+                            theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-100" : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
                         /> */}
-                          <div className="flex items-center w-full border border-gray-300 rounded-lg  text-[13px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors">
-                            <label className="relative cursor-pointer bg-gray-500 text-white px-2 py-2 rounded hover:bg-blue-600 whitespace-nowrap">
+                          <div
+                            className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          } flex items-center w-full border border-gray-300 rounded  text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors`}
+                          >
+                            <label className="relative cursor-pointer bg-gray-500 text-white px-2 py-1.5 rounded hover:bg-blue-600 whitespace-nowrap">
                               Choose File
                               <input
                                 type="file"
@@ -966,7 +1096,7 @@ export default function AddTask({ onClose }) {
                           </div>
                         </div>
                         <div>
-                          <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                          <label className="block text-[13px] font-medium mb-1">
                             File Name
                           </label>
                           <input
@@ -976,11 +1106,18 @@ export default function AddTask({ onClose }) {
                             onChange={(e) =>
                               handleFileChange(i, "fileName", e.target.value)
                             }
-                            className="w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                            className={`
+                          ${
+                            theme == "dark"
+                              ? "bg-gray-800 border-gray-400 text-gray-100"
+                              : ""
+                          }
+                          w-full border border-gray-300 rounded px-3 py-1.5 text-[12px] focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition-colors
+                        `}
                           />
                         </div>
                       </div>
-                      <div className="mt-3 flex justify-end">
+                      <div className="flex justify-end">
                         <button
                           type="button"
                           onClick={() => removeFile(i)}

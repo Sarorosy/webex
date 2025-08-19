@@ -3,6 +3,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Users, X } from "lucide-react"; // Optional close icon
+import { useAuth } from "../../utils/idb";
 
 const Requests = ({ onClose }) => {
   const [userRequests, setUserRequests] = useState([]);
@@ -11,6 +12,7 @@ const Requests = ({ onClose }) => {
   const [activeRow, setActiveRow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(1);
+  const { theme } = useAuth();
 
   const fetchUserRequests = async () => {
     try {
@@ -110,10 +112,22 @@ const Requests = ({ onClose }) => {
           animate={{ x: 0 }}
           exit={{ x: "-100%" }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="relative w-full max-w-3xl bg-white h-full shadow-xl overflow-y-auto"
+          className={`relative w-full max-w-3xl h-full shadow-xl ${
+          theme == "dark"
+            ? "bg-gray-800 text-white mw-dark"
+            : "bg-white text-black"
+        }`}
         >
           {/* Close button */}
-          <div className="flex items-center justify-between mb-2 px-4 py-3 bg-gray-300 sticky top-0">
+          <div
+          className={`p-4 py-2 border-b font-semibold text-lg flex justify-between items-center sticky top-0
+            ${
+              theme == "dark"
+                ? "bg-gray-500 text-white mw-dark"
+                : "bg-gray-300 text-black"
+            }
+          `}
+        >
             <div className="">
                 <h4 className="text-lg font-semibold">Requests</h4>
             </div>
@@ -146,36 +160,44 @@ const Requests = ({ onClose }) => {
             </div>
             <div className="space-y-8">
   {tab === 1 && (
-    <div className="n-bg-light p-3 shadow-md">
-      <h2 className="text-md font-semibold mb-3 text-gray-800">
+    <div className={`p-3 rounded ${theme == "dark" ? "bg-gray-600" : "bg-gray-100" }`}>
+      <h2 className="text-md font-semibold mb-3 ">
         User Limit Requests
       </h2>
       {loading ? (
-        <p className="text-sm text-gray-500">Loading requests...</p>
+        <p className="text-sm ">Loading requests...</p>
       ) : userRequests.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm ">
           No pending user limit requests.
         </p>
       ) : (
-        <table className="min-w-full f-13 text-left text-gray-700">
-          <thead className="bg-gray-300 border-b">
+        <table className="table-auto border border-gray-300 border-collapse w-full text-[12px] text-left">
+          <thead className={`bg-gray-200 ${
+              theme == "dark"
+                ? "bg-gray-500 text-white mw-dark"
+                : "bg-gray-300 text-black"
+            }`}>
             <tr>
-              <th className="px-4 py-2">S.no</th>
-              <th className="px-4 py-2">Sender</th>
-              <th className="px-4 py-2">Request For</th>
-              <th className="px-4 py-2">Group</th>
-              <th className="px-4 py-2">Requested At</th>
-              <th className="px-4 py-2 text-center">Action</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">S.no</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Sender</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Request For</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Group</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Requested At</th>
+              <th className="border border-gray-300 px-2 py-2 whitespace-nowrap text-center">Action</th>
             </tr>
           </thead>
           <tbody>
             {userRequests.map((req, index) => (
-              <tr key={req.id} className="hover:bg-gray-50 border-b">
-                <td className="px-4 py-2">{index + 1}</td>
-                <td className="px-4 py-2">{req.sender_name}</td>
-                <td className="px-4 py-2">{req.user_name}</td>
-                <td className="px-4 py-2">{req.group_name}</td>
-                <td className="px-4 py-2">
+              <tr key={req.id} className={` ${
+              theme == "dark"
+                ? "bg-gray-900 text-white mw-dark hover:bg-gray-800"
+                : "hover:bg-gray-50"
+            }`}>
+                <td className="border border-gray-300 px-2 py-2">{index + 1}</td>
+                <td className="border border-gray-300 px-2 py-2">{req.sender_name}</td>
+                <td className="border border-gray-300 px-2 py-2">{req.user_name}</td>
+                <td className="border border-gray-300 px-2 py-2">{req.group_name}</td>
+                <td className="border border-gray-300 px-2 py-2">
                   {new Date(req.requested_at).toLocaleString("en-US", {
                     day: "2-digit",
                     month: "short",
@@ -185,7 +207,7 @@ const Requests = ({ onClose }) => {
                     hour12: true,
                   })}
                 </td>
-                <td className="px-4 py-2 text-center">
+                <td className="border border-gray-300 px-2 py-2 text-center">
                   <button
                     onClick={() => handleUserApprove(req.id)}
                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded f-11"
@@ -202,24 +224,28 @@ const Requests = ({ onClose }) => {
   )}
 
               {tab === 2 && (
-                <div className="n-bg-light p-3 shadow-md">
-                  <h2 className="text-md font-semibold mb-3 text-gray-800">
+                <div className={`p-3 rounded ${theme == "dark" ? "bg-gray-600" : "bg-gray-100" }`}>
+                  <h2 className="text-md font-semibold mb-3 ">
                     Group Limit Requests
                   </h2>
                   {groupRequests.length === 0 ? (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm ">
                       No pending group limit requests.
                     </p>
                   ) : (
-                    <table className="min-w-full f-13 text-left text-gray-700">
-                      <thead className="bg-gray-300 border-b">
+                    <table className="table-auto border border-gray-300 border-collapse w-full text-[12px] text-left">
+                      <thead className={`bg-gray-200 ${
+              theme == "dark"
+                ? "bg-gray-500 text-white mw-dark"
+                : "bg-gray-300 text-black"
+            }`}>
                         <tr>
-                          <th className="px-4 py-2">S.no</th>
-                          <th className="px-4 py-2">Sender</th>
-                          <th className="px-4 py-2">Group</th>
-                          <th className="px-4 py-2">Existing Limit</th>
-                          <th className="px-4 py-2">Requested At</th>
-                          <th className="px-4 py-2 text-center">Action</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">S.no</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Sender</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Group</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Existing Limit</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap">Requested At</th>
+                          <th className="border border-gray-300 px-2 py-2 whitespace-nowrap text-center">Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -230,13 +256,17 @@ const Requests = ({ onClose }) => {
                           return (
                             <tr
                               key={req.id}
-                              className="hover:bg-gray-50 border-b"
+                              className={` ${
+              theme == "dark"
+                ? "bg-gray-900 text-white mw-dark hover:bg-gray-800"
+                : "hover:bg-gray-50"
+            }`}
                             >
-                              <td className="px-4 py-2">{index + 1}</td>
-                              <td className="px-4 py-2">{req.sender_name}</td>
-                              <td className="px-4 py-2">{req.group_name}</td>
-                              <td className="px-4 py-2">{req.member_limit}</td>
-                              <td className="px-4 py-2">
+                              <td className="border border-gray-300 px-2 py-2">{index + 1}</td>
+                              <td className="border border-gray-300 px-2 py-2">{req.sender_name}</td>
+                              <td className="border border-gray-300 px-2 py-2">{req.group_name}</td>
+                              <td className="border border-gray-300 px-2 py-2">{req.member_limit}</td>
+                              <td className="border border-gray-300 px-2 py-2">
                                 {new Date(req.requested_at).toLocaleString("en-US", {
                                   day: "2-digit",
                                   month: "short",
@@ -246,7 +276,7 @@ const Requests = ({ onClose }) => {
                                   hour12: true,
                                 })}
                               </td>
-                              <td className="px-4 py-2 text-center">
+                              <td className="border border-gray-300 px-2 py-2 text-center">
                                 {isActive ? (
                                   <div className="flex items-center justify-center space-x-2">
                                     <button

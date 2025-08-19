@@ -141,11 +141,11 @@ const ScheduledMessages = ({ userId, userType }) => {
                 {messages.map((msg) => (
                   <li
                     key={msg.id}
-                    className="border rounded-lg px-2 py-1 bg-gray-50 shadow-sm f-11"
+                    className={`border rounded-lg px-2 py-1 shadow-sm f-11 ${theme == "dark" ? " bg-gray-700 text-white" : "bg-gray-50" }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{msg.sender_name}</span>
-                      <span className="f-11 text-gray-500">
+                      <span className="f-11 ">
                         {new Date(msg.schedule_at).toLocaleString()}
                       </span>
                     </div>

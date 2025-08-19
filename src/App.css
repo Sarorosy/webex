@@ -535,9 +535,15 @@ div#commentsMention[placeholder]:empty:before {
 }
 
 .css-1nmdiq5-menu {
-    z-index: 9;
+    z-index: 99 !important;
+}
+.css-yyp97q-placeholder , .css-1dimb5e-singleValue {
+  z-index: 9;
 }
 
+.css-1nmdiq5-menu {
+    z-index: 99 !important;
+}
 
 
 

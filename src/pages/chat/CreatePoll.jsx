@@ -18,7 +18,7 @@ const CreatePoll = ({
   setShowEmojiPickerIndex,
   finalFunction
 }) => {
-  const { user } = useAuth();
+  const { user ,theme } = useAuth();
   const [groups, setGroups] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
 
@@ -140,14 +140,20 @@ const CreatePoll = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         style={{ zIndex: "9999999" }}
-        className="relative  bg-gray-900 text-white w-full max-w-md p-4 rounded-xl shadow-xl ios max-h-full overflow-y-auto"
+        className="w-full max-w-md ios "
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Create poll</h2>
+        <div
+        className={`${
+          theme == "dark" ? "bg-gray-300 text-gray-700" : "bg-white text-gray-700"
+        }  max-w-4xl  rounded-lg`}
+      >
+        <div className="flex justify-between items-center px-4 py-2 bg-orange-500  rounded-t-lg">
+          <h2 className="text-lg font-semibold text-white">Create poll</h2>
           <button onClick={onClose}>
-            <X />
+            <X size={20}  className="text-white" />
           </button>
         </div>
+        <div className="p-4">
 
         {/* Question */}
         <div className="mb-4">
@@ -155,20 +161,30 @@ const CreatePoll = ({
           <input
             type="text"
             placeholder="Ask question"
-            className="w-full bg-transparent border-b border-gray-600 outline-none py-1"
+            className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : ""
+                  }
+                  w-full p-2 border rounded
+                `}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
           />
         </div>
 
         {/* Options */}
-        <div className="mb-4 h-44 custom-scrollbar overflow-y-auto">
+        <div className="mb-4 max-h-44 custom-scrollbar overflow-y-auto">
           <label className="font-semibold block mb-1">Options</label>
           <div className="space-y-2">
             {options.map((opt, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 border-b border-orange-500 py-1"
+                className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400 text-gray-300" : "bg-white text-gray-500" 
+                  }
+                  w-full p-2 border rounded flex items-center gap-2
+                `}
               >
                 <input
                   type="text"
@@ -185,18 +201,18 @@ const CreatePoll = ({
                     )
                   }
                 >
-                  <Smile size={18} />
+                  <Smile size={17} />
                 </button>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-[0px]">
                   <button
                     onClick={() => moveOption(index, index - 1)}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-[9px] text-gray-400 hover:text-white leading-none"
                   >
                     ▲
                   </button>
                   <button
                     onClick={() => moveOption(index, index + 1)}
-                    className="text-xs text-gray-400 hover:text-white"
+                    className="text-[9px] text-gray-400 hover:text-white leading-none"
                   >
                     ▼
                   </button>
@@ -220,7 +236,12 @@ const CreatePoll = ({
             isMulti
             value={selectedGroups}
             onChange={setSelectedGroups}
-            className="text-black" // ensures text is visible in dark background
+            className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400" : "bg-white text-gray-600"
+                  }
+                  w-full rounded
+                `}
           />
         </div>
 
@@ -243,13 +264,15 @@ const CreatePoll = ({
         </div>
 
         {/* Submit button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end border-t border-gay-300 pt-3">
           <button
             onClick={handlePollSend}
             className="bg-orange-500 text-white rounded-full p-3"
           >
-            <SendHorizonal />
+            <SendHorizonal size={15} />
           </button>
+        </div>
+        </div>
         </div>
       </motion.div>
     </div>

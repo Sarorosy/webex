@@ -376,6 +376,7 @@ function SendBroadcast({ onClose }) {
 
   return (
     <AnimatePresence>
+      <div className={`fixed inset-0   z-50 flex items-center ${theme == "dark" ? "bg-gray-900 bg-opacity-30" : "bg-black bg-opacity-30" }`}>
       <motion.div
         initial={{ x: "100%" }}
         animate={{ x: 0 }}
@@ -383,7 +384,7 @@ function SendBroadcast({ onClose }) {
         transition={{ type: "tween", duration: 0.3 }}
         className={`fixed h-full top-0 right-0 w-[45%] ${
           theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"
-        } shadow-xl border-r border-gray-300 z-[100] overflow-y-auto prose`}
+        } shadow-xl border-r border-gray-300 z-[100]  flex flex-col`}
       >
         {/* Header */}
         <div
@@ -402,59 +403,65 @@ function SendBroadcast({ onClose }) {
           </button>
         </div>
 
-        <div className="flex flex-col h-[90%] justify-end p-4 gap-2 ios relative">
-          {selectedUsers.length > 0 && (
-            <div className="flex flex-col gap-1 mb-2 border-b pb-2">
-              <div className="flex items-center justify-between text-sm font-semibold">
-                <span>
-                  Message will be sent to {selectedUsers.length} user
-                  {selectedUsers.length > 1 ? "s" : ""}
-                  <button
-                    className="underline ml-2"
-                    onClick={() => {
-                      setViewUsersOpen(!viewUsersOpen);
-                    }}
-                  >
-                    {viewUsersOpen ? "Hide" : "View"}
-                  </button>
-                </span>
+        <div className="flex flex-col flex-1 justify-between p-2 gap-2 ios relative  overflow-y-auto flex-1">
+          <div>
+            {selectedUsers.length > 0 && (
+              <div className={` mb-2`}>
+                <div className={`${
+                      theme == "dark" ? "bg-gray-700" : "bg-gray-100"
+                    } flex items-center justify-between text-[12px] font-semibold  py-2 px-3 rounded`}>
+                  <span>
+                    Message will be sent to {selectedUsers.length} user
+                    {selectedUsers.length > 1 ? "s" : ""}
+                    <button
+                      className="underline ml-2"
+                      onClick={() => {
+                        setViewUsersOpen(!viewUsersOpen);
+                      }}
+                    >
+                      {viewUsersOpen ? "Hide" : "View"}
+                    </button>
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {viewUsersOpen &&
+                    selectedUsers.map((u) => {
+                      const userDetails = users.find((user) => user.id === u.id);
+                      return (
+                        <div
+                          key={u.id}
+                          className={`${
+                      theme == "dark" ? "bg-gray-700" : "bg-gray-200"
+                    } flex items-center gap-2   px-2 py-1 rounded`}
+                        >
+                          {userDetails?.profile_pic ? (
+                            <img
+                              src={
+                                userDetails.profile_pic.startsWith("http")
+                                  ? userDetails.profile_pic
+                                  : `https://rapidcollaborate.in/ccp${userDetails.profile_pic}`
+                              }
+                              alt={userDetails.name}
+                              className="w-4 h-4 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full flex items-center justify-center bg-orange-400 text-white text-xs font-bold">
+                              {userDetails?.name?.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="text-[12px]">{userDetails?.name}</span>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {viewUsersOpen &&
-                  selectedUsers.map((u) => {
-                    const userDetails = users.find((user) => user.id === u.id);
-                    return (
-                      <div
-                        key={u.id}
-                        className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded"
-                      >
-                        {userDetails?.profile_pic ? (
-                          <img
-                            src={
-                              userDetails.profile_pic.startsWith("http")
-                                ? userDetails.profile_pic
-                                : `https://rapidcollaborate.in/ccp${userDetails.profile_pic}`
-                            }
-                            alt={userDetails.name}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 text-white text-xs font-bold">
-                            {userDetails?.name?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <span className="text-sm">{userDetails?.name}</span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
+            )}
+          </div>
           {selectedFile && (
             <div className="flex items-end">
               <div
                 className={` ${
-                  theme == "dark" ? "bg-gray-200" : "bg-gray-300"
+                  theme == "dark" ? "bg-gray-600" : "bg-gray-200"
                 } rounded chatfile text-[11px] flex  justify-center items-center relative px-2 py-1.5 gap-2 mb-1`}
                 data-tooltip-id="my-tooltip"
                 data-tooltip-content={selectedFile.name}
@@ -470,7 +477,7 @@ function SendBroadcast({ onClose }) {
                   className={`
                                 ${
                                   theme == "dark"
-                                    ? "text-gray-500 hover:text-red-500"
+                                    ? "text-gray-300 hover:text-red-500"
                                     : "text-gray-500 hover:text-red-500"
                                 }
                                 
@@ -481,7 +488,10 @@ function SendBroadcast({ onClose }) {
               </div>
             </div>
           )}
-
+        </div>
+          <div className={`${
+            theme == "dark" ? "bg-gray-700" : "bg-gray-100"
+          } py-3 px-3 rounded flex flex-col gap-3`}>
           <div className="relative flex items-start gap-2">
             <div className="flex flex-col items-center gap-2">
               <label className="cursor-pointer border border-orange-500 text-orange-500 hover:text-white px-1 py-1 rounded hover:bg-orange-600 transition">
@@ -539,25 +549,31 @@ function SendBroadcast({ onClose }) {
             </div>
           </div>
 
-          <div className="flex justify-end items-center">
-            <div className="mr-12">
-              <label className="flex items-center gap-2 mb-2">
+          <div className="flex justify-between items-end gap-6">
+            <div className="flex gap-3">
+              <label className={`flex items-center gap-2  px-2 py-1 rounded text-[12px]  cursor-pointer ${
+            theme == "dark" ? "bg-gray-500 text-gray-200 hover:bg-gray-400" : "bg-gray-300 text-gray-900 hover:bg-gray-400"
+          }`}>
                 <input
                   type="radio"
                   name="sendOption"
                   value="without"
                   checked={!sendWithTags}
+                  className="mt-[-1px]"
                   onChange={() => setSendWithTags(false)}
                 />
                 Send without tags
               </label>
 
-              <label className="flex items-center gap-2">
+              <label className={`flex items-center gap-2  px-2 py-1 rounded text-[12px]  cursor-pointer ${
+            theme == "dark" ? "bg-gray-500 text-gray-200 hover:bg-gray-400" : "bg-gray-300 text-gray-900 hover:bg-gray-400"
+          }`}>
                 <input
                   type="radio"
                   name="sendOption"
                   value="with"
                   checked={sendWithTags}
+                  className="mt-[-1px]"
                   onChange={() => setSendWithTags(true)}
                 />
                 Send with tags
@@ -566,19 +582,20 @@ function SendBroadcast({ onClose }) {
             <button
               onClick={handleSend}
               disabled={submitBtnDisabled || cleanedValue === ""}
-              className="bg-orange-500 text-white px-3 py-1 rounded hover:bg-orange-600 transition mt-2 w-20"
+              className="bg-orange-500 text-white px-2 py-2 rounded hover:bg-orange-600 transition cursor-pointer"
             >
               {submitBtnDisabled ? (
                 <ScaleLoader color="#fff" height={14} width={3} radius={2} />
               ) : (
-                <p className="flex items-center">
-                  <Send size={13} /> Send
+                <p className="flex items-center gap-1 text-[11px]">
+                  <Send size={13} />
                 </p>
               )}
             </button>
           </div>
-        </div>
+          </div>
       </motion.div>
+      </div>
     </AnimatePresence>
   );
 }

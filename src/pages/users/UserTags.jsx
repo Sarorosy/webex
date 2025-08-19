@@ -98,9 +98,7 @@ const UserTags = ({ onClose, user , after}) => {
             )}
             <div>
               <p className="font-semibold text-gray-100 text-sm">{user?.name}</p>
-              <p className={`${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}>
-                Update User Tags
-              </p>
+              
             </div>
           </div>
           <button
@@ -112,7 +110,11 @@ const UserTags = ({ onClose, user , after}) => {
         </div>
 
         {/* Multi-Select */}
+        
         <div className="p-4">
+          <p className={`${theme === "dark" ? "text-gray-900" : "text-gray-900"} mb-1 font-semibold text-[12px]`}>
+            Update User Tags
+          </p>
           <Select
             options={tagOptions}
             value={selectedTags}
@@ -120,11 +122,17 @@ const UserTags = ({ onClose, user , after}) => {
             placeholder="Select tags"
             isMulti
             isClearable
+            className={`
+                  ${
+                    theme == "dark" ? "bg-gray-800 border-gray-400" : "bg-white"
+                  }
+                  w-full rounded-md
+                `}
           />
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t flex justify-end gap-2 rounded-b-lg">
+        <div className="py-3 px-4 border-t flex justify-end gap-2 rounded-b-lg">
           <button
             onClick={handleSave}
             className="px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700 f-12"
