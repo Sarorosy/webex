@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ChevronUp,
   CircleCheckBig,
+  AtSign,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -50,11 +51,13 @@ const ChatMessages = ({
   isTyping,
   ismentioned,
   newMessages,
+  taggedMessages
 }) => {
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { pendingMessages } = useSelectedUser();
   const [messages, setMessages] = useState([]);
   const [skip, setSkip] = useState(messages.length);
   const [hasMore, setHasMore] = useState(true);
@@ -144,6 +147,9 @@ const ChatMessages = ({
   useEffect(() => {
     // console.log("latest msg id", latestMessageId);
   }, [latestMessageId]);
+  useEffect(() => {
+    console.log("pending messages", pendingMessages);
+  }, [pendingMessages]);
 
   const [openFileModal, setOpenFileModal] = useState(null);
   const proseRef = useRef(null); // your container
@@ -820,13 +826,13 @@ const ChatMessages = ({
     }
   };
 
-  const [newMesScrollIds, setNewMesScrollIds] = useState(newMessages);
+  const [newMesScrollIds, setNewMesScrollIds] = useState(taggedMessages);
 
   useEffect(() => {
-    if (Array.isArray(newMessages) && newMessages.length > 0) {
-      setNewMesScrollIds(newMessages);
+    if (Array.isArray(taggedMessages) && taggedMessages.length > 0) {
+      setNewMesScrollIds(taggedMessages);
     }
-  }, [newMessages]);
+  }, [taggedMessages]);
 
   const scrollToMessageByIds = async (messageIds = []) => {
     if (!Array.isArray(messageIds) || messageIds.length === 0) return;
@@ -2776,7 +2782,7 @@ const ChatMessages = ({
                   }}
                   className="top-btn-set transform -translate-x-1/3 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-1 rounded-full shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-700 transition-all  flex items-center justify-center"
                 >
-                  <MessageSquare size={15} className="mr-1" /> New (
+                  <AtSign size={15} className="mr-1" /> New (
                   {newMesScrollIds.length})
                 </motion.button>
               )}

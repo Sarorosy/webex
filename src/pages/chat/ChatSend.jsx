@@ -31,7 +31,6 @@ import AddStatus from "../status/AddStatus";
 import ScheduleMessageModal from "./ScheduleMessageModal";
 import moment from "moment";
 
-
 const ChatSend = ({
   type,
   userId,
@@ -52,6 +51,7 @@ const ChatSend = ({
   const inputRef = useRef(null);
   const [groupUsers, setGroupUsers] = useState([]);
   const { messageLoading, setMessageLoading } = useSelectedUser();
+  const { pendingMessages, setPendingMessages } = useSelectedUser();
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const [selectedFile, setSelectedFile] = useState(null);
   const [isToolbarOpen, setIsToolbarOpen] = useState(false);
@@ -169,10 +169,10 @@ const ChatSend = ({
             userColor: "#6A0572",
             seniority: member.seniority ?? "junior",
             profilePic: member.profile_pic
-        ? member.profile_pic.startsWith("http")
-          ? member.profile_pic
-          : `https://rapidcollaborate.in/ccp${member.profile_pic}`
-        : null,
+              ? member.profile_pic.startsWith("http")
+                ? member.profile_pic
+                : `https://rapidcollaborate.in/ccp${member.profile_pic}`
+              : null,
             email: member.email,
             user_panel: member.user_panel,
           }));
@@ -573,7 +573,7 @@ const ChatSend = ({
   );
 
   const [isSending, setIsSending] = useState(false);
-  const handleSend = async () => {
+  const handleSendOld = async () => {
     if (isSending || (!value.trim() && !selectedFile)) return;
 
     const rawText = value.trim();
@@ -714,10 +714,174 @@ const ChatSend = ({
     }
   };
 
+  function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+  const handleSend = async () => {
+    if (isSending || (!value.trim() && !selectedFile)) return;
+
+    const rawText = value.trim();
+
+    // Step 1: Find all email addresses and replace with placeholders
+    const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+    const emails = [];
+    const maskedText = rawText.replace(emailRegex, (match) => {
+      const placeholder = `__EMAIL_${emails.length}__`;
+      emails.push(match);
+      return placeholder;
+    });
+
+    // Step 2: Linkify only clean URLs
+    const urlRegex = /\bhttps?:\/\/[^\s<>"']+/g;
+    const linkified = maskedText.replace(urlRegex, (url) => {
+      let href = url;
+      if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        href = "https://" + url;
+      }
+      return `<a href="${href}" class="messages-a-link" target="_blank">${url}</a>`;
+    });
+
+    // Step 3: Restore original emails
+    const finalMessage = linkified.replace(/__EMAIL_(\d+)__/g, (_, index) => {
+      return emails[parseInt(index)];
+    });
+
+    const tempId = Date.now(); // unique id for pending message
+    const tempMessage = {
+      id: tempId,
+      message: finalMessage,
+      sender_id: user.id,
+      receiver_id: userId,
+      type: type,
+      status: "sending", // <-- important
+      is_file: !!selectedFile,
+      created_at: new Date().toISOString(),
+    };
+
+    // Add to pending messages
+    setPendingMessages((prev) => [...prev, tempMessage]);
+
+    if (type == "user" && user?.seniority == "junior") {
+      const prevMessagedUserIds = user?.messagedUserIds || [];
+      console.log("prevMessagedUserIds", prevMessagedUserIds);
+      const isNewUser = !prevMessagedUserIds.includes(userId);
+      console.log("isNewUser", isNewUser);
+      console.log("message_count", user?.message_count || 0);
+
+      if (isNewUser && (user?.message_count || 0) >= 5) {
+        toast.custom(
+          (t) => (
+            <div
+              className={`max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-xl pointer-events-auto ring-1 ring-black ring-opacity-5 p-4 flex items-start space-x-4 ${
+                t.visible ? "animate-enter" : "animate-leave"
+              }`}
+            >
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Message Limit Reached
+                </p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                  You've messaged 5 different users. Please continue the
+                  conversation in a group instead.
+                </p>
+              </div>
+              <button
+                onClick={() => toast.dismiss(t.id)}
+                className="text-gray-500 hover:text-gray-800 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ),
+          {
+            duration: 6000,
+            position: "top-right",
+            id: "one-to-one-limit",
+            ariaProps: {
+              role: "status",
+              "aria-live": "polite",
+            },
+          }
+        );
+      }
+
+      await trackMessagedUser(userId);
+    }
+
+    try {
+      setIsSending(true);
+      setSubmitBtnDisabled(true);
+      setMessageLoading(true);
+      setShowEmojiPicker(false);
+
+      setValue("");
+      const chatInput = document.getElementById("chatInput");
+      const chatInput2 = document.getElementById("chatInputuser");
+      if (chatInput) {
+        chatInput.innerHTML = "";
+      }
+      if (chatInput2) {
+        chatInput2.innerHTML = "";
+      }
+      localStorage.removeItem(localStorageKey);
+      scrollToBottom();
+
+
+
+      const formData = new FormData();
+      formData.append("isReply", isReply);
+      if (isReply && replyMsgId) formData.append("replyMsgId", replyMsgId);
+      formData.append("user_type", type);
+      formData.append("sender_id", user.id);
+      formData.append("receiver_id", userId);
+      formData.append("message", finalMessage);
+      formData.append("sender_name", user.name);
+      formData.append("profile_pic", user.profile_pic);
+      formData.append(
+        "selected_quote_message",
+        selectedQuoteMessage ? JSON.stringify(selectedQuoteMessage) : null
+      );
+      formData.append("is_file", selectedFile ? "1" : "0");
+      let selectedUserIds = [];
+
+      if (Array.isArray(selectedUsers)) {
+        selectedUserIds = selectedUsers.map((user) => user.id);
+      }
+
+      formData.append("selected_users", JSON.stringify(selectedUserIds));
+      if (selectedFile) {
+        formData.append("selectedFile", selectedFile); // key should match `req.file`
+      }
+
+      const res = await fetch("https://webexback-06cc.onrender.com/api/chats/send", {
+        method: "POST",
+        body: formData, // No need for headers, browser sets Content-Type with boundary
+      });
+
+      if (!res.ok) throw new Error("Message send failed");
+      
+      setSelectedFile(null); // Clear file
+      setIsReply(false);
+      setReplyMsgId(null);
+      setReplyMessage(null);
+      setSelectedQuoteMessage(null);
+      setPendingMessages((prev) => prev.filter((m) => m.id !== tempId));
+    } catch (error) {
+      console.error("Send error:", error);
+    } finally {
+      setIsSending(false);
+      setSubmitBtnDisabled(false);
+      setMessageLoading(false);
+      setSelectedUsers([]);
+      
+    }
+  };
+
   const handleSchedule = async () => {
     if (isSending || (!value.trim() && !selectedFile)) return;
 
-    if(!selectedHours){
+    if (!selectedHours) {
       toast.error("Please Select a time");
       return;
     }
@@ -801,9 +965,9 @@ const ChatSend = ({
       setMessageLoading(true);
       setShowEmojiPicker(false);
 
-      const scheduleAt = moment().add(selectedHours, "hours").format("YYYY-MM-DD HH:mm:ss");
-
-      
+      const scheduleAt = moment()
+        .add(selectedHours, "hours")
+        .format("YYYY-MM-DD HH:mm:ss");
 
       const formData = new FormData();
       formData.append("isReply", isReply);
@@ -854,7 +1018,7 @@ const ChatSend = ({
       setSelectedUsers([]);
       setValue("");
       setScheduleModalOpen(false);
-      setSelectedHours(null)
+      setSelectedHours(null);
       const chatInput = document.getElementById("chatInput");
       const chatInput2 = document.getElementById("chatInputuser");
       if (chatInput) {
@@ -1118,31 +1282,32 @@ const ChatSend = ({
     };
   }, [userId, type]);
 
-  
   const containerRef = useRef();
 
   const stripHtml = (input) => {
-  const tmp = document.createElement("div");
-  tmp.innerHTML = input;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = input;
 
-  // Remove all child nodes that are not <img>
-  const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_ELEMENT, {
-    acceptNode(node) {
-      return node.tagName !== "IMG" ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    // Remove all child nodes that are not <img>
+    const walker = document.createTreeWalker(tmp, NodeFilter.SHOW_ELEMENT, {
+      acceptNode(node) {
+        return node.tagName !== "IMG"
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_SKIP;
+      },
+    });
+
+    let node;
+    const nodesToRemove = [];
+
+    while ((node = walker.nextNode())) {
+      nodesToRemove.push(node);
     }
-  });
 
-  let node;
-  const nodesToRemove = [];
+    nodesToRemove.forEach((n) => n.remove());
 
-  while ((node = walker.nextNode())) {
-    nodesToRemove.push(node);
-  }
-
-  nodesToRemove.forEach((n) => n.remove());
-
-  return tmp.innerHTML.trim();
-};
+    return tmp.innerHTML.trim();
+  };
 
   const cleanedValue = stripHtml(value).trim();
 
@@ -1457,9 +1622,7 @@ const ChatSend = ({
                 data-tooltip-content="Schedule Message"
                 className="bg-gray-500 text-white px-2 py-2 rounded hover:bg-gray-600 transition "
               >
-                
-                  <Clock4 size={13} />
-                
+                <Clock4 size={13} />
               </button>
             )}
             <button

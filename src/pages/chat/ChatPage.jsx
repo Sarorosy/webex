@@ -202,6 +202,7 @@ const ChatPage = () => {
 
   const [ismentioned, setIsMentioned] = useState(false);
   const [newMessages, setNewMessages] = useState([]);
+  const [taggedMessages, setTaggedMessages] = useState([]);
 
   return (
     <div className="flex flex-col rounded sticky top-0 n-height transition-all duration-200 ease-in-out">
@@ -216,6 +217,7 @@ const ChatPage = () => {
           sidebarWidth={sidebarWidth}
           setIsMentioned={setIsMentioned}
           setNewMessages={setNewMessages}
+          setTaggedMessages={setTaggedMessages}
         />
         {selectedUser ? (
            
@@ -231,6 +233,8 @@ const ChatPage = () => {
             ismentioned={ismentioned}
             newMessages={newMessages}
             setNewMessages={setNewMessages}
+            taggedMessages={taggedMessages}
+            setTaggedMessages={setTaggedMessages}
           />
         ) : (
           <div
