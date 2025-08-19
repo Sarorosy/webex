@@ -21,7 +21,9 @@ const ChatArea = ({
   sidebarWidth,
   ismentioned,
   newMessages,
-  setNewMessages
+  setNewMessages,
+  taggedMessages,
+  setTaggedMessages
 }) => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -186,6 +188,8 @@ const ChatArea = ({
           ismentioned={ismentioned}
           newMessages={newMessages}
           setNewMessages={setNewMessages}
+          taggedMessages={taggedMessages}
+          setTaggedMessages={setTaggedMessages}
         />
       ) : (
         <ChatFiles

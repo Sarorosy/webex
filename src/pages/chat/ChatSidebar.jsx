@@ -47,6 +47,7 @@ const ChatSidebar = ({
   sidebarWidth,
   setIsMentioned,
   setNewMessages,
+  setTaggedMessages
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const { selectedStatus, setSelectedStatus } = useSelectedUser();
@@ -95,7 +96,7 @@ const ChatSidebar = ({
       );
 
       if (hasChanges) setChats(updatedChats);
-    }, 1500); // every 1.5 seconds
+    }, 500); // every 1.5 seconds
 
     return () => clearInterval(interval); // clean up on unmount
   }, [chats]);
@@ -222,6 +223,7 @@ const ChatSidebar = ({
         });
 
         setNewMessages(matchedChat.unread_message_ids ?? []);
+        setTaggedMessages(matchedChat.tagged_message_ids ?? []);
 
         const updatedChats = chats.map((c) => {
           if (c.id == matchedChat.id && c.type == matchedChat.type) {
@@ -230,6 +232,9 @@ const ChatSidebar = ({
               read_status: 0,
               unread_count: 0,
               is_mentioned: false,
+              is_all: false,
+              unread_message_ids : [],
+              tagged_message_ids: []
             };
           }
           return c;
@@ -251,7 +256,7 @@ const ChatSidebar = ({
 
       const userId = view_user_id ? view_user_id : user.id;
 
-      const [interactionsRes, unreadRes, groupsRes] = await Promise.all([
+      const [interactionsRes, unreadRes] = await Promise.all([
         fetch("https://webexback-06cc.onrender.com/api/chats/getUserAndGroupInteractions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -262,21 +267,14 @@ const ChatSidebar = ({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId }),
         }),
-        fetch("https://webexback-06cc.onrender.com/api/chats/getUserGroupsWithDetails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        }),
       ]);
 
       const interactionsData = await interactionsRes.json();
       const unreadData = await unreadRes.json();
-      const groupsData = await groupsRes.json();
 
-      if (interactionsData.status && unreadData.status && groupsData.status) {
+      if (interactionsData.status && unreadData.status) {
         const { users, groups } = interactionsData.data;
         const unreadCounts = unreadData.data;
-        const groupDetails = groupsData.data;
 
         const unreadMap = new Map();
         unreadCounts.forEach((item) => {
@@ -295,6 +293,9 @@ const ChatSidebar = ({
           user.is_mentioned = unreadInfo
             ? Boolean(unreadInfo.is_mentioned)
             : false;
+          user.tagged_message_ids = unreadInfo
+            ? unreadInfo.tagged_message_ids
+            : [];
           user.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
           if (unreadInfo) user.last_message_id = unreadInfo.last_message_id;
         });
@@ -321,6 +322,9 @@ const ChatSidebar = ({
           group.is_mentioned = unreadInfo
             ? Boolean(unreadInfo.is_mentioned)
             : false;
+          group.tagged_message_ids = unreadInfo
+            ? unreadInfo.tagged_message_ids
+            : [];
           group.is_all = unreadInfo ? Boolean(unreadInfo.is_all) : false;
           if (unreadInfo) group.last_message_id = unreadInfo.last_message_id;
 
@@ -652,6 +656,15 @@ const ChatSidebar = ({
             : updatedChats[index]?.is_mentioned ||
               (Array.isArray(msg.mentioned_users) &&
                 msg.mentioned_users.includes(user?.id)),
+
+          tagged_message_ids: isSameAsSelected
+            ? updatedChats[index]?.tagged_message_ids || []
+            : (Array.isArray(msg.mentioned_users) &&
+                (msg.mentioned_users.includes(user?.id) ||
+                msg.mentioned_users.includes("all")))
+              ? [...(updatedChats[index]?.tagged_message_ids || []), msg.id]
+              : updatedChats[index]?.tagged_message_ids || [],
+
           is_all: isSameAsSelected
             ? updatedChats[index]?.is_all
             : updatedChats[index]?.is_all ||
@@ -1303,6 +1316,7 @@ const ChatSidebar = ({
                         : setIsMentioned(false);
 
                       setNewMessages(chat.unread_message_ids ?? []);
+                      setTaggedMessages(chat.tagged_message_ids ?? [])
 
                       const socket = getSocket();
                       socket.emit("chat_opened", {
@@ -1325,6 +1339,7 @@ const ChatSidebar = ({
                             read_status: 0,
                             unread_count: 0,
                             unread_message_ids: [],
+                            tagged_message_ids: [],
                             is_mentioned: false,
                             is_all: false,
                           };
