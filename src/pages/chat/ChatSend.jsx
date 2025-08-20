@@ -59,6 +59,9 @@ const ChatSend = ({
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [selectedHours, setSelectedHours] = useState(null);
 
+  const [customDate, setCustomDate] = useState("");
+  const [customTime, setCustomTime] = useState("");
+
   const localStorageKey = `chat_input_${userId}_type_${type}`;
 
   const [isTyping, setIsTyping] = useState(false);
@@ -886,6 +889,22 @@ const ChatSend = ({
       return;
     }
 
+    let scheduleAt;
+      if (selectedHours === "custom") {
+        if (!customDate || !customTime) {
+          toast.error("Please select both date and time for custom schedule.");
+          return;
+        }
+        scheduleAt = moment(
+          `${customDate} ${customTime}`,
+          "YYYY-MM-DD HH:mm"
+        ).format("YYYY-MM-DD HH:mm:ss");
+      } else {
+        scheduleAt = moment()
+          .add(selectedHours, "hours")
+          .format("YYYY-MM-DD HH:mm:ss");
+      }
+
     const rawText = value.trim();
 
     // Step 1: Find all email addresses and replace with placeholders
@@ -965,9 +984,7 @@ const ChatSend = ({
       setMessageLoading(true);
       setShowEmojiPicker(false);
 
-      const scheduleAt = moment()
-        .add(selectedHours, "hours")
-        .format("YYYY-MM-DD HH:mm:ss");
+      
 
       const formData = new FormData();
       formData.append("isReply", isReply);
@@ -1655,6 +1672,10 @@ const ChatSend = ({
           onSchedule={handleSchedule}
           selectedHours={selectedHours}
           setSelectedHours={setSelectedHours}
+           customDate={customDate}
+          setCustomDate={setCustomDate}
+          customTime={customTime}
+          setCustomTime={setCustomTime}
         />
       )}
     </>

@@ -47,7 +47,7 @@ const ChatSidebar = ({
   sidebarWidth,
   setIsMentioned,
   setNewMessages,
-  setTaggedMessages
+  setTaggedMessages,
 }) => {
   const { messageLoading, setMessageLoading } = useSelectedUser();
   const { selectedStatus, setSelectedStatus } = useSelectedUser();
@@ -102,8 +102,6 @@ const ChatSidebar = ({
   }, [chats]);
 
   const audioRef = useRef(new Audio(notificationsound));
-
-  
 
   useEffect(() => {
     connectSocket(user?.id);
@@ -160,18 +158,18 @@ const ChatSidebar = ({
     };
 
     const handlePrimaryUserUpdated = ({ group_id, user_id }) => {
-    setChats((prevChats) =>
-      prevChats.map((chat) => {
-        if (chat.id == group_id && chat.type === "group") {
-          return {
-            ...chat,
-            primary_user: user_id,
-          };
-        }
-        return chat;
-      })
-    );
-  };
+      setChats((prevChats) =>
+        prevChats.map((chat) => {
+          if (chat.id == group_id && chat.type === "group") {
+            return {
+              ...chat,
+              primary_user: user_id,
+            };
+          }
+          return chat;
+        })
+      );
+    };
 
     socket.on("group_left", handleGroupLeft);
     socket.on("group_updated", handleGroupUpdated);
@@ -233,8 +231,8 @@ const ChatSidebar = ({
               unread_count: 0,
               is_mentioned: false,
               is_all: false,
-              unread_message_ids : [],
-              tagged_message_ids: []
+              unread_message_ids: [],
+              tagged_message_ids: [],
             };
           }
           return c;
@@ -257,16 +255,22 @@ const ChatSidebar = ({
       const userId = view_user_id ? view_user_id : user.id;
 
       const [interactionsRes, unreadRes] = await Promise.all([
-        fetch("https://webexback-06cc.onrender.com/api/chats/getUserAndGroupInteractions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        }),
-        fetch("https://webexback-06cc.onrender.com/api/chats/getUnreadMessageCounts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }),
-        }),
+        fetch(
+          "https://webexback-06cc.onrender.com/api/chats/getUserAndGroupInteractions",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          }
+        ),
+        fetch(
+          "https://webexback-06cc.onrender.com/api/chats/getUnreadMessageCounts",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+          }
+        ),
       ]);
 
       const interactionsData = await interactionsRes.json();
@@ -362,22 +366,21 @@ const ChatSidebar = ({
   };
 
   const fetchGroups = async () => {
-  try {
-    const res = await axios.get(
-      `https://webexback-06cc.onrender.com/api/groups/user-present-groups-only/${user?.id}`
-    );
+    try {
+      const res = await axios.get(
+        `https://webexback-06cc.onrender.com/api/groups/user-present-groups-only/${user?.id}`
+      );
 
-    // Filter only groups where is_present === true
-    const presentGroups = (res.data.groups || []).filter(
-      (group) => group.is_present === true
-    );
+      // Filter only groups where is_present === true
+      const presentGroups = (res.data.groups || []).filter(
+        (group) => group.is_present === true
+      );
 
-    setUserGroups(presentGroups);
-  } catch (err) {
-    console.error("Error fetching groups", err);
-  }
-};
-
+      setUserGroups(presentGroups);
+    } catch (err) {
+      console.error("Error fetching groups", err);
+    }
+  };
 
   const updateChatLoginStatus = async (chatList) => {
     try {
@@ -592,7 +595,6 @@ const ChatSidebar = ({
 
               // console.log("Matched group chat:", matchingChat);
 
-
               const groupExistsInUserGroups = userGroups.some(
                 (group) => group.group_id == otherUserId
               );
@@ -659,11 +661,11 @@ const ChatSidebar = ({
 
           tagged_message_ids: isSameAsSelected
             ? updatedChats[index]?.tagged_message_ids || []
-            : (Array.isArray(msg.mentioned_users) &&
-                (msg.mentioned_users.includes(user?.id) ||
-                msg.mentioned_users.includes("all")))
-              ? [...(updatedChats[index]?.tagged_message_ids || []), msg.id]
-              : updatedChats[index]?.tagged_message_ids || [],
+            : Array.isArray(msg.mentioned_users) &&
+              (msg.mentioned_users.includes(user?.id) ||
+                msg.mentioned_users.includes("all"))
+            ? [...(updatedChats[index]?.tagged_message_ids || []), msg.id]
+            : updatedChats[index]?.tagged_message_ids || [],
 
           is_all: isSameAsSelected
             ? updatedChats[index]?.is_all
@@ -1316,7 +1318,7 @@ const ChatSidebar = ({
                         : setIsMentioned(false);
 
                       setNewMessages(chat.unread_message_ids ?? []);
-                      setTaggedMessages(chat.tagged_message_ids ?? [])
+                      setTaggedMessages(chat.tagged_message_ids ?? []);
 
                       const socket = getSocket();
                       socket.emit("chat_opened", {
