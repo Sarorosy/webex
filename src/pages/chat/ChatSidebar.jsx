@@ -385,7 +385,7 @@ const ChatSidebar = ({
         const parsed = JSON.parse(cachedData);
         const now = Date.now();
         const diffHours = (now - parsed.timestamp) / (1000 * 60 * 60);
-        
+
         // if (diffHours < 12) {
         // cachedChats = parsed.chats;
         // useCache = true;
@@ -861,6 +861,11 @@ const ChatSidebar = ({
 
         const updated = updatedChats.splice(index, 1)[0];
         updatedChats.unshift(updated);
+
+        localStorage.setItem(
+          "chats_cache",
+          JSON.stringify({ timestamp: Date.now(), chats: updatedChats })
+        );
 
         return updatedChats;
       });
