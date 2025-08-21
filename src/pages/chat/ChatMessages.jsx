@@ -2248,7 +2248,11 @@ const ChatMessages = ({
                                                 "svg",
                                                 "webp",
                                               ].includes(ext);
-                                              const fileUrl = `https://rapidcollaborate.in/ccp${reply.filename}`;
+                                              const fileUrl = reply.filename.startsWith(
+                                      "http"
+                                    )
+                                      ? reply.filename
+                                      : `https://rapidcollaborate.in/ccp${reply.filename}`;
                                               const filenameOnly =
                                                 reply.filename.split("/").pop();
 
@@ -2308,7 +2312,11 @@ const ChatMessages = ({
                                                         <button
                                                           onClick={() =>
                                                             setOpenFileModal({
-                                                              url: `https://rapidcollaborate.in/ccp${reply.filename}`,
+                                                              url: msg.filename.startsWith(
+                                                      "http"
+                                                    )
+                                                      ? msg.filename
+                                                      : `https://rapidcollaborate.in/ccp${msg.filename}`,
                                                               name: reply.filename
                                                                 .split("/")
                                                                 .pop(),

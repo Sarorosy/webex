@@ -552,7 +552,7 @@ const ChatSidebar = ({
 
     const syncChats = () => {
       console.log("🔄 Reconnected: syncing chats and messages");
-      fetchChats(false, true); // 👈 get latest chats
+      //fetchChats(false, true); // 👈 get latest chats
       fetchGroups();
       // You can also call message syncing API here (see below)
     };
