@@ -220,6 +220,13 @@ export default function Header() {
 
       const currentSelectedUser = selectedUserRef.current;
 
+      try {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+          } catch (e) {
+            console.warn("Notification sound playback failed:", e);
+          }
+
       if (
         payload.data.user_type == "group" &&
         payload.data.receiver_id != currentSelectedUser?.id

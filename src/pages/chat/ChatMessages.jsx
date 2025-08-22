@@ -10,7 +10,6 @@ import {
   ArrowDown,
   Trash2,
   MessageSquare,
-  Clock,
   FileText,
   ImageIcon,
   VideoIcon,
@@ -20,9 +19,9 @@ import {
   QuoteIcon,
   Copy,
   ArrowRight,
-  ChevronUp,
   CircleCheckBig,
   AtSign,
+  BellRing,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import EmojiPicker from "emoji-picker-react";
@@ -34,6 +33,7 @@ import FileModal from "../../components/FileModal";
 import TypingIndicator from "./TypingIndicator";
 import PollResults from "../../components/PollResults";
 import AddTask from "../looptask/AddTask";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const ChatMessages = ({
   view_user_id,
@@ -51,7 +51,7 @@ const ChatMessages = ({
   isTyping,
   ismentioned,
   newMessages,
-  taggedMessages
+  taggedMessages,
 }) => {
   const { selectedUser, setSelectedUser } = useSelectedUser();
   const { selectedMessage, setSelectedMessage } = useSelectedUser();
@@ -571,14 +571,250 @@ const ChatMessages = ({
       }
     };
 
+    const handleReminderSet = (data) => {
+      const { msg_id, user_id, time } = data;
+
+      // only update if the event is for this user
+      if (Number(user_id) !== Number(user?.id)) return;
+
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => {
+          if (msg.id === msg_id) {
+            // ✅ Case 1: Reminder for main message
+            let reminderUsers = [];
+            try {
+              if (Array.isArray(msg.reminder_users)) {
+                reminderUsers = msg.reminder_users;
+              } else if (msg.reminder_users) {
+                reminderUsers = JSON.parse(msg.reminder_users);
+              }
+            } catch {
+              reminderUsers = [];
+            }
+
+            reminderUsers.push({ userId: user_id, time });
+
+            return {
+              ...msg,
+              reminder_users: reminderUsers,
+            };
+          }
+
+          // ✅ Case 2: Reminder for a reply
+          if (Array.isArray(msg.replies) && msg.replies.length > 0) {
+            return {
+              ...msg,
+              replies: msg.replies.map((reply) => {
+                if (reply.id === msg_id) {
+                  let reminderUsers = [];
+                  try {
+                    if (Array.isArray(reply.reminder_users)) {
+                      reminderUsers = reply.reminder_users;
+                    } else if (reply.reminder_users) {
+                      reminderUsers = JSON.parse(reply.reminder_users);
+                    }
+                  } catch {
+                    reminderUsers = [];
+                  }
+
+                  reminderUsers.push({ userId: user_id, time });
+
+                  return {
+                    ...reply,
+                    reminder_users: reminderUsers,
+                  };
+                }
+                return reply;
+              }),
+            };
+          }
+
+          return msg; // no changes
+        })
+      );
+    };
+
+    const handleReminderDeleted = (data) => {
+      const { msg_id, user_id } = data;
+
+      // only update if the event is for this user
+      if (Number(user_id) !== Number(user?.id)) return;
+
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => {
+          // ✅ Case 1: Reminder belongs to a main message
+          if (msg.id == msg_id) {
+            let reminderUsers = [];
+            try {
+              if (Array.isArray(msg.reminder_users)) {
+                reminderUsers = msg.reminder_users;
+              } else if (msg.reminder_users) {
+                reminderUsers = JSON.parse(msg.reminder_users);
+              }
+            } catch {
+              reminderUsers = [];
+            }
+
+            reminderUsers = reminderUsers.filter(
+              (r) => Number(r.userId) !== Number(user?.id)
+            );
+
+            return {
+              ...msg,
+              reminder_users: reminderUsers.length > 0 ? reminderUsers : null,
+            };
+          }
+
+          // ✅ Case 2: Reminder belongs to a reply
+          if (Array.isArray(msg.replies) && msg.replies.length > 0) {
+            return {
+              ...msg,
+              replies: msg.replies.map((reply) => {
+                if (reply.id == msg_id) {
+                  let reminderUsers = [];
+                  try {
+                    if (Array.isArray(reply.reminder_users)) {
+                      reminderUsers = reply.reminder_users;
+                    } else if (reply.reminder_users) {
+                      reminderUsers = JSON.parse(reply.reminder_users);
+                    }
+                  } catch {
+                    reminderUsers = [];
+                  }
+
+                  reminderUsers = reminderUsers.filter(
+                    (r) => Number(r.userId) !== Number(user?.id)
+                  );
+
+                  return {
+                    ...reply,
+                    reminder_users:
+                      reminderUsers.length > 0 ? reminderUsers : null,
+                  };
+                }
+                return reply;
+              }),
+            };
+          }
+
+          return msg; // no changes
+        })
+      );
+    };
+
     socket.on("message_edited", handleMessageEdited);
     socket.on("message_delete", handleMessageDelete);
+    socket.on("reminder_set", handleReminderSet);
+    socket.on("reminder_removed", handleReminderDeleted);
 
     return () => {
       socket.off("message_edited", handleMessageEdited);
       socket.off("message_delete", handleMessageDelete);
+      socket.off("reminder_set", handleReminderSet);
+      socket.off("reminder_removed", handleReminderDeleted);
     };
   }, [user.id]);
+
+  const [removeReminderModalOpen, setRemoveReminderModalOpen] = useState(false);
+  const [removeReminderMsgId, setRemoveReminderMsgId] = useState(false);
+  const handleRemoveReminder = (msgId) => {
+    setRemoveReminderMsgId(msgId);
+    setRemoveReminderModalOpen(true);
+  };
+
+  const handleConfirmRemoveReminder = async () => {
+    if (!removeReminderMsgId) {
+      setRemoveReminderModalOpen(false);
+      return;
+    }
+    try {
+      const res = await fetch(
+        "https://webexback-06cc.onrender.com/api/reminders/remove-reminder",
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            msg_id: removeReminderMsgId,
+            user_id: user?.id,
+          }),
+        }
+      );
+      const data = await res.json();
+      if (data.status) {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) => {
+            // ✅ Case 1: Reminder belongs to a main message
+            if (msg.id === removeReminderMsgId) {
+              let reminderUsers = [];
+              try {
+                if (Array.isArray(msg.reminder_users)) {
+                  reminderUsers = msg.reminder_users;
+                } else if (msg.reminder_users) {
+                  reminderUsers = JSON.parse(msg.reminder_users);
+                }
+              } catch {
+                reminderUsers = [];
+              }
+
+              reminderUsers = reminderUsers.filter(
+                (r) => Number(r.userId) !== Number(user?.id)
+              );
+
+              return {
+                ...msg,
+                reminder_users: reminderUsers.length > 0 ? reminderUsers : null,
+              };
+            }
+
+            // ✅ Case 2: Reminder belongs to a reply
+            if (Array.isArray(msg.replies) && msg.replies.length > 0) {
+              return {
+                ...msg,
+                replies: msg.replies.map((reply) => {
+                  if (reply.id === removeReminderMsgId) {
+                    let reminderUsers = [];
+                    try {
+                      if (Array.isArray(reply.reminder_users)) {
+                        reminderUsers = reply.reminder_users;
+                      } else if (reply.reminder_users) {
+                        reminderUsers = JSON.parse(reply.reminder_users);
+                      }
+                    } catch {
+                      reminderUsers = [];
+                    }
+
+                    reminderUsers = reminderUsers.filter(
+                      (r) => Number(r.userId) !== Number(user?.id)
+                    );
+
+                    return {
+                      ...reply,
+                      reminder_users:
+                        reminderUsers.length > 0 ? reminderUsers : null,
+                    };
+                  }
+                  return reply;
+                }),
+              };
+            }
+
+            return msg; // no changes
+          })
+        );
+
+        toast.success("Reminder removed");
+      } else {
+        toast.error(data.message || "Failed to remove reminder");
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setRemoveReminderModalOpen(false);
+      setRemoveReminderMsgId(null);
+    }
+  };
 
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
@@ -1381,7 +1617,7 @@ const ChatMessages = ({
                       msg.profile_pic != "null" &&
                       msg.profile_pic != "" ? (
                         <img
-                        loading="lazy"
+                          loading="lazy"
                           src={
                             msg.profile_pic.startsWith("http")
                               ? msg.profile_pic
@@ -1679,6 +1915,83 @@ const ChatMessages = ({
                                     >
                                       <div> {formatTime(msg.created_at)}</div>
                                     </div>
+                                    {(() => {
+                                      let pinned = [];
+
+                                      if (Array.isArray(msg.pinned_users)) {
+                                        pinned = msg.pinned_users;
+                                      } else {
+                                        try {
+                                          pinned = JSON.parse(msg.pinned_users);
+                                        } catch {
+                                          pinned = [];
+                                        }
+                                      }
+
+                                      return Array.isArray(pinned) &&
+                                        pinned.includes(
+                                          isValidViewUserId
+                                            ? view_user_id
+                                            : user?.id
+                                        ) ? (
+                                        <span
+                                          className={` bg-orange-100 p-0.5 rounded`}
+                                        >
+                                          <Pin
+                                            size={13}
+                                            className={`text-orange-600 fill-orange-600 
+                                  ${isSent ? "rotate-[-45deg]" : "rotate-45"}
+                                `}
+                                          />
+                                        </span>
+                                      ) : null;
+                                    })()}
+
+                                    {(() => {
+                                      let reminder_users = [];
+
+                                      if (Array.isArray(msg.reminder_users)) {
+                                        reminder_users = msg.reminder_users;
+                                      } else {
+                                        try {
+                                          reminder_users = JSON.parse(
+                                            msg.reminder_users
+                                          );
+                                        } catch {
+                                          reminder_users = [];
+                                        }
+                                      }
+
+                                      const targetUserId = isValidViewUserId
+                                        ? view_user_id
+                                        : user?.id;
+
+                                      const reminder = Array.isArray(
+                                        reminder_users
+                                      )
+                                        ? reminder_users.find(
+                                            (r) =>
+                                              Number(r.userId) ===
+                                              Number(targetUserId)
+                                          )
+                                        : null;
+
+                                      return reminder ? (
+                                        <span
+                                          className={` bg-blue-100 p-0.5 rounded cursor-pointer`}
+                                          data-tooltip-id="my-tooltip"
+                                          data-tooltip-html={`Reminder at <b>${reminder?.time}</b> `}
+                                          onClick={() => {
+                                            handleRemoveReminder(msg.id);
+                                          }}
+                                        >
+                                          <BellRing
+                                            size={13}
+                                            className={`text-blue-600 fill-blue-600`}
+                                          />
+                                        </span>
+                                      ) : null;
+                                    })()}
                                     <div>
                                       {msg.is_edited == 1 && (
                                         <p className="text-[9px] bg-gray-200 text-gray-700 px-2 rounded-full font-medium flex items-center">
@@ -1898,7 +2211,7 @@ const ChatMessages = ({
 
                                   return (
                                     <div
-                                      className={`mt-1 flex gap-2 flex-wrap text-sm relative flex
+                                      className={`mt-1 flex gap-2 flex-wrap text-sm relative 
                             ${isSent ? "justify-end" : "justify-start"}
                           `}
                                     >
@@ -1982,37 +2295,6 @@ const ChatMessages = ({
                           </div>
                         </div>
 
-                        {(() => {
-                          let pinned = [];
-
-                          if (Array.isArray(msg.pinned_users)) {
-                            pinned = msg.pinned_users;
-                          } else {
-                            try {
-                              pinned = JSON.parse(msg.pinned_users);
-                            } catch {
-                              pinned = [];
-                            }
-                          }
-
-                          return Array.isArray(pinned) &&
-                            pinned.includes(
-                              isValidViewUserId ? view_user_id : user?.id
-                            ) ? (
-                            <span
-                              className={`absolute top-[-8px]  animate-pulse
-                              ${isSent ? "left-[-3px]" : "right-[-3px]"}
-                            `}
-                            >
-                              <Pin
-                                size={18}
-                                className={`text-orange-500 fill-orange-500 
-                                  ${isSent ? "rotate-[-45deg]" : "rotate-45"}
-                                `}
-                              />
-                            </span>
-                          ) : null;
-                        })()}
                         {(() => {
                           let replies = [];
 
@@ -2232,6 +2514,97 @@ const ChatMessages = ({
                                             >
                                               {formatTime(reply.created_at)}
                                             </div>
+                                            {(() => {
+                                              let pinned = [];
+
+                                              if (
+                                                Array.isArray(
+                                                  reply.pinned_users
+                                                )
+                                              ) {
+                                                pinned = reply.pinned_users;
+                                              } else {
+                                                try {
+                                                  pinned = JSON.parse(
+                                                    reply.pinned_users
+                                                  );
+                                                } catch {
+                                                  pinned = [];
+                                                }
+                                              }
+
+                                              return Array.isArray(pinned) &&
+                                                pinned.includes(
+                                                  isValidViewUserId
+                                                    ? view_user_id
+                                                    : user?.id
+                                                ) ? (
+                                                <span
+                                                  className={` bg-orange-100 p-0.5 rounded`}
+                                                >
+                                                  <Pin
+                                                    size={13}
+                                                    className={`text-orange-600 fill-orange-600 
+                                  ${isSent ? "rotate-[-45deg]" : "rotate-45"}
+                                `}
+                                                  />
+                                                </span>
+                                              ) : null;
+                                            })()}
+
+                                            {(() => {
+                                              let reminder_users = [];
+
+                                              if (
+                                                Array.isArray(
+                                                  reply.reminder_users
+                                                )
+                                              ) {
+                                                reminder_users =
+                                                  reply.reminder_users;
+                                              } else {
+                                                try {
+                                                  reminder_users = JSON.parse(
+                                                    reply.reminder_users
+                                                  );
+                                                } catch {
+                                                  reminder_users = [];
+                                                }
+                                              }
+
+                                              const targetUserId =
+                                                isValidViewUserId
+                                                  ? view_user_id
+                                                  : user?.id;
+
+                                              const reminder = Array.isArray(
+                                                reminder_users
+                                              )
+                                                ? reminder_users.find(
+                                                    (r) =>
+                                                      Number(r.userId) ===
+                                                      Number(targetUserId)
+                                                  )
+                                                : null;
+
+                                              return reminder ? (
+                                                <span
+                                                  className={` bg-blue-100 p-0.5 rounded cursor-pointer`}
+                                                  data-tooltip-id="my-tooltip"
+                                                  data-tooltip-html={`Reminder at <b>${reminder?.time}</b> `}
+                                                  onClick={() => {
+                                                    handleRemoveReminder(
+                                                      reply.id
+                                                    );
+                                                  }}
+                                                >
+                                                  <BellRing
+                                                    size={13}
+                                                    className={`text-blue-600 fill-blue-600`}
+                                                  />
+                                                </span>
+                                              ) : null;
+                                            })()}
                                           </div>
                                           {reply.is_file == 1 &&
                                             reply.filename &&
@@ -2248,11 +2621,12 @@ const ChatMessages = ({
                                                 "svg",
                                                 "webp",
                                               ].includes(ext);
-                                              const fileUrl = reply.filename.startsWith(
-                                      "http"
-                                    )
-                                      ? reply.filename
-                                      : `https://rapidcollaborate.in/ccp${reply.filename}`;
+                                              const fileUrl =
+                                                reply.filename.startsWith(
+                                                  "http"
+                                                )
+                                                  ? reply.filename
+                                                  : `https://rapidcollaborate.in/ccp${reply.filename}`;
                                               const filenameOnly =
                                                 reply.filename.split("/").pop();
 
@@ -2313,10 +2687,10 @@ const ChatMessages = ({
                                                           onClick={() =>
                                                             setOpenFileModal({
                                                               url: msg.filename.startsWith(
-                                                      "http"
-                                                    )
-                                                      ? msg.filename
-                                                      : `https://rapidcollaborate.in/ccp${msg.filename}`,
+                                                                "http"
+                                                              )
+                                                                ? msg.filename
+                                                                : `https://rapidcollaborate.in/ccp${msg.filename}`,
                                                               name: reply.filename
                                                                 .split("/")
                                                                 .pop(),
@@ -2346,47 +2720,7 @@ const ChatMessages = ({
                                             }}
                                             style={{ lineBreak: "auto" }}
                                           ></div>
-                                          {(() => {
-                                            let pinned = [];
 
-                                            if (
-                                              Array.isArray(reply.pinned_users)
-                                            ) {
-                                              pinned = reply.pinned_users;
-                                            } else {
-                                              try {
-                                                pinned = JSON.parse(
-                                                  reply.pinned_users
-                                                );
-                                              } catch {
-                                                pinned = [];
-                                              }
-                                            }
-
-                                            return Array.isArray(pinned) &&
-                                              pinned.includes(
-                                                isValidViewUserId
-                                                  ? view_user_id
-                                                  : user?.id
-                                              ) ? (
-                                              <span
-                                                className={`absolute top-[-8px]  animate-pulse ${
-                                                  isSent
-                                                    ? "left-[-3px]"
-                                                    : "right-[-3px]"
-                                                }`}
-                                              >
-                                                <Pin
-                                                  size={18}
-                                                  className={`text-orange-500 fill-orange-500 ${
-                                                    isSent
-                                                      ? "rotate-[-45deg]"
-                                                      : "rotate-45"
-                                                  }`}
-                                                />
-                                              </span>
-                                            ) : null;
-                                          })()}
                                           {(() => {
                                             let reactions = [];
 
@@ -2572,15 +2906,47 @@ const ChatMessages = ({
                                             <Reply size={11} />
                                           </button>
 
-                                          <button
-                                            onClick={() =>
-                                              handleReminder(reply.id)
+                                          {(() => {
+                                            let reminderUsers = [];
+
+                                            try {
+                                              if (
+                                                Array.isArray(
+                                                  reply.reminder_users
+                                                )
+                                              ) {
+                                                reminderUsers =
+                                                  reply.reminder_users;
+                                              } else if (reply.reminder_users) {
+                                                reminderUsers = JSON.parse(
+                                                  reply.reminder_users
+                                                );
+                                              }
+                                            } catch {
+                                              reminderUsers = [];
                                             }
-                                            className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
-                                            title="Set reminder"
-                                          >
-                                            <BellDot size={11} />
-                                          </button>
+
+                                            const hasReminder =
+                                              reminderUsers.some(
+                                                (r) =>
+                                                  Number(r.userId) ===
+                                                  Number(user?.id)
+                                              );
+
+                                            return (
+                                              !hasReminder && (
+                                                <button
+                                                  onClick={() =>
+                                                    handleReminder(reply.id)
+                                                  }
+                                                  className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                                  title="Set reminder"
+                                                >
+                                                  <BellDot size={11} />
+                                                </button>
+                                              )
+                                            );
+                                          })()}
 
                                           <button
                                             onClick={() => handleQuote(reply)}
@@ -2696,15 +3062,36 @@ const ChatMessages = ({
                           >
                             <Reply size={11} />
                           </button>
-                          {!msg.voice_note && (
-                            <button
-                              onClick={() => handleReminder(msg.id)}
-                              className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50  transition-colors"
-                              title="Set reminder"
-                            >
-                              <BellDot size={11} />
-                            </button>
-                          )}
+                          {(() => {
+                            let reminderUsers = [];
+
+                            try {
+                              if (Array.isArray(msg.reminder_users)) {
+                                reminderUsers = msg.reminder_users;
+                              } else if (msg.reminder_users) {
+                                reminderUsers = JSON.parse(msg.reminder_users);
+                              }
+                            } catch {
+                              reminderUsers = [];
+                            }
+
+                            const hasReminder = reminderUsers.some(
+                              (r) => Number(r.userId) === Number(user?.id)
+                            );
+
+                            return (
+                              !hasReminder &&
+                              !msg.voice_note && (
+                                <button
+                                  onClick={() => handleReminder(msg.id)}
+                                  className="action-button py-1 px-2 text-gray-600 hover:bg-purple-50 transition-colors"
+                                  title="Set reminder"
+                                >
+                                  <BellDot size={11} />
+                                </button>
+                              )
+                            );
+                          })()}
 
                           {!msg.voice_note && (
                             <button
@@ -2835,6 +3222,17 @@ const ChatMessages = ({
             msg={msgForResults}
             onClose={() => {
               setResultOpen(false);
+            }}
+          />
+        )}
+        {removeReminderModalOpen && (
+          <ConfirmationModal
+            title="Remove Reminder"
+            message="Are you sure want to remove this reminder?"
+            onYes={handleConfirmRemoveReminder}
+            onClose={() => {
+              setRemoveReminderModalOpen(false);
+              setRemoveReminderMsgId(null);
             }}
           />
         )}

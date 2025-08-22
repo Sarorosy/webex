@@ -812,12 +812,12 @@ const ChatSidebar = ({
           selectedUser.type == otherChatType;
 
         if (msg.sender_id != user?.id) {
-          try {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play();
-          } catch (e) {
-            console.warn("Notification sound playback failed:", e);
-          }
+          // try {
+          //   audioRef.current.currentTime = 0;
+          //   audioRef.current.play();
+          // } catch (e) {
+          //   console.warn("Notification sound playback failed:", e);
+          // }
         }
 
         const updatedChats = [...prevChats];
